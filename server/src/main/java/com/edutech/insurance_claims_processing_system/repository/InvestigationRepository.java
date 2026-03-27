@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.edutech.insurance_claims_processing_system.entity.Investigation;
 
 @Repository
-public interface InvestigationRepository  {
+public interface InvestigationRepository extends JpaRepository<Investigation , Long> {
     // Additional query methods can be defined here if needed
 }
