@@ -10,6 +10,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -22,6 +23,56 @@ import com.edutech.insurance_claims_processing_system.service.UserService;
 @RestController
 public class RegisterAndLoginController {
 
-    //implement required code here
+      @Autowired
+    private UserService userService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    /**
+     * Registers a new user.
+     */
+    @PostMapping("/register")
+    @RequestMapping("/api/user")
+    public ResponseEntity<User> registerUser(@RequestBody User user) {
+        User registeredUser = userService.registerUser(user);
+        return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
+    }
+
+    /**
+     * Authenticates user and returns JWT token with user details.
+     */
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> loginUser(
+            @RequestBody LoginRequest loginRequest) {
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword()
+                    )
+            );
+        } catch (AuthenticationException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = userService.getUserByUsername(loginRequest.getUsername());
+        String token = jwtUtil.generateToken(user.getUsername());
+
+        LoginResponse response = new LoginResponse(
+                user.getId(),
+                token,
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
 
 }
