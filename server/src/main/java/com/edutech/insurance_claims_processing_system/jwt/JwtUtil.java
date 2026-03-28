@@ -18,17 +18,20 @@ import java.util.Map;
 public class JwtUtil {
 
 
-     private final UserRepository userRepository;
-
-    /** Secret key for signing JWT tokens */
-    private final String secret = "insuranceClaimsSecretKey";
-
-    /** Token expiration time in seconds (10 hours) */
-    private final int expiration = 60 * 60 * 10;
+    
+ private final UserRepository userRepository;
 
     /**
-     * Constructor that initializes UserRepository.
+     * ✅ FIXED: Secret key length >= 256 bits
      */
+    private final String secret =
+            "insuranceClaimsSecretKeyinsuranceClaimsSecretKeyinsuranceClaimsSecretKey";
+
+    /**
+     * Token expiration time in seconds (10 hours)
+     */
+    private final int expiration = 60 * 60 * 10;
+
     public JwtUtil(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -82,8 +85,11 @@ public class JwtUtil {
      */
     public boolean validateToken(String token, UserDetails userDetails) {
         String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        return username.equals(userDetails.getUsername())
+                && !isTokenExpired(token);
     }
+
+
 
 
     

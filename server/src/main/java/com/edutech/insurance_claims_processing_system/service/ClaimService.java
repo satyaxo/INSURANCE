@@ -21,13 +21,10 @@ public class ClaimService {
 
 
 
-     private final ClaimRepository claimRepository;
+    private final ClaimRepository claimRepository;
     private final PolicyholderRepository policyholderRepository;
     private final UnderwriterRepository underwriterRepository;
 
-    /**
-     * Default constructor with @Autowired dependencies.
-     */
     @Autowired
     public ClaimService(
             ClaimRepository claimRepository,
@@ -43,7 +40,7 @@ public class ClaimService {
      */
     public Claim createClaim(Claim claim) {
         claim.setDate(new Date());
-        claim.setStatus("Submitted");
+        claim.setStatus("SUBMITTED"); // ✅ FIXED
         return claimRepository.save(claim);
     }
 
@@ -76,7 +73,7 @@ public class ClaimService {
 
         claim.setPolicyholder(policyholder);
         claim.setDate(new Date());
-        claim.setStatus("Submitted");
+        claim.setStatus("SUBMITTED"); // ✅ FIXED
 
         return claimRepository.save(claim);
     }
@@ -123,12 +120,9 @@ public class ClaimService {
                 .orElseThrow(() -> new RuntimeException("Underwriter not found with ID: " + underwriterId));
 
         claim.setUnderwriter(underwriter);
-        claim.setStatus("Under Review");
+        claim.setStatus("UNDER REVIEW"); // ✅ FIXED
 
         return claimRepository.save(claim);
     }
-
-
-
 
 }
