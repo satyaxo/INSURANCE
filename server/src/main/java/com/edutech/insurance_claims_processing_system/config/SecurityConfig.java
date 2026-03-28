@@ -22,10 +22,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtRequestFilter jwtRequestFilter;
     private final PasswordEncoder passwordEncoder;
 
-    public SecurityConfig(
-            UserDetailsService userDetailsService,
-            JwtRequestFilter jwtRequestFilter,
-            PasswordEncoder passwordEncoder) {
+    public SecurityConfig(UserDetailsService userDetailsService,
+                          JwtRequestFilter jwtRequestFilter,
+                          PasswordEncoder passwordEncoder) {
         this.userDetailsService = userDetailsService;
         this.jwtRequestFilter = jwtRequestFilter;
         this.passwordEncoder = passwordEncoder;
@@ -33,33 +32,40 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService)
+        auth
+            .userDetailsService(userDetailsService)
             .passwordEncoder(passwordEncoder);
     }
-@Override
-protected void configure(HttpSecurity http) throws Exception {
 
-    http
-        .csrf().disable()
-        .cors().and()
-        .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and()
-        .authorizeRequests()
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
 
-        // Required so functional tests run
-        .antMatchers("/api/**").permitAll()
+        http
+            .csrf().disable()
+            .cors().and()
+            .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .authorizeRequests()
 
-        .anyRequest().permitAll();
+            // Public APIs
+            .antMatchers("/api/user/register", "/api/user/login").permitAll()
 
-    http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-}
+            // Role-based APIs (AUTHORITY based — FIX)
+            .antMatchers("/api/adjuster/**").hasAuthority("ADJUSTER")
+            .antMatchers("/api/investigator/**").hasAuthority("INVESTIGATOR")
+            .antMatchers("/api/policyholder/**").hasAuthority("POLICYHOLDER")
+            .antMatchers("/api/underwriter/**").hasAuthority("UNDERWRITER")
+
+            // All other requests
+            .anyRequest().authenticated();
+
+        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+    }
+
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
-
-
 }
-
