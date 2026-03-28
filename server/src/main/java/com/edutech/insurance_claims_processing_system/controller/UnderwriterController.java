@@ -1,6 +1,5 @@
 package com.edutech.insurance_claims_processing_system.controller;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +13,7 @@ import java.util.List;
 @RequestMapping("/api/underwriter")
 public class UnderwriterController {
 
-   @Autowired
+    @Autowired
     private ClaimService claimService;
 
     /**
@@ -24,7 +23,7 @@ public class UnderwriterController {
     @PutMapping("/claim/{id}/review")
     public ResponseEntity<Claim> reviewClaim(
             @PathVariable Long id,
-            @RequestParam String status) {
+            @RequestParam(required = false) String status) {
 
         Claim reviewedClaim = claimService.reviewClaim(id, status);
         return ResponseEntity.ok(reviewedClaim);
@@ -35,11 +34,11 @@ public class UnderwriterController {
      */
     @GetMapping("/claims")
     public ResponseEntity<List<Claim>> getClaimsForReview(
-            @RequestParam Long underwriterId) {
+            @RequestParam(required = false) Long underwriterId) {
 
         List<Claim> claims =
                 claimService.getClaimsForReview(underwriterId);
+
         return ResponseEntity.ok(claims);
     }
-
 }

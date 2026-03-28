@@ -1,8 +1,10 @@
 package com.edutech.insurance_claims_processing_system.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.edutech.insurance_claims_processing_system.entity.Claim;
 import com.edutech.insurance_claims_processing_system.entity.Underwriter;
@@ -21,47 +23,38 @@ public class AdjusterController {
     @Autowired
     private ClaimService claimService;
 
-    /**
-     * Updates a claim based on its ID.
-     */
     @PutMapping("/claim/{id}")
     public ResponseEntity<Claim> updateClaim(
             @PathVariable Long id,
-            @RequestBody Claim claimDetails) {
+            @RequestBody(required = false) Claim claimDetails) {
 
-        Claim updatedClaim = claimService.updateClaim(id, claimDetails);
-        return ResponseEntity.ok(updatedClaim);
+        if (id == null || claimDetails == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
+
+        return ResponseEntity.ok(claimService.updateClaim(id, claimDetails));
     }
 
-    /**
-     * Retrieves all claims.
-     */
     @GetMapping("/claims")
     public List<Claim> getAllClaims() {
         return claimService.getAllClaims();
     }
 
-    /**
-     * Retrieves all underwriters.
-     */
     @GetMapping("/underwriters")
     public List<Underwriter> getAllUnderwriters() {
         return underwriterRepository.findAll();
     }
 
-    /**
-     * Assigns a claim to an underwriter.
-     */
     @PutMapping("/claim/{claimId}/assign")
     public ResponseEntity<Claim> assignClaimToUnderwriter(
             @PathVariable Long claimId,
-            @RequestParam Long underwriterId) {
+            @RequestParam(required = false) Long underwriterId) {
 
-        Claim assignedClaim = claimService.assignClaimToUnderwriter(claimId, underwriterId);
+        if (claimId == null || underwriterId == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
 
-        return ResponseEntity.ok(assignedClaim);
+        return ResponseEntity.ok(
+                claimService.assignClaimToUnderwriter(claimId, underwriterId));
     }
-
-    // implement required code here
-
 }

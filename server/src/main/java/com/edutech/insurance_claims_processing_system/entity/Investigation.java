@@ -25,6 +25,15 @@ public class Investigation {
         return id;
     }
 
+    public Investigation(String report, String status) {
+        this.report = report;
+        this.status = status;
+
+    }
+
+    public Investigation() {
+    }
+
     public void setId(Long id) {
         this.id = id;
     }

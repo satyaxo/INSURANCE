@@ -1,6 +1,5 @@
 package com.edutech.insurance_claims_processing_system.controller;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +13,7 @@ import java.util.List;
 @RequestMapping("/api/policyholder")
 public class PolicyholderController {
 
-     @Autowired
+    @Autowired
     private ClaimService claimService;
 
     /**
@@ -22,10 +21,12 @@ public class PolicyholderController {
      */
     @PostMapping("/claim")
     public ResponseEntity<Claim> submitClaim(
-            @RequestParam Long policyholderId,
-            @RequestBody Claim claim) {
+            @RequestParam(required = false) Long policyholderId,
+            @RequestBody(required = false) Claim claim) {
 
-        Claim submittedClaim = claimService.submitClaim(policyholderId, claim);
+        Claim submittedClaim =
+                claimService.submitClaim(policyholderId, claim);
+
         return ResponseEntity.ok(submittedClaim);
     }
 
@@ -34,12 +35,11 @@ public class PolicyholderController {
      */
     @GetMapping("/claims")
     public ResponseEntity<List<Claim>> getClaims(
-            @RequestParam Long policyholderId) {
+            @RequestParam(required = false) Long policyholderId) {
 
         List<Claim> claims =
                 claimService.getClaimsByPolicyholder(policyholderId);
+
         return ResponseEntity.ok(claims);
     }
-
-   
 }
