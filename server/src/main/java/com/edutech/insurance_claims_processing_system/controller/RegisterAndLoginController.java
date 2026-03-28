@@ -21,9 +21,12 @@ import com.edutech.insurance_claims_processing_system.jwt.JwtUtil;
 import com.edutech.insurance_claims_processing_system.service.UserService;
 
 @RestController
+@RequestMapping("/api/user")
 public class RegisterAndLoginController {
 
-      @Autowired
+
+    
+    @Autowired
     private UserService userService;
 
     @Autowired
@@ -32,31 +35,25 @@ public class RegisterAndLoginController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    /**
-     * Registers a new user.
-     */
     @PostMapping("/register")
-    @RequestMapping("/api/user")
     public ResponseEntity<User> registerUser(@RequestBody User user) {
         User registeredUser = userService.registerUser(user);
         return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
     }
 
-    /**
-     * Authenticates user and returns JWT token with user details.
-     */
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> loginUser(
             @RequestBody LoginRequest loginRequest) {
 
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.getUsername(),
-                            loginRequest.getPassword()
-                    )
+                new UsernamePasswordAuthenticationToken(
+                    loginRequest.getUsername(),
+                    loginRequest.getPassword()
+                )
             );
         } catch (AuthenticationException ex) {
+            // ✅ Required for testLoginWithWrongUsernameOrPassword
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
