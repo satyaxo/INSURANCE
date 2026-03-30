@@ -11,13 +11,20 @@ import { AuthService } from '../../services/auth.service';
 })
 export class CreateClaimComponent implements OnInit {
 
+
   itemForm: FormGroup;
-  formModel: any = { description: '', date: '' }; // ✅ removed status
-  showError: boolean = false;
+
+  formModel: any = {
+    description: '',
+    date: '',
+    status: ''
+  };
+
+  showError = false;
   errorMessage: any = '';
   claimList: any[] = [];
   assignModel: any = {};
-  showMessage: any = false;
+  showMessage = false;
   responseMessage: any = '';
 
   constructor(
@@ -26,22 +33,16 @@ export class CreateClaimComponent implements OnInit {
     private formBuilder: FormBuilder,
     private authService: AuthService
   ) {
-    this.itemForm = this.formBuilder.group({
 
-       description: ['',[ Validators.required]],
-    date: ['',[ Validators.required]]
-     // description:[ [this.formModel.description, Validators.required],
-     // date: [this.formModel.date, Validators.required]
-      //✅ status removed
+    this.itemForm = this.formBuilder.group({
+      description: ['', Validators.required],
+      date: ['', Validators.required],
+      status: ['', Validators.required]
     });
   }
 
   ngOnInit(): void {
     this.getClaims();
-    // this.itemForm = this.formBuilder.group({
-    //   description: [this.formModel.description, Validators.required],
-    //   date: [this.formModel.date, Validators.required]
-    // });
   }
 
   getClaims(): void {
@@ -53,9 +54,7 @@ export class CreateClaimComponent implements OnInit {
     }
 
     this.httpService.getClaimsByPolicyholder(userId).subscribe({
-      next: (res: any[]) => {
-        this.claimList = res;
-      },
+      next: (res: any[]) => this.claimList = res,
       error: () => {
         this.showError = true;
         this.errorMessage = 'Error fetching claims.';
@@ -66,7 +65,6 @@ export class CreateClaimComponent implements OnInit {
   onSubmit(): void {
     this.showError = false;
     this.showMessage = false;
-    
 
     if (this.itemForm.invalid) {
       this.showError = true;
@@ -81,11 +79,10 @@ export class CreateClaimComponent implements OnInit {
       return;
     }
 
-    // ✅ Only send description and date
     const payload = {
       description: this.itemForm.value.description,
       date: this.itemForm.value.date,
-     status:'Pending'
+      status: this.itemForm.value.status || 'Pending'
     };
 
     this.httpService.createClaims(payload, userId).subscribe({
