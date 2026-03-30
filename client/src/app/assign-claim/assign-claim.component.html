@@ -1,1 +1,35 @@
-<!--Enter your code here-->
+<div class="container mt-4">
+  <h2 class="text-center mb-4">Assign Claim</h2>
+
+  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="needs-validation">
+    <div class="form-group mb-3">
+      <label for="claimId">Select Claim</label>
+      <select id="claimId" formControlName="claimId" class="form-select">
+        <option value="" disabled>Select Claim</option>
+        <option *ngFor="let claim of claimList" [value]="claim.id">
+          {{ claim.claimNumber }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="underwriterId">Select Underwriter</label>
+      <select id="underwriterId" formControlName="underwriterId" class="form-select">
+        <option value="" disabled>Select Underwriter</option>
+        <option *ngFor="let uw of underwriterList" [value]="uw.id">
+          {{ uw.name }}
+        </option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-success w-100">Assign Claim</button>
+  </form>
+
+  <div *ngIf="showError" class="alert alert-danger mt-3">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="showMessage" class="alert alert-success mt-3">
+    {{ responseMessage }}
+  </div>
+</div>

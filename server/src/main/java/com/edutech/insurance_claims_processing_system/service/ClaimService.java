@@ -41,7 +41,7 @@ public class ClaimService {
         }
 
         claim.setDate(new Date());
-        claim.setStatus("SUBMITTED");
+        // claim.setStatus("SUBMITTED");
         return claimRepository.save(claim);
     }
 

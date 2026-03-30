@@ -1,1 +1,42 @@
-<!--Enter your code here-->
+<div class="container mt-4">
+  <h2 class="text-center mb-4">Create Claim</h2>
+
+  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="needs-validation">
+    <div class="form-group mb-3">
+      <label for="description">Description</label>
+      <input id="description" type="text" formControlName="description" class="form-control" />
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="date">Date</label>
+      <input id="date" type="date" formControlName="date" class="form-control" />
+    </div>
+
+    <!-- <div class="form-group mb-3">
+      <label for="status">Status</label>
+      <select id="status" formControlName="status" class="form-select">
+        <option value="" disabled>Select Status</option>
+        <option value="Pending">Pending</option>
+        <option value="Approved">Approved</option>
+        <option value="Rejected">Rejected</option>
+      </select>
+    </div> -->
+
+    <button type="submit" class="btn btn-primary w-100">Create Claim</button>
+  </form>
+
+  <div *ngIf="showError" class="alert alert-danger mt-3">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="showMessage" class="alert alert-success mt-3">
+    {{ responseMessage }}
+  </div>
+
+  <h3 class="mt-4">My Claims</h3>
+  <ul class="list-group">
+    <li *ngFor="let claim of claimList" class="list-group-item">
+      {{ claim.description }} - {{ claim.status }} ({{ claim.date }})
+    </li>
+  </ul>
+</div>

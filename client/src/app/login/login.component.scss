@@ -1,3 +1,23 @@
-a{
-    cursor: pointer;
+.container {
+  max-width: 400px;
+
+  h2 {
+    color: #333;
+  }
+
+  form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+  }
+
+  .alert {
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .btn-link {
+    text-decoration: none;
+  }
 }

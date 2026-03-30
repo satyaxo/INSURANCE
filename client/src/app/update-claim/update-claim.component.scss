@@ -1,0 +1,29 @@
+.container {
+  max-width: 600px;
+
+  h2, h3 {
+    color: #333;
+  }
+
+  form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+  }
+
+  .alert {
+    text-align: center;
+    font-weight: bold;
+  }
+
+  ul.list-group {
+    margin-top: 10px;
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+}
