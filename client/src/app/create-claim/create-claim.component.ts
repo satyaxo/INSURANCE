@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpService } from '../../services/http.service';
 import { AuthService } from '../../services/auth.service';
@@ -17,7 +17,7 @@ export class CreateClaimComponent implements OnInit {
   formModel: any = {
     description: '',
     date: '',
-    status: ''
+   status: ''
   };
 
   showError = false;
@@ -37,9 +37,18 @@ export class CreateClaimComponent implements OnInit {
     this.itemForm = this.formBuilder.group({
       description: ['', Validators.required],
       date: ['', Validators.required],
-      status: ['', Validators.required]
+      status: ['',[Validators.required]]
     });
   }
+//   dateValidator(control:AbstractControl):ValidationErrors|null{
+// let dateValue=control.value;
+// let regex=/^\d{4}-\d{2}-\d{2}$/;
+// if(!regex.test(dateValue))
+//   return {invalidDate:true};
+// else
+//   return null;
+
+//   }
 
   ngOnInit(): void {
     this.getClaims();
@@ -78,12 +87,16 @@ export class CreateClaimComponent implements OnInit {
       this.errorMessage = 'User not logged in.';
       return;
     }
-
-    const payload = {
-      description: this.itemForm.value.description,
-      date: this.itemForm.value.date,
-      status: this.itemForm.value.status || 'Pending'
-    };
+const payload = {
+  description: this.itemForm.value.description,
+  date: new Date(this.itemForm.value.date).toISOString().split('T')[0], // YYYY-MM-DD
+  status: this.itemForm.value.status || 'Pending'
+};
+    // const payload = {
+    //   description: this.itemForm.value.description,
+    //   date: this.itemForm.value.date,
+    //   status: this.itemForm.value.status || 'Pending'
+    // };
 
     this.httpService.createClaims(payload, userId).subscribe({
       next: () => {
@@ -92,10 +105,20 @@ export class CreateClaimComponent implements OnInit {
         this.itemForm.reset();
         this.getClaims();
       },
-      error: () => {
-        this.showError = true;
-        this.errorMessage = 'Error creating claim.';
-      }
+      // error: () => {
+      //   this.showError = true;
+      //   this.errorMessage = 'Error creating claim.';
+      // }
+      
+error: (err) => {
+  console.error('Create claim error:', err);
+  this.showError = true;
+  this.errorMessage =
+    err?.error?.message ||
+    err?.message ||
+    'Error creating claim.';
+}
+
     });
   }
 }

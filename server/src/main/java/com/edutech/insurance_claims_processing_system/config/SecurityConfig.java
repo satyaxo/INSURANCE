@@ -52,10 +52,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/api/user/register", "/api/user/login").permitAll()
 
             // Role-based APIs (AUTHORITY based — FIX)
-            .antMatchers("/api/adjuster/**").hasAuthority("ADJUSTER")
-            .antMatchers("/api/investigator/**").hasAuthority("INVESTIGATOR")
-            .antMatchers("/api/policyholder/**").hasAuthority("POLICYHOLDER")
-            .antMatchers("/api/underwriter/**").hasAuthority("UNDERWRITER")
+            .antMatchers("/api/adjuster/**").hasRole("ADJUSTER")
+            .antMatchers("/api/investigator/**").hasRole("INVESTIGATOR")
+            .antMatchers("/api/policyholder/**").hasRole("POLICYHOLDER")
+            .antMatchers("/api/underwriter/**").hasRole("UNDERWRITER")
 
             // All other requests
             .anyRequest().authenticated();
