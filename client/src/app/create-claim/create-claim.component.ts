@@ -36,8 +36,8 @@ export class CreateClaimComponent implements OnInit {
 
     this.itemForm = this.formBuilder.group({
       description: ['', Validators.required],
-      date: ['', Validators.required],
-      status: ['',[Validators.required]]
+      // date: ['', Validators.required],
+      // status: ['',[Validators.required]]
     });
   }
 //   dateValidator(control:AbstractControl):ValidationErrors|null{
@@ -89,8 +89,8 @@ export class CreateClaimComponent implements OnInit {
     }
 const payload = {
   description: this.itemForm.value.description,
-  date: new Date(this.itemForm.value.date).toISOString().split('T')[0], // YYYY-MM-DD
-  status: this.itemForm.value.status || 'Pending'
+  // date: new Date(this.itemForm.value.date).toISOString().split('T')[0], // YYYY-MM-DD
+  // status: this.itemForm.value.status || 'Pending'
 };
     // const payload = {
     //   description: this.itemForm.value.description,
