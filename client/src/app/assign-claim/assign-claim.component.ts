@@ -54,6 +54,8 @@ export class AssignClaimComponent implements OnInit {
         this.showMessage = true;
         this.responseMessage = 'Claim successfully assigned!';
         this.itemForm.reset();
+        //changes
+       // this.getClaims;
       },
       error: () => {
         this.showError = true;

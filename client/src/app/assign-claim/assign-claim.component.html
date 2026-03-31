@@ -7,7 +7,8 @@
       <select id="claimId" formControlName="claimId" class="form-select">
         <option value="" disabled>Select Claim</option>
         <option *ngFor="let claim of claimList" [value]="claim.id">
-          {{ claim.claimNumber }}
+          <!-- {{ claim.claimNumber }} -->
+              {{ claim.description }}({{claim.status}})
         </option>
       </select>
     </div>
