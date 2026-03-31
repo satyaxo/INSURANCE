@@ -18,7 +18,7 @@
       <select id="underwriterId" formControlName="underwriterId" class="form-select">
         <option value="" disabled>Select Underwriter</option>
         <option *ngFor="let uw of underwriterList" [value]="uw.id">
-          {{ uw.name }}
+          {{ uw.username }}
         </option>
       </select>
     </div>
