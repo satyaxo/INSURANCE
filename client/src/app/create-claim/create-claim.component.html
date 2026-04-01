@@ -1,6 +1,54 @@
 <div class="container mt-4">
   <h2 class="text-center mb-4">Create Claim</h2>
 
+  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
+    <div class="mb-3">
+      <label>Description</label>
+      <input
+        type="text"
+        class="form-control"
+        formControlName="description"
+      />
+    </div>
+
+    <div class="mb-3">
+      <label>Date</label>
+      <input
+        type="date"
+        class="form-control"
+        formControlName="date"
+      />
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">
+      Create Claim
+    </button>
+  </form>
+
+  <!-- ✅ Success Popup -->
+  <div *ngIf="showMessage" class="alert alert-success mt-3">
+    {{ responseMessage }}
+  </div>
+
+  <!-- ❌ Error Popup -->
+  <div *ngIf="showError" class="alert alert-danger mt-3">
+    {{ errorMessage }}
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<!-- <div class="container mt-4">
+  <h2 class="text-center mb-4">Create Claim</h2>
+
   <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="needs-validation">
     <div class="form-group mb-3">
       <label for="description">Description</label>
@@ -11,7 +59,7 @@
       <label for="date">Date</label>
       <input id="date" type="date" formControlName="date" class="form-control" />
     </div>
-<!-- 
+
     <div class="form-group mb-3">
       <label for="status">Status</label>
       <select id="status" formControlName="status" class="form-select">
@@ -20,7 +68,7 @@
         <option value="Approved">Approved</option>
         <option value="Rejected">Rejected</option>
       </select>
-    </div> -->
+    </div>
 
     <button type="submit" class="btn btn-primary w-100">Create Claim</button>
   </form>
@@ -39,4 +87,4 @@
       {{ claim.description }} - {{ claim.status }} ({{ claim.date }})
     </li>
   </ul>
-</div>
+</div> -->

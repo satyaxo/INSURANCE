@@ -1,7 +1,83 @@
 <div class="container mt-4">
   <h2 class="text-center mb-4">Dashboard</h2>
 
-  <div class="card">
+  <!-- Claim Status List -->
+  <div class="card" *ngIf="claimList.length > 0">
+    <div class="card-body">
+      <h5 class="mb-3">My Claim Status</h5>
+
+      <ul class="list-group">
+        <li class="list-group-item" *ngFor="let claim of claimList">
+          <strong>{{ claim.description }}</strong><br />
+          Status:
+          <span class="badge bg-info text-dark">
+            {{ claim.status }}
+          </span><br />
+          Date: {{ claim.date | date:'dd-MM-yyyy' }}
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- No Claims -->
+  <div class="alert alert-info mt-3" *ngIf="claimList.length === 0 && !showError">
+    No claims found yet.
+  </div>
+
+  <!-- Error -->
+  <div class="alert alert-danger mt-3" *ngIf="showError">
+    {{ errorMessage }}
+  </div>
+</div>
+
+  <!-- ✅ ADJUSTER DASHBOARD
+  <div class="card" *ngIf="roleName === 'ADJUSTER' && claimList.length > 0">
+    <div class="card-body">
+      <h5 class="mb-3">All Claims</h5>
+
+      <ul class="list-group">
+        <li
+          class="list-group-item d-flex justify-content-between align-items-center"
+          *ngFor="let claim of claimList"
+        >
+          <span>
+            {{ claim.description }} —
+            <strong>{{ claim.status }}</strong>
+            ({{ claim.date | date:'dd-MM-yyyy' }})
+          </span>
+
+          <button
+            class="btn btn-sm btn-primary"
+            (click)="editClaim(claim.id)"
+          >
+            Edit
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  ✅ No Claims
+  <div class="alert alert-info mt-3" *ngIf="claimList.length === 0 && !showError">
+    No claims found.
+  </div>
+
+  ✅ Error
+  <div class="alert alert-danger mt-3" *ngIf="showError">
+    {{ errorMessage }}
+  </div>
+</div> -->
+
+
+
+
+
+
+<!-- <div class="container mt-4">
+  <h2 class="text-center mb-4">Dashboard</h2> -->
+
+  <!-- Existing Dashboard Card -->
+  <!-- <div class="card mb-4">
     <div class="card-body">
       <p class="text-muted">
         Welcome to the Insurance Claims & Resource Management Platform dashboard.
@@ -16,5 +92,39 @@
         <li>Underwriters: Review and update claim investigations</li>
       </ul>
     </div>
+  </div> -->
+
+  <!-- Policyholder Claim Status Section -->
+  <!-- <div class="card" *ngIf="claimList.length > 0">
+    <div class="card-body">
+      <h5 class="mb-3">My Claim Status</h5> -->
+
+      <!-- <ul class="list-group">
+        <li
+          class="list-group-item"
+          *ngFor="let claim of claimList"
+        >
+          <strong>{{ claim.description }}</strong><br />
+          Status: <span class="badge bg-info text-dark">{{ claim.status }}</span><br />
+          Date: {{ claim.date | date:'dd-MM-yyyy' }}
+        </li>
+      </ul>
+    </div>
+  </div> -->
+
+  <!-- No Claims -->
+  <!-- <div class="alert alert-info mt-3" *ngIf="claimList.length === 0 && !showError">
+    No claims found yet.
+  </div> -->
+
+  <!-- Error -->
+  <!-- <div class="alert alert-danger mt-3" *ngIf="showError">
+    {{ errorMessage }}
   </div>
-</div>
+</div> -->
+
+
+
+
+
+

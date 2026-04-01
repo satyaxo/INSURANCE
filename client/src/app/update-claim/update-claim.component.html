@@ -1,30 +1,42 @@
 <div class="container mt-4">
   <h2 class="text-center mb-4">Update Claim</h2>
 
-  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="needs-validation">
-    <div class="form-group mb-3">
-      <label for="description">Description</label>
-      <input id="description" type="text" formControlName="description" class="form-control" />
+  <!-- Update Form -->
+  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
+
+    <div class="mb-3">
+      <label>Description</label>
+      <input
+        type="text"
+        class="form-control"
+        formControlName="description"
+      />
     </div>
 
-    <div class="form-group mb-3">
-      <label for="date">Date</label>
-      <input id="date" type="date" formControlName="date" class="form-control" />
+    <div class="mb-3">
+      <label>Date</label>
+      <input
+        type="date"
+        class="form-control"
+        formControlName="date"
+      />
     </div>
 
-    <div class="form-group mb-3">
-      <label for="status">Status</label>
-      <select id="status" formControlName="status" class="form-select">
+    <div class="mb-3">
+      <label>Status</label>
+      <select class="form-select" formControlName="status">
         <option value="" disabled>Select Status</option>
-        <option value="Pending">Pending</option>
-        <option value="Approved">Approved</option>
-        <option value="Rejected">Rejected</option>
+        <option value="IN_PROGRESS">IN_PROGRESS</option>
+        <option value="UNDER_REVIEW">UNDER_REVIEW</option>
       </select>
     </div>
 
-    <button type="submit" class="btn btn-primary w-100">Update Claim</button>
+    <button type="submit" class="btn btn-primary w-100">
+      Update Claim
+    </button>
   </form>
 
+  <!-- Messages -->
   <div *ngIf="showError" class="alert alert-danger mt-3">
     {{ errorMessage }}
   </div>
@@ -33,11 +45,20 @@
     {{ responseMessage }}
   </div>
 
-  <h3 class="mt-4">Claims</h3>
+  <!-- Claim List -->
+  <h4 class="mt-4">Claims</h4>
   <ul class="list-group">
-    <li *ngFor="let claim of claimList" class="list-group-item d-flex justify-content-between align-items-center">
-      <span>{{ claim.description }} - {{ claim.status }} ({{ claim.date }})</span>
-      <button class="btn btn-sm btn-secondary" (click)="edit(claim)">Edit</button>
+    <li
+      *ngFor="let claim of claimList"
+      class="list-group-item d-flex justify-content-between align-items-center"
+    >
+      <span>
+        {{ claim.description }} — {{ claim.status }}
+        ({{ claim.date | date:'yyyy-MM-dd' }})
+      </span>
+      <button class="btn btn-sm btn-secondary" (click)="edit(claim)">
+        Edit
+      </button>
     </li>
   </ul>
 </div>

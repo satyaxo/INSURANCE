@@ -1,4 +1,99 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+  <!-- ✅ Platform title now routes to Dashboard -->
+  <a class="navbar-brand" routerLink="/dashboard">
+    Insurance Claims &amp; Resource Management Platform
+  </a>
 
+  <button class="navbar-toggler" type="button"
+          data-toggle="collapse"
+          data-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <!-- Left menu -->
+    <ul class="navbar-nav">
+
+      <!-- Policyholder -->
+      <li class="nav-item">
+        <a class="nav-link"
+           *ngIf="roleName === 'POLICYHOLDER'"
+           routerLink="/create-claim">
+          Create claim
+        </a>
+      </li>
+
+      <!-- ✅ FIXED: View Claim Status now routes to Dashboard -->
+      <li class="nav-item">
+        <a class="nav-link"
+           *ngIf="roleName === 'POLICYHOLDER'"
+           routerLink="/dashboard">
+          View Claim Status
+        </a>
+      </li>
+
+      <!-- Adjuster -->
+      <li class="nav-item">
+        <a class="nav-link"
+           *ngIf="roleName === 'ADJUSTER'"
+           routerLink="/update-claim">
+          Get &amp; Update Claims
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link"
+           *ngIf="roleName === 'ADJUSTER'"
+           routerLink="/assign-claim">
+          Assign Claim
+        </a>
+      </li>
+
+      <!-- Investigator -->
+      <li class="nav-item">
+        <a class="nav-link"
+           *ngIf="roleName === 'INVESTIGATOR'"
+           routerLink="/create-investigator">
+          Investigator
+        </a>
+      </li>
+
+      <!-- Underwriter -->
+      <li class="nav-item">
+        <a class="nav-link"
+           *ngIf="roleName === 'UNDERWRITER'"
+           routerLink="/update-claim-investigator">
+          Update Claim
+        </a>
+      </li>
+
+    </ul>
+
+    <!-- Right menu: Login / Logout -->
+    <ul class="navbar-nav ms-auto">
+      <li *ngIf="!IsLoggin" class="nav-item">
+        <a class="nav-link" routerLink="/login">Login</a>
+      </li>
+      <li *ngIf="IsLoggin" class="nav-item">
+        <a class="nav-link" (click)="logout()" routerLink="/login">
+          Logout
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ✅ Router outlet -->
+<div class="container mt-4 mx-5">
+  <router-outlet></router-outlet>
+</div>
+
+
+
+<!-- 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
   <a class="navbar-brand" href="#">Insurance Claims & Resource Management Platform</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,7 +126,7 @@
     </ul>
    
  
-    <!-- Login/Logout buttons -->
+    
     <ul class="navbar-nav">
       <li *ngIf="!IsLoggin" class="nav-item">
         <a class="nav-link" [routerLink]="['/login']">Login</a>
@@ -50,4 +145,4 @@
   </div>
 
 </body>
-
+ -->
