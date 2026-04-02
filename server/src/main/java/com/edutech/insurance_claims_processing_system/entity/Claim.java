@@ -31,6 +31,10 @@ public class Claim {
     @JoinColumn(name = "underwriter_id")
     private Underwriter underwriter;
 
+    @ManyToOne
+    @JoinColumn(name = "investigator_id") // ✅ NEW
+    private Investigator investigator;
+
     @OneToOne(mappedBy = "claim")
     @JsonIgnore
     private Investigation investigation;
@@ -103,5 +107,15 @@ public class Claim {
     public void setInvestigation(Investigation investigation) {
         this.investigation = investigation;
     }
+
+    public Investigator getInvestigator() {
+        return investigator;
+    }
+
+    public void setInvestigator(Investigator investigator) {
+        this.investigator = investigator;
+    }
+
+    
 
 }

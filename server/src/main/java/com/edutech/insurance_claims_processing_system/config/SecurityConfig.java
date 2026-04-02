@@ -2,6 +2,7 @@ package com.edutech.insurance_claims_processing_system.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,7 +19,7 @@ import com.edutech.insurance_claims_processing_system.jwt.JwtRequestFilter;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private final UserDetailsService userDetailsService;
+      private final UserDetailsService userDetailsService;
     private final JwtRequestFilter jwtRequestFilter;
     private final PasswordEncoder passwordEncoder;
 
@@ -41,25 +42,36 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
 
         http
+            // ✅ Disable CSRF for REST APIs
             .csrf().disable()
+
+            // ✅ Enable CORS
             .cors().and()
+
+            // ✅ Stateless session (JWT based)
             .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
+
             .authorizeRequests()
 
-            // Public APIs
+            // ✅ ✅ ✅ CRITICAL FIX
+            // Allow preflight OPTIONS requests (required for PUT from Angular)
+            .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+            // ✅ Public endpoints
             .antMatchers("/api/user/register", "/api/user/login").permitAll()
 
-            // Role-based APIs (AUTHORITY based — FIX)
+            // ✅ Role-based endpoints
+            .antMatchers("/api/policyholder/**").hasRole("POLICYHOLDER")
             .antMatchers("/api/adjuster/**").hasRole("ADJUSTER")
             .antMatchers("/api/investigator/**").hasRole("INVESTIGATOR")
-            .antMatchers("/api/policyholder/**").hasRole("POLICYHOLDER")
             .antMatchers("/api/underwriter/**").hasRole("UNDERWRITER")
 
-            // All other requests
+            // ✅ Everything else must be authenticated
             .anyRequest().authenticated();
 
+        // ✅ JWT Filter
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
 

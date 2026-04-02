@@ -1,6 +1,9 @@
 package com.edutech.insurance_claims_processing_system.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.edutech.insurance_claims_processing_system.entity.Investigation;
@@ -8,4 +11,6 @@ import com.edutech.insurance_claims_processing_system.entity.Investigation;
 @Repository
 public interface InvestigationRepository extends JpaRepository<Investigation , Long> {
     // Additional query methods can be defined here if needed
+    @Query("SELECT i FROM Investigation i JOIN FETCH i.claim")
+List<Investigation> findAllWithClaim();
 }

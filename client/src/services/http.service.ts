@@ -122,4 +122,45 @@ getClaimsByUnderwriter(id:any):Observable<any> {
     return this.http.post(this.serverName+'/api/user/register',details,{headers:headers});
   }
 
+  // ✅ Get all Investigators (for Adjuster assignment)
+getAllInvestigators(): Observable<any> {
+  const authToken = this.authService.getToken();
+  let headers = new HttpHeaders();
+  headers = headers.set('Content-Type', 'application/json');
+  headers = headers.set('Authorization', `Bearer ${authToken}`);
+
+  return this.http.get(
+    this.serverName + '/api/adjuster/investigators',
+    { headers }
+  );
+}
+
+// ✅ Assign Claim to Investigator
+assignClaimToInvestigator(claimId: number, investigatorId: number): Observable<any> {
+  const authToken = this.authService.getToken();
+  let headers = new HttpHeaders();
+  headers = headers.set('Content-Type', 'application/json');
+  headers = headers.set('Authorization', `Bearer ${authToken}`);
+
+  return this.http.put(
+    `${this.serverName}/api/adjuster/claim/${claimId}/assign-investigator?investigatorId=${investigatorId}`,
+    {},
+    { headers }
+  );
+}
+
+
+getClaimsByInvestigator(investigatorId: number): Observable<any> {
+  const authToken = this.authService.getToken();
+  let headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Authorization', `Bearer ${authToken}`);
+
+  return this.http.get(
+    `${this.serverName}/api/investigator/claims?investigatorId=${investigatorId}`,
+    { headers }
+  );
+}
+
+
 }

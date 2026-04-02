@@ -6,9 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.edutech.insurance_claims_processing_system.entity.Claim;
+import com.edutech.insurance_claims_processing_system.entity.Investigator;
 import com.edutech.insurance_claims_processing_system.entity.Policyholder;
 import com.edutech.insurance_claims_processing_system.entity.Underwriter;
 import com.edutech.insurance_claims_processing_system.repository.ClaimRepository;
+import com.edutech.insurance_claims_processing_system.repository.InvestigatorRepository;
 import com.edutech.insurance_claims_processing_system.repository.PolicyholderRepository;
 import com.edutech.insurance_claims_processing_system.repository.UnderwriterRepository;
 
@@ -21,15 +23,16 @@ public class ClaimService {
     private final ClaimRepository claimRepository;
     private final PolicyholderRepository policyholderRepository;
     private final UnderwriterRepository underwriterRepository;
+    private final InvestigatorRepository investigatorRepository;
 
     @Autowired
-    public ClaimService(
-            ClaimRepository claimRepository,
-            PolicyholderRepository policyholderRepository,
-            UnderwriterRepository underwriterRepository) {
+
+    public ClaimService(ClaimRepository claimRepository, PolicyholderRepository policyholderRepository,
+            UnderwriterRepository underwriterRepository, InvestigatorRepository investigatorRepository) {
         this.claimRepository = claimRepository;
         this.policyholderRepository = policyholderRepository;
         this.underwriterRepository = underwriterRepository;
+        this.investigatorRepository = investigatorRepository;
     }
 
     /**
@@ -48,23 +51,21 @@ public class ClaimService {
     /**
      * Updates claim details by ID.
      */
-  public Claim updateClaim(Long id, Claim claimDetails) {
-    if (id == null || claimDetails == null) {
-        throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN,
-                "Access denied"
-        );
+    public Claim updateClaim(Long id, Claim claimDetails) {
+        if (id == null || claimDetails == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Access denied");
+        }
+
+        Claim existingClaim = claimRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
+
+        existingClaim.setDescription(claimDetails.getDescription());
+        existingClaim.setStatus(claimDetails.getStatus());
+
+        return claimRepository.save(existingClaim);
     }
-
-    Claim existingClaim = claimRepository.findById(id)
-            .orElseThrow(() ->
-                    new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
-
-    existingClaim.setDescription(claimDetails.getDescription());
-    existingClaim.setStatus(claimDetails.getStatus());
-
-    return claimRepository.save(existingClaim);
-}
 
     /**
      * Retrieves all claims.
@@ -82,8 +83,7 @@ public class ClaimService {
         }
 
         Policyholder policyholder = policyholderRepository.findById(policyholderId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
 
         claim.setPolicyholder(policyholder);
         claim.setDate(new Date());
@@ -101,8 +101,7 @@ public class ClaimService {
         }
 
         Policyholder policyholder = policyholderRepository.findById(policyholderId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
 
         return claimRepository.findByPolicyholder(policyholder);
     }
@@ -116,8 +115,7 @@ public class ClaimService {
         }
 
         Claim claim = claimRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
 
         claim.setStatus(status);
         return claimRepository.save(claim);
@@ -132,8 +130,7 @@ public class ClaimService {
         }
 
         Underwriter underwriter = underwriterRepository.findById(underwriterId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
 
         return claimRepository.findByUnderwriter(underwriter);
     }
@@ -147,16 +144,53 @@ public class ClaimService {
         }
 
         Claim claim = claimRepository.findById(claimId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
 
         Underwriter underwriter = underwriterRepository.findById(underwriterId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
 
         claim.setUnderwriter(underwriter);
         claim.setStatus("UNDER REVIEW");
 
         return claimRepository.save(claim);
     }
+
+    public Claim assignClaimToInvestigator(Long claimId, Long investigatorId) {
+
+        Claim claim = claimRepository.findById(claimId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Claim not found"));
+
+        Investigator investigator = investigatorRepository.findById(investigatorId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Investigator not found"));
+
+        // ✅ Assign investigator
+        claim.setInvestigator(investigator);
+
+        // ✅ Update workflow status logically
+        claim.setStatus("IN_PROGRESS");
+
+        return claimRepository.save(claim);
+    }
+
+public List<Claim> getClaimsByInvestigator(Long investigatorId) {
+
+    Investigator investigator = investigatorRepository.findById(investigatorId)
+            .orElseThrow(() ->
+                    new ResponseStatusException(HttpStatus.NOT_FOUND, "Investigator not found"));
+
+    return claimRepository.findByInvestigator(investigator);
+}
+
+public List<Claim> getClaimsForUnderwriter(Long underwriterId) {
+
+    Underwriter underwriter = underwriterRepository.findById(underwriterId)
+            .orElseThrow(() ->
+                    new ResponseStatusException(HttpStatus.NOT_FOUND, "Underwriter not found"));
+
+    return claimRepository.findClaimsWithInvestigation(underwriterId);
+}
+
+
+
+
 }
