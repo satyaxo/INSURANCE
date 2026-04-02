@@ -106,20 +106,49 @@ public class ClaimService {
         return claimRepository.findByPolicyholder(policyholder);
     }
 
+
+
+
+    public Claim reviewClaim(Long id, String status) {
+
+    Claim claim = claimRepository.findById(id)
+            .orElseThrow(() ->
+                    new ResponseStatusException(HttpStatus.NOT_FOUND, "Claim not found"));
+
+    if (claim.getInvestigation() == null) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Investigation report not completed yet"
+        );
+    }
+
+    if (!"APPROVED".equalsIgnoreCase(status)
+            && !"REJECTED".equalsIgnoreCase(status)) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Invalid status"
+        );
+    }
+
+    claim.setStatus(status.toUpperCase());
+    return claimRepository.save(claim);
+}
+
+
     /**
      * Updates claim status during review.
      */
-    public Claim reviewClaim(Long id, String status) {
-        if (id == null || status == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-        }
+    // public Claim reviewClaim(Long id, String status) {
+    //     if (id == null || status == null) {
+    //         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+    //     }
 
-        Claim claim = claimRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
+    //     Claim claim = claimRepository.findById(id)
+    //             .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied"));
 
-        claim.setStatus(status);
-        return claimRepository.save(claim);
-    }
+    //     claim.setStatus(status);
+    //     return claimRepository.save(claim);
+    // }
 
     /**
      * Retrieves claims assigned to a specific underwriter.

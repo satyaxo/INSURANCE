@@ -13,32 +13,57 @@ import java.util.List;
 @RequestMapping("/api/underwriter")
 public class UnderwriterController {
 
-    @Autowired
+     @Autowired
     private ClaimService claimService;
 
-    /**
-     * Updates the status of a claim during review
-     * (e.g., Approved, Rejected).
-     */
+    // ✅ Get claims WITH investigation if available
+    @GetMapping("/claims")
+    public ResponseEntity<List<Claim>> getClaimsForReview(
+            @RequestParam Long underwriterId) {
+
+        return ResponseEntity.ok(
+                claimService.getClaimsForUnderwriter(underwriterId)
+        );
+    }
+
+    // ✅ Final decision (only after investigation)
     @PutMapping("/claim/{id}/review")
     public ResponseEntity<Claim> reviewClaim(
             @PathVariable Long id,
-            @RequestParam(required = false) String status) {
+            @RequestParam String status) {
 
-        Claim reviewedClaim = claimService.reviewClaim(id, status);
-        return ResponseEntity.ok(reviewedClaim);
+        return ResponseEntity.ok(
+                claimService.reviewClaim(id, status)
+        );
     }
 
-    /**
-     * Retrieves claims assigned to a specific underwriter for review.
-     */
-    @GetMapping("/claims")
-    public ResponseEntity<List<Claim>> getClaimsForReview(
-            @RequestParam(required = false) Long underwriterId) {
 
-        List<Claim> claims =
-                claimService.getClaimsForReview(underwriterId);
+    // @Autowired
+    // private ClaimService claimService;
 
-        return ResponseEntity.ok(claims);
-    }
+    // /**
+    //  * Updates the status of a claim during review
+    //  * (e.g., Approved, Rejected).
+    //  */
+    // @PutMapping("/claim/{id}/review")
+    // public ResponseEntity<Claim> reviewClaim(
+    //         @PathVariable Long id,
+    //         @RequestParam(required = false) String status) {
+
+    //     Claim reviewedClaim = claimService.reviewClaim(id, status);
+    //     return ResponseEntity.ok(reviewedClaim);
+    // }
+
+    // /**
+    //  * Retrieves claims assigned to a specific underwriter for review.
+    //  */
+    // @GetMapping("/claims")
+    // public ResponseEntity<List<Claim>> getClaimsForReview(
+    //         @RequestParam(required = false) Long underwriterId) {
+
+    //     List<Claim> claims =
+    //             claimService.getClaimsForReview(underwriterId);
+
+    //     return ResponseEntity.ok(claims);
+    // }
 }

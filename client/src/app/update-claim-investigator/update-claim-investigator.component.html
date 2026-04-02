@@ -1,33 +1,60 @@
 <div class="container mt-4">
-  <h2 class="text-center mb-4">Update Claim Status</h2>
+  <h2 class="text-center mb-4">Underwriter Review</h2>
 
-  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="needs-validation">
-    <div class="form-group mb-3">
-      <label for="status">Status</label>
-      <select id="status" formControlName="status" class="form-select">
-        <option value="" disabled>Select Status</option>
-        <option value="Pending">Pending</option>
-        <option value="Approved">Approved</option>
-        <option value="Rejected">Rejected</option>
-      </select>
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100">Update Status</button>
-  </form>
-
-  <div *ngIf="showError" class="alert alert-danger mt-3">
+  <!-- Error -->
+  <div *ngIf="showError" class="alert alert-danger">
     {{ errorMessage }}
   </div>
 
-  <div *ngIf="showMessage" class="alert alert-success mt-3">
+  <!-- Success -->
+  <div *ngIf="showMessage" class="alert alert-success">
     {{ responseMessage }}
   </div>
 
-  <h3 class="mt-4">Assigned Claims</h3>
-  <ul class="list-group">
-    <li *ngFor="let claim of claimList" class="list-group-item d-flex justify-content-between align-items-center">
-      <span>{{ claim.description }} - {{ claim.status }} ({{ claim.date }})</span>
-      <button class="btn btn-sm btn-secondary" (click)="edit(claim)">Edit</button>
+  <h4>Assigned Claims</h4>
+
+  <ul class="list-group mb-4">
+    <li
+      *ngFor="let claim of claimList"
+      class="list-group-item list-group-item-action"
+      (click)="selectClaim(claim)"
+      style="cursor: pointer"
+    >
+      <strong>{{ claim.description }}</strong><br />
+      Status: {{ claim.status }}
     </li>
   </ul>
+
+  <!-- Claim Details -->
+  <div *ngIf="selectedClaim" class="card">
+    <div class="card-body">
+
+      <h5 class="card-title">Claim Details</h5>
+
+      <p><strong>Description:</strong> {{ selectedClaim.description }}</p>
+      <p><strong>Status:</strong> {{ selectedClaim.status }}</p>
+
+      <!-- If investigation NOT completed -->
+      <div *ngIf="!selectedClaim.investigation" class="alert alert-warning">
+        Awaiting investigator report.
+      </div>
+
+      <!-- If investigation completed -->
+      <div *ngIf="selectedClaim.investigation">
+        <hr />
+        <h6>Investigation Report</h6>
+        <p>{{ selectedClaim.investigation.report }}</p>
+
+        <div class="mt-3">
+          <button class="btn btn-success me-2" (click)="approveClaim()">
+            Approve
+          </button>
+          <button class="btn btn-danger" (click)="rejectClaim()">
+            Reject
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>

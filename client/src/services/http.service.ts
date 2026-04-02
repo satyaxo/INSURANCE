@@ -163,4 +163,16 @@ getClaimsByInvestigator(investigatorId: number): Observable<any> {
 }
 
 
+
+// ✅ Used by Underwriter component (alias)
+getClaimsForUnderwriter(underwriterId: number): Observable<any> {
+  return this.getClaimsByUnderwriter(underwriterId);
+}
+
+// ✅ Used by Underwriter component (alias)
+updateClaimStatusUnderwriter(status: string, claimId: number): Observable<any> {
+  return this.updateClaimsStatus(status, claimId);
+}
+
+
 }
