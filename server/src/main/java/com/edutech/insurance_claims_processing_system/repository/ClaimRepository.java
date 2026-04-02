@@ -19,7 +19,7 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
 
     List<Claim> findByInvestigator(Investigator investigator);
 
-
+    List<Claim> findByUnderwriterId(Long underwriterId);
     
  
    @Query(

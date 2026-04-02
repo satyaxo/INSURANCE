@@ -13,6 +13,7 @@ import { UpdateClaimComponent } from './update-claim/update-claim.component';
 import { AssignClaimComponent } from './assign-claim/assign-claim.component';
 import { CreateInvestigatorComponent } from './create-investigator/create-investigator.component';
 import { UpdateClaimInvestigatorComponent } from './update-claim-investigator/update-claim-investigator.component';
+import { UnderwriterDashboardComponent } from './underwriter-dashboard/underwriter-dashboard.component';
 
 
 const routes: Routes = [
@@ -24,7 +25,7 @@ const routes: Routes = [
   { path: 'assign-claim', component: AssignClaimComponent },  
   { path: 'create-investigator', component: CreateInvestigatorComponent },  
   { path: 'update-claim-investigator', component: UpdateClaimInvestigatorComponent },  
-
+  { path: 'underwriter-dashboard', component: UnderwriterDashboardComponent },
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
 
   { path: '**', redirectTo: '/dashboard', pathMatch: 'full' },

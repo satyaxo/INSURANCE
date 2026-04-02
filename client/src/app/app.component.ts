@@ -27,4 +27,18 @@ export class AppComponent {
   window.location.reload();
 }
 
+
+
+goToHome() {
+  const role = localStorage.getItem('role');
+
+  if (role === 'UNDERWRITER') {
+    this.router.navigate(['/underwriter-dashboard']);
+  } else if (role === 'INVESTIGATOR') {
+    this.router.navigate(['/create-investigator']);
+  } else {
+    this.router.navigate(['/dashboard']);
+  }
+}
+
 }

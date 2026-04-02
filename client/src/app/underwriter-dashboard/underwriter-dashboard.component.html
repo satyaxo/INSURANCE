@@ -1,0 +1,102 @@
+<div class="container mt-4">
+
+  <h2>Underwriter Dashboard</h2>
+
+  <div *ngIf="filteredClaims.length === 0">
+    <p>No claims assigned yet.</p>
+  </div>
+
+  <div *ngFor="let claim of filteredClaims" class="claim-card">
+
+    <h4>Claim #{{ claim.id }}</h4>
+
+    <p><strong>Description:</strong> {{ claim.description }}</p>
+
+    <p><strong>Status:</strong> {{ claim.status }}</p>
+
+    <button class="btn btn-primary"
+            (click)="editClaim(claim)">
+      Edit
+    </button>
+
+  </div>
+
+  <!-- EDIT SECTION -->
+  <div *ngIf="selectedClaim" class="detail-box">
+
+    <h3>Edit Claim</h3>
+
+    <p><strong>ID:</strong> {{ selectedClaim.id }}</p>
+    <p><strong>Description:</strong> {{ selectedClaim.description }}</p>
+
+    <button class="btn btn-success"
+            (click)="updateStatus(selectedClaim.id, 'APPROVED')">
+      Approve
+    </button>
+
+    <button class="btn btn-danger"
+            (click)="updateStatus(selectedClaim.id, 'REJECTED')">
+      Reject
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- <div class="container mt-4">
+
+  <h2 class="text-center mb-4">Underwriter Dashboard</h2>
+
+  <div *ngIf="showError" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-4" *ngFor="let claim of filteredClaims">
+
+      <div class="claim-card">
+
+        <h5>Claim #{{ claim.id }}</h5>
+
+        <p><strong>Description:</strong> {{ claim.description }}</p>
+
+        <p>
+          <strong>Investigation:</strong>
+          {{ claim.investigation?.report || 'Not Available' }}
+        </p>
+
+        <!-- Status -->
+        <span class="status"
+              [ngClass]="{
+                'status-completed': claim.status === 'COMPLETED',
+                'status-pending': claim.status === 'PENDING',
+                'status-rejected': claim.status === 'REJECTED'
+              }">
+          {{ claim.status }}
+        </span>
+
+        <!-- Buttons -->
+        <div class="mt-3">
+          <button class="btn btn-success btn-sm"
+                  (click)="updateStatus(claim.id, 'APPROVED')">
+            Approve
+          </button>
+
+          <button class="btn btn-danger btn-sm"
+                  (click)="updateStatus(claim.id, 'REJECTED')">
+            Reject
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Empty Message -->
+  <div *ngIf="filteredClaims.length === 0" class="text-center mt-5">
+    <p>No claims assigned yet.</p>
+  </div>
+
+</div> -->

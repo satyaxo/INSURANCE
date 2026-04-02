@@ -162,6 +162,11 @@ getClaimsByInvestigator(investigatorId: number): Observable<any> {
   );
 }
 
+updateClaimStatus(id: number, status: string) {
+  return this.updateClaimsStatus(status, id);
+}
+
+
 
 
 // ✅ Used by Underwriter component (alias)

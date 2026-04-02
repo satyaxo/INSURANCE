@@ -35,32 +35,46 @@ export class LoginComponent implements OnInit {
   }
 
   onLogin(): void {
-    this.showError = false;
+   this.showError = false;
 
-    if (this.itemForm.invalid) {
-      this.showError = true;
-      this.errorMessage = 'Please enter both username and password.';
-      return;
-    }
-//changes made here L
-    this.httpService.Login(this.itemForm.value).subscribe({
-      next: (res: any) => {
-        // Use AuthService methods
-        this.authService.saveToken(res.token);
-        this.authService.SetRole(res.role);
-        this.authService.saveUserId(res.userId);
+  if (this.itemForm.invalid) {
+    this.showError = true;
+    this.errorMessage = 'Please enter both username and password.';
+    return;
+  }
 
-        // Navigate to dashboard and refresh
+  this.httpService.Login(this.itemForm.value).subscribe({
+    next: (res: any) => {
+
+      this.authService.saveToken(res.token);
+      this.authService.SetRole(res.role);
+      this.authService.saveUserId(res.userId);
+
+      // ✅ Added role-based navigation
+      const role = res.role;
+
+      if (role === 'UNDERWRITER') {
+        this.router.navigateByUrl('/underwriter-dashboard').then(() => {
+          window.location.reload();
+        });
+      } else if (role === 'INVESTIGATOR') {
+        this.router.navigateByUrl('/create-investigator').then(() => {
+          window.location.reload();
+        });
+      } else {
         this.router.navigateByUrl('/dashboard').then(() => {
           window.location.reload();
         });
-      },
-      error: () => {
-        this.showError = true;
-        this.errorMessage = 'Invalid username or password.';
       }
-    });
+    },
+    error: () => {
+      this.showError = true;
+      this.errorMessage = 'Invalid username or password.';
+    }
+  });
   }
+
+  
 
   registration(): void {
     this.router.navigateByUrl('/registration');

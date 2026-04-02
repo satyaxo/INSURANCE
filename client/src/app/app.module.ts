@@ -15,6 +15,8 @@ import { UpdateClaimComponent } from './update-claim/update-claim.component';
 import { AssignClaimComponent } from './assign-claim/assign-claim.component';
 import { CreateInvestigatorComponent } from './create-investigator/create-investigator.component';
 import { UpdateClaimInvestigatorComponent } from './update-claim-investigator/update-claim-investigator.component';
+import { CommonModule } from '@angular/common';
+import { UnderwriterDashboardComponent } from './underwriter-dashboard/underwriter-dashboard.component';
 
 @NgModule({
   declarations: [
@@ -27,6 +29,7 @@ import { UpdateClaimInvestigatorComponent } from './update-claim-investigator/up
       AssignClaimComponent,
       CreateInvestigatorComponent,
       UpdateClaimInvestigatorComponent,
+      UnderwriterDashboardComponent
   ],
   imports: [
     BrowserModule,
@@ -34,6 +37,7 @@ import { UpdateClaimInvestigatorComponent } from './update-claim-investigator/up
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
+    CommonModule
   ],
   providers: [HttpService, HttpClientModule],
   bootstrap: [AppComponent],

@@ -1,0 +1,43 @@
+.claim-card {
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+.detail-box {
+  margin-top: 20px;
+  padding: 20px;
+  border: 2px solid #007bff;
+}
+
+.claim-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Status styles */
+.status {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* Green */
+.status-completed {
+  background: #d4edda;
+  color: #155724;
+}
+
+/* Yellow */
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+/* Red */
+.status-rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
