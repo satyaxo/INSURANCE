@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpService } from '../../services/http.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-underwriter-dashboard',
@@ -13,13 +14,17 @@ export class UnderwriterDashboardComponent implements OnInit {
   showError = false;
   errorMessage = '';
 
-  constructor(private httpService: HttpService) {}
+  constructor(private httpService: HttpService , private router: Router) {}
 
   ngOnInit(): void {
     this.loadClaims();
     
   }
 
+
+  editClaim(claim: any) {
+  this.router.navigate(['/underwriter-edit', claim.id]);
+}
   loadClaims() {
   const userId = localStorage.getItem('userId');
 
@@ -71,9 +76,9 @@ export class UnderwriterDashboardComponent implements OnInit {
 
   selectedClaim: any = null;
 
-editClaim(claim: any) {
-  this.selectedClaim = claim;
-}
+// editClaim(claim: any) {
+//   this.selectedClaim = claim;
+// }
 
   updateStatus(claimId: number, status: string) {
     this.httpService.updateClaimStatus(claimId, status).subscribe({

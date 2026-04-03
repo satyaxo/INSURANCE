@@ -27,6 +27,8 @@ public class ClaimController {
         return claimRepository.findByUnderwriterId(id);
     }
 
+
+
     // ✅ Update claim status (Approve / Reject)
     @PutMapping("/{id}/status")
     public Claim updateStatus(@PathVariable Long id, @RequestBody Claim updatedClaim) {
@@ -37,4 +39,4 @@ public class ClaimController {
 
         return claimRepository.save(claim);
     }
-}List<Claim> findByUnderwriterId(Long underwriterId);
+}

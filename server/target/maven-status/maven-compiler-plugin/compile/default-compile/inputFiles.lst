@@ -13,6 +13,7 @@
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/entity/Adjuster.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/service/ClaimService.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/controller/InvestigatorController.java
+/home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/controller/ClaimController.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/jwt/JwtRequestFilter.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/service/InvestigationService.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/dto/LoginRequest.java
