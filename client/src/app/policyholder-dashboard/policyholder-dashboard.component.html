@@ -1,0 +1,115 @@
+<!-- Navbar -->
+<nav class="navbar navbar-dark bg-dark mb-4">
+  <div class="container">
+    <a class="navbar-brand fw-bold">ClaimsPro Portal</a>
+    <div class="d-flex align-items-center">
+      <span class="text-light me-3">
+        Welcome, <strong>{{ username }}</strong>
+      </span>
+      <button class="btn btn-outline-danger btn-sm rounded-pill" (click)="logout()">
+        Logout
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">My Claims</h2>
+      <p class="text-muted mb-0">Track and manage your insurance claims</p>
+    </div>
+
+    <button class="btn btn-primary rounded-pill px-4 shadow-sm"
+            (click)="createClaim()">
+      + New Claim
+    </button>
+  </div>
+
+  <!-- Card -->
+  <div class="card shadow rounded-4 border-0">
+    <div class="card-body p-0">
+
+      <div class="table-responsive">
+        <table class="table align-middle table-borderless mb-0">
+
+          <!-- Table Header -->
+          <thead class="bg-dark text-white">
+            <tr>
+              <th>ID</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+
+          <!-- Table Body -->
+          <tbody>
+
+            <tr *ngFor="let claim of claims">
+
+              <!-- ID -->
+              <td class="fw-bold">#{{ claim.id }}</td>
+
+              <!-- Description -->
+              <td>{{ claim.description }}</td>
+
+              <!-- Status -->
+              <td>
+                <span class="badge rounded-pill px-3 py-2" [ngClass]="{
+                  'bg-secondary': claim.status === 'SUBMITTED',
+                  'bg-primary': claim.status === 'UNDER_REVIEW',
+                  'bg-info text-dark': claim.status === 'IN_PROGRESS',
+                  'bg-success': claim.status === 'APPROVED',
+                  'bg-danger': claim.status === 'REJECTED'
+                }">
+                  {{
+                    claim.status === 'SUBMITTED' ? 'Pending' :
+                    claim.status === 'UNDER_REVIEW' ? 'Reviewing' :
+                    claim.status === 'IN_PROGRESS' ? 'In Progress' :
+                    claim.status === 'APPROVED' ? 'Approved' :
+                    claim.status === 'REJECTED' ? 'Rejected' :
+                    claim.status
+                  }}
+                </span>
+              </td>
+
+              <!-- Date -->
+              <td>{{ claim.date | date:'MMM d, y' }}</td>
+
+              <!-- Actions -->
+              <td class="text-end">
+                <div class="d-flex justify-content-end gap-2">
+
+                  <button class="btn btn-outline-primary btn-sm rounded-pill px-3"
+                          (click)="viewClaim(claim.id)">
+                    👁 View
+                  </button>
+
+                  <button class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                          (click)="deleteClaim(claim.id)">
+                    🗑 Delete
+                  </button>
+
+                </div>
+              </td>
+
+            </tr>
+
+            <!-- Empty State -->
+            <tr *ngIf="claims.length === 0">
+              <td colspan="5" class="text-center py-5 text-muted">
+                No claims found.
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>

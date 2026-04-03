@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.edutech.insurance_claims_processing_system.entity.Claim;
 import com.edutech.insurance_claims_processing_system.entity.Investigator;
@@ -14,6 +15,15 @@ import com.edutech.insurance_claims_processing_system.repository.InvestigatorRep
 import com.edutech.insurance_claims_processing_system.repository.PolicyholderRepository;
 import com.edutech.insurance_claims_processing_system.repository.UnderwriterRepository;
 
+import java.io.IOException;
+import com.edutech.insurance_claims_processing_system.dto.ClaimDocumentDTO;
+import com.edutech.insurance_claims_processing_system.entity.ClaimDocument;
+import com.edutech.insurance_claims_processing_system.repository.ClaimDocumentRepository;
+
+import java.io.File;
+import java.util.stream.Collectors;
+
+
 import java.util.Date;
 import java.util.List;
 
@@ -23,19 +33,24 @@ public class ClaimService {
     private final ClaimRepository claimRepository;
     private final PolicyholderRepository policyholderRepository;
     private final UnderwriterRepository underwriterRepository;
-    private final InvestigatorRepository investigatorRepository;
+    private final InvestigatorRepository investigatorRepository; 
+    private ClaimDocumentRepository documentRepository;
 
+    
     @Autowired
     public ClaimService(
             ClaimRepository claimRepository,
             PolicyholderRepository policyholderRepository,
             UnderwriterRepository underwriterRepository,
-            InvestigatorRepository investigatorRepository) {
+            InvestigatorRepository investigatorRepository,
+            ClaimDocumentRepository documentRepository) {
 
         this.claimRepository = claimRepository;
         this.policyholderRepository = policyholderRepository;
         this.underwriterRepository = underwriterRepository;
         this.investigatorRepository = investigatorRepository;
+       // this.ClaimDocumentRepository =documentRepository;
+       this.documentRepository = documentRepository;
     }
 
     /* ================= POLICYHOLDER ================= */
@@ -52,6 +67,46 @@ public class ClaimService {
 
         return claimRepository.save(claim);
     }
+
+public void saveDocuments(Long claimId, List<MultipartFile> files) {
+
+    Claim claim = claimRepository.findById(claimId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Claim not found"));
+
+    for (MultipartFile file : files) {
+        try {
+            String dir = "uploads/claims/" + claimId;
+            new File(dir).mkdirs();
+
+            String path = dir + "/" + file.getOriginalFilename();
+
+            // ✅ This can throw IOException -> catch it
+            file.transferTo(new File(path));
+
+            ClaimDocument doc = new ClaimDocument();
+            doc.setFileName(file.getOriginalFilename());
+            doc.setFilePath(path);
+            doc.setClaim(claim);
+
+            documentRepository.save(doc);
+
+        } catch (IOException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Failed to save file: " + file.getOriginalFilename(),
+                    e
+            );
+        }
+    }
+}
+
+
+public List<ClaimDocumentDTO> getDocuments(Long claimId) {
+    return documentRepository.findByClaimId(claimId)
+        .stream()
+        .map(doc -> new ClaimDocumentDTO(doc.getId(), doc.getFileName(), "/uploads/" + doc.getFilePath()))
+        .collect(Collectors.toList());
+}
 
     public List<Claim> getClaimsByPolicyholder(Long policyholderId) {
 
@@ -111,6 +166,12 @@ public class ClaimService {
 
         return claimRepository.save(claim);
     }
+    public void deleteClaim(Long claimId) {
+    if (!claimRepository.existsById(claimId)) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Claim not found");
+    }
+    claimRepository.deleteById(claimId);
+}
 
     /* ================= INVESTIGATOR ================= */
 

@@ -6,7 +6,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.edutech.insurance_claims_processing_system.entity.Claim;
 import com.edutech.insurance_claims_processing_system.service.ClaimService;
-
+import org.springframework.web.multipart.MultipartFile;
+import com.edutech.insurance_claims_processing_system.dto.ClaimDocumentDTO;
 import java.util.List;
 
 @RestController
@@ -42,4 +43,25 @@ public class PolicyholderController {
 
         return ResponseEntity.ok(claims);
     }
+  // Upload documents
+@PostMapping("/policyholder/claim/{claimId}/documents")
+public ResponseEntity<?> uploadDocuments(
+    @PathVariable Long claimId,
+    @RequestParam("files") List<MultipartFile> files) {
+    claimService.saveDocuments(claimId, files);
+    return ResponseEntity.ok("Uploaded successfully");
+}
+
+// Get documents
+@GetMapping("/policyholder/claim/{claimId}/documents")
+public ResponseEntity<List<ClaimDocumentDTO>> getDocuments(@PathVariable Long claimId) {
+    return ResponseEntity.ok(claimService.getDocuments(claimId));
+}
+
+@DeleteMapping("/claim/{id}")
+public ResponseEntity<String> deleteClaim(@PathVariable Long id) {
+    claimService.deleteClaim(id);
+    return ResponseEntity.ok("Deleted successfully");
+}
+
 }

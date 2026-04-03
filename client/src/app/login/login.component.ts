@@ -35,25 +35,30 @@ export class LoginComponent implements OnInit {
   }
 
   onLogin(): void {
-    this.showError = false;
 
-    if (this.itemForm.invalid) {
-      this.showError = true;
-      this.errorMessage = 'Please enter both username and password.';
-      return;
-    }
-//changes made here L
     this.httpService.Login(this.itemForm.value).subscribe({
       next: (res: any) => {
-        // Use AuthService methods
+        console.log("FULL RESPONSE:", res);
+        console.log("ROLE:", res.role);
+
         this.authService.saveToken(res.token);
         this.authService.SetRole(res.role);
-        this.authService.saveUserId(res.userId);
 
-        // Navigate to dashboard and refresh
-        this.router.navigateByUrl('/dashboard').then(() => {
-          window.location.reload();
-        });
+        this.authService.saveUserId(res.userId);
+        localStorage.setItem('username', this.itemForm.value.username);
+
+        const role = res.role?.toUpperCase();
+
+        console.log("ROLE:", role);
+
+        if (role && role.includes('POLICYHOLDER')) {
+          console.log("Navigating to policyholder dashboard");
+          this.router.navigate(['/policyholder-dashboard']);
+
+        } else {
+          console.log("Navigating to default dashboard");
+          this.router.navigate(['/dashboard']);
+        }
       },
       error: () => {
         this.showError = true;

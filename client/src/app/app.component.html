@@ -1,5 +1,5 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
-  <!-- ✅ Platform title now routes to Dashboard -->
+<!-- <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+   ✅ Platform title now routes to Dashboard 
   <a class="navbar-brand" routerLink="/dashboard">
     Insurance Claims &amp; Resource Management Platform
   </a>
@@ -14,10 +14,10 @@
   </button>
 
   <div class="collapse navbar-collapse" id="navbarNav">
-    <!-- Left menu -->
+    Left menu 
     <ul class="navbar-nav">
 
-      <!-- Policyholder -->
+     Policyholder 
       <li class="nav-item">
         <a class="nav-link"
            *ngIf="roleName === 'POLICYHOLDER'"
@@ -26,16 +26,16 @@
         </a>
       </li>
 
-      <!-- ✅ FIXED: View Claim Status now routes to Dashboard -->
+      ✅ FIXED: View Claim Status now routes to Dashboard 
       <li class="nav-item">
         <a class="nav-link"
            *ngIf="roleName === 'POLICYHOLDER'"
-           routerLink="/dashboard">
+           routerLink="/Policyholder-dashboard">
           View Claim Status
         </a>
       </li>
 
-      <!-- Adjuster -->
+       Adjuster
       <li class="nav-item">
         <a class="nav-link"
            *ngIf="roleName === 'ADJUSTER'"
@@ -52,7 +52,7 @@
         </a>
       </li>
 
-      <!-- Investigator -->
+       Investigator 
       <li class="nav-item">
         <a class="nav-link"
            *ngIf="roleName === 'INVESTIGATOR'"
@@ -61,7 +61,7 @@
         </a>
       </li>
 
-      <!-- Underwriter -->
+       Underwriter
       <li class="nav-item">
         <a class="nav-link"
            *ngIf="roleName === 'UNDERWRITER'"
@@ -72,7 +72,7 @@
 
     </ul>
 
-    <!-- Right menu: Login / Logout -->
+     Right menu: Login / Logout 
     <ul class="navbar-nav ms-auto">
       <li *ngIf="!IsLoggin" class="nav-item">
         <a class="nav-link" routerLink="/login">Login</a>
@@ -84,8 +84,8 @@
       </li>
     </ul>
   </div>
-</nav>
-
+</nav> -->
+<!--  -->
 <!-- ✅ Router outlet -->
 <div class="container mt-4 mx-5">
   <router-outlet></router-outlet>

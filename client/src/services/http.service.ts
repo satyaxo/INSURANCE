@@ -95,8 +95,32 @@ getClaimsByUnderwriter(id:any):Observable<any> {
       headers = headers.set('Authorization', `Bearer ${authToken}`);
       return this.http.put(this.serverName+'/api/underwriter/claim/'+claimId+'/review?status='+status,{},{headers:headers});
     }
- 
- 
+ // ✅ Delete claim
+deleteClaim(claimId: any): Observable<any> {
+  const authToken = this.authService.getToken();
+
+  let headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Authorization', `Bearer ${authToken}`);
+
+  return this.http.delete(
+    `${this.serverName}/api/policyholder/claim/${claimId}`,
+    { headers }
+  );
+}
+ // ✅ Get single claim by ID (Policyholder)
+// getClaimById(claimId: any): Observable<any> {
+//   const authToken = this.authService.getToken();
+
+//   let headers = new HttpHeaders()
+//     .set('Content-Type', 'application/json')
+//     .set('Authorization', `Bearer ${authToken}`);
+
+//   return this.http.get(
+//     `${this.serverName}/api/policyholder/claim/${claimId}`,
+//     { headers }
+//   );
+// }
   AssignClaim(details:any):Observable<any> {
     const authToken = this.authService.getToken();
     let headers = new HttpHeaders();
@@ -163,7 +187,37 @@ getClaimsByInvestigator(investigatorId: number): Observable<any> {
 }
 
 
+ // ✅ Upload documents for a claim
+  uploadClaimDocuments(claimId: any, files: File[]): Observable<any> {
+    const authToken = this.authService.getToken();
+    let headers = new HttpHeaders();
+    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    // ⚠️ Do NOT set Content-Type — browser sets it automatically for FormData
 
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file, file.name);
+    });
+
+    return this.http.post(
+      `${this.serverName}/api/policyholder/claim/${claimId}/documents`,
+      formData,
+      { headers }
+    );
+  }
+
+  // ✅ Get documents for a claim
+  getClaimDocuments(claimId: any): Observable<any[]> {
+    const authToken = this.authService.getToken();
+    let headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
+
+    return this.http.get<any[]>(
+      `${this.serverName}/api/policyholder/claim/${claimId}/documents`,
+      { headers }
+    );
+  }
 // ✅ Used by Underwriter component (alias)
 getClaimsForUnderwriter(underwriterId: number): Observable<any> {
   return this.getClaimsByUnderwriter(underwriterId);

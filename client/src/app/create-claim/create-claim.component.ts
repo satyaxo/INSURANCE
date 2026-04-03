@@ -10,6 +10,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class CreateClaimComponent {
 
+   selectedFiles: File[] = [];
   itemForm: FormGroup;
 
   showError = false;
@@ -28,7 +29,17 @@ export class CreateClaimComponent {
       date: ['', Validators.required] // ✅ keep date
     });
   }
+// ✅ 2. Add these two methods INSIDE the class (before or after onSubmit)
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files) {
+      this.selectedFiles.push(...Array.from(input.files));
+    }
+  }
 
+  removeFile(file: File): void {
+    this.selectedFiles = this.selectedFiles.filter(f => f !== file);
+  }
   onSubmit(): void {
     this.showError = false;
     this.showMessage = false;
@@ -52,7 +63,20 @@ export class CreateClaimComponent {
     };
 
     this.httpService.createClaims(payload, userId).subscribe({
-      next: () => {
+      next: (res:any) => {
+          // ✅ ADD THIS BLOCK
+  const claimId = res.id;
+  if (this.selectedFiles.length > 0 && claimId) {
+    this.httpService.uploadClaimDocuments(claimId, this.selectedFiles).subscribe({
+      next: () => console.log('Files uploaded'),
+      error: (err) => console.error('Upload failed', err)
+    });
+  }
+  this.selectedFiles = []; // ✅ clear files after submit
+  // ✅ END OF ADDED BLOCK
+
+  // your existing code continues below...
+  this.responseMessage = '✅ Claim created successfully!';
         this.responseMessage = '✅ Claim created successfully!';
         this.showMessage = true;
         this.itemForm.reset();
