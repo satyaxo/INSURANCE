@@ -18,6 +18,7 @@ import { UpdateClaimInvestigatorComponent } from './update-claim-investigator/up
 import { PolicyholderDashboardComponent } from './policyholder-dashboard/policyholder-dashboard.component';
 import { CommonModule } from '@angular/common';
 import { ViewClaimComponent } from './view-claim/view-claim.component';
+import { LandingComponent } from './landing-component/landing.component'
 
 @NgModule({
   declarations: [
@@ -25,6 +26,7 @@ import { ViewClaimComponent } from './view-claim/view-claim.component';
     LoginComponent,
     RegistrationComponent,
     DashbaordComponent,
+    LandingComponent,
     CreateClaimComponent,
      UpdateClaimComponent,
       AssignClaimComponent,
@@ -32,6 +34,8 @@ import { ViewClaimComponent } from './view-claim/view-claim.component';
       UpdateClaimInvestigatorComponent,
       PolicyholderDashboardComponent,
       ViewClaimComponent,
+      LandingComponent
+  
   ],
   imports: [
     BrowserModule,

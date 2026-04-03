@@ -1,0 +1,336 @@
+:host {
+    display: block;
+    width: 100%;
+    background-color: #020617;
+    /* deep navy */
+    color: #E5E7EB;
+    /* readable default text */
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+.ic-hero-title,
+.ic-section-title,
+.ic-cta-title {
+    color: #FFFFFF;
+    font-weight: 800;
+}
+
+/* Paragraph / secondary text */
+p,
+.ic-hero-sub,
+.ic-big-label,
+.ic-feature-card p,
+.ic-role-card p,
+.ic-cta-sub {
+    color: #CBD5F5;
+}
+
+/* Links */
+a {
+    color: #93C5FD;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #60A5FA;
+}
+
+/* Icons */
+i.fa-solid {
+    color: #60A5FA;
+    line-height: 1;
+}
+
+/* ================= NAVBAR ================= */
+.ic-nav {
+    background: rgba(2, 6, 23, 0.88);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 14px 0;
+    z-index: 1000;
+}
+
+.ic-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #FFFFFF;
+}
+
+.ic-shield {
+    font-size: 1.4rem;
+    color: #60A5FA;
+}
+
+.ic-brand-text {
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.ic-brand-accent {
+    color: #3B82F6;
+}
+
+/* ================= HERO ================= */
+.ic-hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at top left, rgba(59, 130, 246, 0.35), transparent 60%),
+        radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.25), transparent 60%),
+        #020617;
+}
+
+.ic-hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 64px 64px;
+    opacity: 0.15;
+}
+
+.ic-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.ic-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(59, 130, 246, 0.15);
+    color: #93C5FD;
+    font-size: 0.8rem;
+    margin-bottom: 20px;
+}
+
+.ic-badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22C55E;
+}
+
+.ic-hero-title {
+    font-size: clamp(2.6rem, 5vw, 4rem);
+    line-height: 1.1;
+    margin-bottom: 24px;
+}
+
+.ic-gradient-text {
+    background: linear-gradient(135deg, #3B82F6, #22D3EE);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.ic-hero-sub {
+    max-width: 720px;
+    margin: 0 auto 40px;
+    font-size: 1.05rem;
+}
+
+.ic-hero-actions {
+    display: flex;
+    justify-content: center;
+}
+
+/* Video-style button */
+.ic-btn-video {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    color: #E5E7EB;
+}
+
+.ic-btn-video:hover {
+    color: #93C5FD;
+}
+
+.ic-play-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ================= STATS ================= */
+.ic-stats-section {
+    padding: 100px 0;
+    background: #0F172A;
+    text-align: center;
+}
+
+.ic-big-num {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #3B82F6, #22D3EE);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.ic-big-label {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* ================= FEATURES ================= */
+.ic-features-section {
+    padding: 120px 0;
+    background: #020617;
+}
+
+.ic-section-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.ic-section-tag {
+    display: inline-block;
+    margin-bottom: 12px;
+    padding: 4px 12px;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #93C5FD;
+    background: rgba(59, 130, 246, 0.15);
+    border-radius: 999px;
+}
+
+.ic-feature-card {
+    background: #0F172A;
+    padding: 36px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ic-feature-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+}
+
+.ic-feature-card i {
+    font-size: 1.8rem;
+    margin-bottom: 18px;
+}
+
+/* ================= ROLES ================= */
+.ic-roles-section {
+    padding: 120px 0;
+    background: #0B1220;
+}
+
+.ic-role-card {
+    background: #020617;
+    padding: 36px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    height: 100%;
+    transition: transform 0.3s ease;
+}
+
+.ic-role-card:hover {
+    transform: translateY(-6px);
+}
+
+/* ================= CTA ================= */
+.ic-cta-section {
+    padding: 140px 0;
+    text-align: center;
+    background:
+        radial-gradient(circle at center, rgba(59, 130, 246, 0.35), transparent 65%),
+        #020617;
+}
+
+.ic-cta-sub {
+    margin: 20px auto 40px;
+    max-width: 520px;
+}
+
+/* ================= ANIMATIONS ================= */
+.ic-reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.ic-reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ic-fade-up {
+    opacity: 0;
+    transform: translateY(28px);
+    animation: fadeUp 0.8s ease forwards;
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ================= SAFETY ================= */
+section {
+    display: block;
+}
+
+.container {
+    position: relative;
+    z-index: 2;
+}
+
+/* ================= Background Video ================= */
+.ic-bg-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    filter: brightness(0.45) saturate(1.1);
+}
+
+.ic-bg-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom,
+            rgba(2, 6, 23, 0.8),
+            rgba(2, 6, 23, 0.9));
+    z-index: 1;
+}
+
+/* Keep content above video */
+.ic-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* Disable video on mobile */
+@media (max-width: 768px) {
+    .ic-bg-video {
+        display: none;
+    }
+}

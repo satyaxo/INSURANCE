@@ -1,0 +1,137 @@
+<nav class="navbar fixed-top ic-nav">
+    <div class="container d-flex align-items-center justify-content-between">
+
+        <!-- ✅ Brand: always goes home (history preserved) -->
+        <a class="ic-brand" routerLink="/">
+            <span class="ic-shield">⬡</span>
+            <span class="ic-brand-text">
+                ClaimSure<span class="ic-brand-accent">Pro</span>
+            </span>
+        </a>
+
+        <!-- ✅ Auth Navigation -->
+        <div class="d-flex gap-2">
+            <a class="ic-btn-ghost" routerLink="/login">
+                Login
+            </a>
+
+            <a class="ic-btn-primary" routerLink="/registration">
+                Register
+            </a>
+        </div>
+
+    </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<section class="ic-hero">
+
+    <!-- ✅ Background Video -->
+    <video class="ic-bg-video" autoplay muted loop playsinline preload="auto">
+        <source src="/assets/vecteezy.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+    </video>
+
+    <div class="ic-bg-overlay"></div>
+    <div class="ic-hero-grid"></div>
+
+    <div class="container ic-hero-content">
+        <div class="row justify-content-center text-center min-vh-100 align-items-center">
+            <div class="col-lg-9">
+
+                <div class="ic-badge ic-fade-up">
+                    <span class="ic-badge-dot"></span>
+                    Trusted by 50,000+ policyholders
+                </div>
+
+                <h1 class="ic-hero-title ic-fade-up">
+                    Insurance Claims<br />
+                    <span class="ic-gradient-text">Handled Smarter</span>
+                </h1>
+
+                <p class="ic-hero-sub ic-fade-up">
+                    A unified platform for insurers, coordinators, and policyholders —
+                    automate workflows, allocate resources, and close claims faster.
+                </p>
+
+                <div class="ic-hero-actions ic-fade-up justify-content-center">
+                    <a class="ic-btn-video" href="#">
+                        <span class="ic-play-icon">
+                            <i class="fa-solid fa-play"></i>
+                        </span>
+                        View Platform Overview
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= STATS ================= -->
+<section class="ic-stats-section">
+    <div class="container">
+        <div class="row g-4 justify-content-center text-center">
+
+            <div class="col-md-4 ic-reveal">
+                <div class="ic-big-num ic-count" data-target="50000">0</div>
+                <div class="ic-big-label">Policyholders Served</div>
+            </div>
+
+            <div class="col-md-4 ic-reveal">
+                <div class="ic-big-num">
+                    <span class="ic-count" data-target="98">0</span>%
+                </div>
+                <div class="ic-big-label">Customer Satisfaction</div>
+            </div>
+
+            <div class="col-md-4 ic-reveal">
+                <div class="ic-big-num ic-count" data-target="1200">0</div>
+                <div class="ic-big-label">Claims Closed Daily</div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section class="ic-features-section">
+    <div class="container">
+
+        <div class="ic-section-header ic-reveal">
+            <div class="ic-section-tag">Platform</div>
+            <h2 class="ic-section-title">
+                Built for modern<br />
+                <span class="ic-gradient-text">insurance operations</span>
+            </h2>
+        </div>
+
+        <div class="row g-4 mt-4">
+
+            <div class="col-md-4 ic-reveal">
+                <div class="ic-feature-card">
+                    <i class="fa-solid fa-bolt"></i>
+                    <h4>Automated Workflows</h4>
+                    <p>Reduce manual handling and accelerate claim resolution.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4 ic-reveal">
+                <div class="ic-feature-card">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <h4>Secure &amp; Compliant</h4>
+                    <p>JWT‑based access control with industry‑grade security.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4 ic-reveal">
+                <div class="ic-feature-card">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <h4>Live Analytics</h4>
+                    <p>Monitor claims, resources, and performance in real time.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>

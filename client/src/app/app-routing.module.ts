@@ -15,21 +15,46 @@ import { CreateInvestigatorComponent } from './create-investigator/create-invest
 import { UpdateClaimInvestigatorComponent } from './update-claim-investigator/update-claim-investigator.component';
 import { PolicyholderDashboardComponent } from './policyholder-dashboard/policyholder-dashboard.component';
 import { ViewClaimComponent } from './view-claim/view-claim.component';
+import { LandingComponent } from './landing-component/landing.component';
+
+// const routes: Routes = [
+//   {path:'',component:LandingComponent},
+//   { path: 'login', component: LoginComponent },
+//   { path: 'registration', component: RegistrationComponent },
+//   { path: 'dashboard', component: DashbaordComponent },
+//   { path: 'create-claim', component: CreateClaimComponent },
+//   { path: 'update-claim', component: UpdateClaimComponent },
+//   { path: 'assign-claim', component: AssignClaimComponent },
+//   { path: 'create-investigator', component: CreateInvestigatorComponent },
+//   { path: 'update-claim-investigator', component: UpdateClaimInvestigatorComponent },
+//   { path: 'policyholder-dashboard', component: PolicyholderDashboardComponent},
+// { path: 'view-claim/:id', component: ViewClaimComponent },
+//   { path: '', redirectTo: '', pathMatch: 'full' },
+
+//   { path: '**', redirectTo: "", pathMatch: 'full' },
+// ];
 
 const routes: Routes = [
+  // ✅ Landing page (default)
+  { path: '', component: LandingComponent },
+
+  // ✅ Auth
   { path: 'login', component: LoginComponent },
   { path: 'registration', component: RegistrationComponent },
+
+  // ✅ Dashboard & features
   { path: 'dashboard', component: DashbaordComponent },
   { path: 'create-claim', component: CreateClaimComponent },
   { path: 'update-claim', component: UpdateClaimComponent },
   { path: 'assign-claim', component: AssignClaimComponent },
   { path: 'create-investigator', component: CreateInvestigatorComponent },
   { path: 'update-claim-investigator', component: UpdateClaimInvestigatorComponent },
-  { path: 'policyholder-dashboard', component: PolicyholderDashboardComponent},
-{ path: 'view-claim/:id', component: ViewClaimComponent },
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
 
-  { path: '**', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'policyholder-dashboard', component: PolicyholderDashboardComponent },
+  { path: 'view-claim/:id', component: ViewClaimComponent },
+
+  // ✅ Fallback (only ONE)
+  { path: '**', redirectTo: '' }
 ];
 
 @NgModule({
