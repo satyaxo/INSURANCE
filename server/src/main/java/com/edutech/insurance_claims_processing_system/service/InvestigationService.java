@@ -27,28 +27,48 @@ public class InvestigationService {
     }
 
     /**
-     * Creates a new investigation and moves the claim to underwriter stage.
+     * ✅ Create investigation (UPSERT) and move claim to underwriter stage.
+     * - Prevents duplicate investigations for same claim
+     * - Preserves claim relations (underwriter/investigator/adjuster)
      */
     public Investigation createInvestigation(Investigation investigation) {
 
-        if (investigation == null || investigation.getClaim() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid investigation");
+        if (investigation == null
+                || investigation.getClaim() == null
+                || investigation.getClaim().getId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Claim must be provided");
         }
 
-        // ✅ Save investigation
-        Investigation savedInvestigation = investigationRepository.save(investigation);
+        Long claimId = investigation.getClaim().getId();
 
-        // ✅ Update claim status after investigation
-        Claim claim = investigation.getClaim();
-        claim.setStatus("INVESTIGATION_COMPLETED");
+        // ✅ Always load the managed claim from DB (prevents overwriting relations)
+        Claim existingClaim = claimRepository.findById(claimId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Claim not found"));
 
-        claimRepository.save(claim);
+        // ✅ UPSERT: if investigation exists for this claim, UPDATE it; else CREATE new
+        Investigation savedInvestigation = investigationRepository.findByClaimId(claimId)
+                .map(existingInv -> {
+                    existingInv.setReport(investigation.getReport());
+                    existingInv.setStatus(investigation.getStatus());
+                    existingInv.setClaim(existingClaim);
+                    return investigationRepository.save(existingInv);
+                })
+                .orElseGet(() -> {
+                    investigation.setClaim(existingClaim);
+                    return investigationRepository.save(investigation);
+                });
+
+        // ✅ Update only claim status after investigation
+        existingClaim.setStatus("INVESTIGATION_COMPLETED");
+        claimRepository.save(existingClaim);
 
         return savedInvestigation;
     }
 
     /**
      * Updates an investigation’s details by ID.
+     * ✅ Safe update (does not create duplicates)
      */
     public Investigation updateInvestigation(Long id, Investigation investigationDetails) {
 
@@ -63,10 +83,17 @@ public class InvestigationService {
         existingInvestigation.setReport(investigationDetails.getReport());
         existingInvestigation.setStatus(investigationDetails.getStatus());
 
-        // ✅ Optional: also update claim status if investigation completed
-        if ("Completed".equalsIgnoreCase(investigationDetails.getStatus())
-                && existingInvestigation.getClaim() != null) {
+        // ✅ Keep current claim link unless a valid claim id is provided
+        if (investigationDetails.getClaim() != null && investigationDetails.getClaim().getId() != null) {
+            Claim existingClaim = claimRepository.findById(investigationDetails.getClaim().getId())
+                    .orElseThrow(() ->
+                            new ResponseStatusException(HttpStatus.NOT_FOUND, "Claim not found"));
+            existingInvestigation.setClaim(existingClaim);
+        }
 
+        // ✅ If completed, update claim status
+        if ("Completed".equalsIgnoreCase(existingInvestigation.getStatus())
+                && existingInvestigation.getClaim() != null) {
             Claim claim = existingInvestigation.getClaim();
             claim.setStatus("INVESTIGATION_COMPLETED");
             claimRepository.save(claim);
@@ -76,11 +103,9 @@ public class InvestigationService {
     }
 
     /**
-     * Retrieves all investigations.
+     * Retrieves all investigations with claim.
      */
-  public List<Investigation> getAllInvestigations() {
-    return investigationRepository.findAllWithClaim();
-}
-
-
+    public List<Investigation> getAllInvestigations() {
+        return investigationRepository.findAllWithClaim();
+    }
 }

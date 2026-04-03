@@ -2,6 +2,8 @@ package com.edutech.insurance_claims_processing_system.entity;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 @Table(name = "investigations")
 public class Investigation {
@@ -15,23 +17,21 @@ public class Investigation {
 
     private String status;
 
+    // ✅ Enforce one investigation per claim (unique)
     @OneToOne
-    @JoinColumn(name = "claim_id", nullable = false)
+    @JoinColumn(name = "claim_id", nullable = false, unique = true)
+   // @JsonBackReference // ✅ prevents JSON infinite loop if Claim contains Investigation
     private Claim claim;
 
-    // -------------------- Getters and Setters --------------------
-
-    public Long getId() {
-        return id;
-    }
+    public Investigation() {}
 
     public Investigation(String report, String status) {
         this.report = report;
         this.status = status;
-
     }
 
-    public Investigation() {
+    public Long getId() {
+        return id;
     }
 
     public void setId(Long id) {
@@ -46,10 +46,6 @@ public class Investigation {
         this.report = report;
     }
 
-    /**
-     * Possible values:
-     * Pending, InProgress, Completed
-     */
     public String getStatus() {
         return status;
     }
@@ -65,5 +61,4 @@ public class Investigation {
     public void setClaim(Claim claim) {
         this.claim = claim;
     }
-
 }
