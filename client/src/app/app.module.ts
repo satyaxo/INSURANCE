@@ -17,6 +17,7 @@ import { CreateInvestigatorComponent } from './create-investigator/create-invest
 import { UpdateClaimInvestigatorComponent } from './update-claim-investigator/update-claim-investigator.component';
 import { CommonModule } from '@angular/common';
 import { UnderwriterDashboardComponent } from './underwriter-dashboard/underwriter-dashboard.component';
+import { LandingComponent } from './landing-component/landing.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { UnderwriterDashboardComponent } from './underwriter-dashboard/underwrit
       AssignClaimComponent,
       CreateInvestigatorComponent,
       UpdateClaimInvestigatorComponent,
-      UnderwriterDashboardComponent
+      UnderwriterDashboardComponent,
+      LandingComponent
   ],
   imports: [
     BrowserModule,

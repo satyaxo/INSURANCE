@@ -14,10 +14,13 @@ import { AssignClaimComponent } from './assign-claim/assign-claim.component';
 import { CreateInvestigatorComponent } from './create-investigator/create-investigator.component';
 import { UpdateClaimInvestigatorComponent } from './update-claim-investigator/update-claim-investigator.component';
 import { UnderwriterDashboardComponent } from './underwriter-dashboard/underwriter-dashboard.component';
+import { LandingComponent } from './landing-component/landing.component';
 //import { UnderwriterEditClaimComponent } from './underwriter-edit-claim/underwriter-edit-claim.component';
 
 
 const routes: Routes = [
+  {path:'',component:LandingComponent},
+  {path:'landing',component:LandingComponent},
   { path: 'login', component: LoginComponent },
   { path: 'registration', component: RegistrationComponent },
   { path: 'dashboard', component: DashbaordComponent },
@@ -27,11 +30,11 @@ const routes: Routes = [
   { path: 'create-investigator', component: CreateInvestigatorComponent },  
   { path: 'update-claim-investigator', component: UpdateClaimInvestigatorComponent },  
  { path: 'underwriter-dashboard', component: UnderwriterDashboardComponent },
-//  { path :' underwriter-editClaim ' , component: UnderwriterEditClaimComponent}
- // {path : ' underwriter-edit/:id' , component : UnderwriterEditClaimComponent },
-  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
+{ path: '', redirectTo: '/landing', pathMatch: 'full' },
+{ path: '**', redirectTo: '/landing', pathMatch: 'full' },
+//  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
 
-  { path: '**', redirectTo: '/dashboard', pathMatch: 'full' },
+//  { path: '**', redirectTo: '/dashboard', pathMatch: 'full' },
 ];
 
 @NgModule({

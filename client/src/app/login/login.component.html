@@ -1,4 +1,4 @@
-<div class="container mt-4">
+<!-- <div class="container mt-4">
   <h2 class="text-center mb-4">Login</h2>
 
   <form [formGroup]="itemForm" (ngSubmit)="onLogin()" class="needs-validation">
@@ -22,4 +22,64 @@
   <div class="text-center mt-3">
     <button class="btn btn-link" (click)="registration()">Register here</button>
   </div>
+</div> -->
+<!-- ================= LOGIN PAGE WRAPPER ================= -->
+<div class="ic-auth-page">
+
+  <!-- Centered Login Panel -->
+  <div class="ic-auth-card">
+
+    <!-- Header -->
+    <div class="ic-auth-header">
+      <span class="ic-shield">⬡</span>
+      <h2 class="ic-auth-title">
+        ClaimSure<span class="ic-brand-accent">Pro</span>
+      </h2>
+      <p class="ic-auth-sub">
+        Sign in to manage and track your claims
+      </p>
+    </div>
+
+    <!-- Login Form -->
+    <form [formGroup]="itemForm" (ngSubmit)="onLogin()">
+
+      <div class="ic-form-group">
+        <label>Username</label>
+        <input
+          type="text"
+          formControlName="username"
+          class="ic-input"
+          placeholder="Enter your username"
+        />
+      </div>
+
+      <div class="ic-form-group">
+        <label>Password</label>
+        <input
+          type="password"
+          formControlName="password"
+          class="ic-input"
+          placeholder="Enter your password"
+        />
+      </div>
+
+      <button type="submit" class="ic-btn-primary w-100">
+        Login
+      </button>
+
+    </form>
+
+    <!-- Error Message -->
+    <div *ngIf="showError" class="ic-alert-error">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Footer -->
+    <div class="ic-auth-footer">
+      <span>Don’t have an account?</span>
+      <a (click)="registration()">Register here</a>
+    </div>
+
+  </div>
+
 </div>
