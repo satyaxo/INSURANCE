@@ -30,6 +30,7 @@ const routes: Routes = [
   { path: 'create-investigator', component: CreateInvestigatorComponent },  
   { path: 'update-claim-investigator', component: UpdateClaimInvestigatorComponent },  
  { path: 'underwriter-dashboard', component: UnderwriterDashboardComponent },
+ 
 { path: '', redirectTo: '/landing', pathMatch: 'full' },
 { path: '**', redirectTo: '/landing', pathMatch: 'full' },
 //  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
