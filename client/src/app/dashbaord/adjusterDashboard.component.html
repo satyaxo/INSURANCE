@@ -1,211 +1,181 @@
-<div class="container mt-4">
+<div class="adj-page">
 
-  <!-- ========= HEADER ========= -->
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="m-0">Adjuster Dashboard</h2>
-
-    <!-- ✅ ONLY Refresh button (Removed Update & Assign pages) -->
-    <div class="d-flex gap-2">
-      <button class="btn btn-outline-secondary btn-sm" (click)="refreshNow()">
-        Refresh
-      </button>
-    </div>
-  </div>
-
-  <!-- ========= ALERTS ========= -->
-  <div *ngIf="isLoading" class="alert alert-info">Loading...</div>
-
-  <div *ngIf="showError" class="alert alert-danger">
-    {{ errorMessage }}
-  </div>
-
-  <div *ngIf="showMessage" class="alert alert-success">
-    {{ responseMessage }}
-  </div>
-
-  <div class="row g-4">
-
-    <!-- ================= INBOX (SUBMITTED) ================= -->
-    <div class="col-md-6">
-      <div class="section-card">
-        <div class="section-title">Inbox (SUBMITTED)</div>
-
-        <div *ngIf="inboxClaims.length === 0" class="empty-state">
-          No SUBMITTED claims.
-        </div>
-
-        <ul class="list-group" *ngIf="inboxClaims.length > 0">
-          <li *ngFor="let c of inboxClaims" class="list-group-item">
-
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <div class="fw-bold">{{ typeLabel(c.insuranceType) }}</div>
-                <div class="text-muted small">Policy: {{ c.policyNumber || '-' }}</div>
-                <div class="small">{{ c.description }}</div>
-              </div>
-
-              <span [class]="badgeClass(c.status)">{{ c.status }}</span>
-            </div>
-
-            <!-- Status Update -->
-            <div class="mt-3 action-row">
-              <select class="form-select form-select-sm"
-                      [(ngModel)]="statusDraft[c.id]"
-                      [ngModelOptions]="{standalone: true}">
-                <option value="SUBMITTED">SUBMITTED</option>
-                <option value="IN_PROGRESS">IN_PROGRESS</option>
-                <option value="UNDER_PROGRESS">UNDER_PROGRESS</option>
-              </select>
-
-              <button class="btn btn-sm btn-primary"
-                      (click)="updateStatus(c)">
-                Update Status
-              </button>
-
-              <button class="btn btn-sm btn-outline-secondary"
-                      (click)="selectClaim(c)">
-                Details
-              </button>
-            </div>
-
-          </li>
-        </ul>
+  <!-- Header -->
+  <div class="adj-topbar">
+    <div class="adj-brand">
+      <span class="adj-logo">⬡</span>
+      <div>
+        <div class="adj-brand-title">ClaimSure<span class="adj-accent">Pro</span></div>
+        <div class="adj-brand-sub">Insurance Claims & Resource Management Platform</div>
       </div>
     </div>
 
-    <!-- ================= READY TO ASSIGN (UNDER_PROGRESS) ================= -->
-    <div class="col-md-6">
-      <div class="section-card">
-        <div class="section-title">Ready to Assign (UNDER_PROGRESS)</div>
+    <div class="adj-actions">
+      <div class="adj-role">Role: <b>Adjuster</b></div>
 
-        <div *ngIf="assignableClaims.length === 0" class="empty-state">
-          No UNDER_PROGRESS claims.
-        </div>
-
-        <ul class="list-group" *ngIf="assignableClaims.length > 0">
-          <li *ngFor="let c of assignableClaims" class="list-group-item">
-
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <div class="fw-bold">{{ typeLabel(c.insuranceType) }}</div>
-                <div class="text-muted small">Policy: {{ c.policyNumber || '-' }}</div>
-                <div class="small">{{ c.description }}</div>
-              </div>
-
-              <span [class]="badgeClass(c.status)">{{ c.status }}</span>
-            </div>
-
-            <!-- Assignment Controls -->
-            <div class="mt-3 assign-grid">
-
-              <select class="form-select form-select-sm"
-                      [(ngModel)]="investigatorDraft[c.id]"
-                      [ngModelOptions]="{standalone: true}">
-                <option [ngValue]="null" disabled>Select Investigator</option>
-                <option *ngFor="let inv of investigators" [ngValue]="inv.id">
-                  {{ inv.username }}
-                </option>
-              </select>
-
-              <select class="form-select form-select-sm"
-                      [(ngModel)]="underwriterDraft[c.id]"
-                      [ngModelOptions]="{standalone: true}">
-                <option [ngValue]="null" disabled>Select Underwriter</option>
-                <option *ngFor="let uw of underwriters" [ngValue]="uw.id">
-                  {{ uw.username }}
-                </option>
-              </select>
-
-              <!-- ✅ FIXED BUTTON LOGIC -->
-              <div class="btn-group w-100">
-                <button class="btn btn-sm btn-warning"
-                        [disabled]="c.investigator != null"
-                        (click)="assignInvestigator(c)">
-                  {{ c.investigator ? 'Investigator Assigned' : 'Assign Investigator' }}
-                </button>
-
-                <button class="btn btn-sm btn-dark"
-                        [disabled]="c.underwriter != null"
-                        (click)="assignUnderwriter(c)">
-                  {{ c.underwriter ? 'Underwriter Assigned' : 'Assign Underwriter' }}
-                </button>
-              </div>
-
-              <button class="btn btn-sm btn-success w-100"
-                      [disabled]="c.investigator != null && c.underwriter != null"
-                      (click)="assignBoth(c)">
-                Assign Both (1 click)
-              </button>
-
-              <button class="btn btn-sm btn-outline-secondary w-100"
-                      (click)="selectClaim(c)">
-                Details
-              </button>
-
-            </div>
-          </li>
-        </ul>
-      </div>
+      <button class="adj-btn ghost" (click)="refreshNow()">⟳ Refresh</button>
     </div>
   </div>
 
-  <!-- ================= CLAIM DETAILS ================= -->
-  <div *ngIf="selectedClaim" class="card details-card mt-4">
-    <div class="card-body">
+  <!-- Alerts -->
+  <div *ngIf="isLoading" class="adj-alert info">Loading claims...</div>
+  <div *ngIf="showError" class="adj-alert error">{{ errorMessage }}</div>
+  <div *ngIf="showMessage" class="adj-alert success">{{ responseMessage }}</div>
 
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h5 class="m-0">Claim Details</h5>
-        <button class="btn btn-sm btn-outline-secondary" (click)="closeDetails()">
-          Close
-        </button>
+  <!-- Stats -->
+  <div class="adj-stats">
+    <div class="stat-card">
+      <div class="stat-label">Total Claims</div>
+      <div class="stat-value">{{ stats.total }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Inbox (SUBMITTED)</div>
+      <div class="stat-value">{{ stats.inbox }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ready / Work Queue</div>
+      <div class="stat-value">{{ stats.ready }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Closed</div>
+      <div class="stat-value">{{ stats.closed }}</div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="adj-search">
+    <input
+      class="adj-search-input"
+      type="text"
+      placeholder="Search by policy / type / status / description..."
+      [(ngModel)]="searchText"
+      (input)="onSearchChange()"
+    />
+    <span class="adj-search-icon">⌕</span>
+  </div>
+
+  <!-- Main Grid -->
+  <div class="adj-grid">
+
+    <!-- Inbox -->
+    <div class="adj-card">
+      <div class="adj-card-title">Inbox (SUBMITTED)</div>
+
+      <div *ngIf="inboxClaims.length === 0" class="adj-empty">
+        No SUBMITTED claims found.
       </div>
 
-      <div class="row">
-        <div class="col-md-6">
-          <p><b>Type:</b> {{ typeLabel(selectedClaim.insuranceType) }}</p>
-          <p><b>Policy Number:</b> {{ selectedClaim.policyNumber || '-' }}</p>
-          <p><b>Date:</b> {{ selectedClaim.date | date:'dd-MMM-yyyy' }}</p>
+      <div *ngFor="let c of inboxClaims" class="adj-claim">
+        <div class="adj-claim-top">
+          <div>
+            <div class="adj-type">{{ typeLabel(c.insuranceType) }}</div>
+            <div class="adj-meta">Policy: {{ c.policyNumber || '-' }}</div>
+            <div class="adj-desc">{{ c.description }}</div>
+          </div>
+          <span [class]="badgeClass(c.status)">{{ c.status }}</span>
         </div>
 
-        <div class="col-md-6">
-          <p><b>Status:</b>
-            <span [class]="badgeClass(selectedClaim.status)">
-              {{ selectedClaim.status }}
-            </span>
-          </p>
-          <p><b>Description:</b> {{ selectedClaim.description }}</p>
+        <div class="adj-row">
+          <select class="adj-select"
+                  [(ngModel)]="statusDraft[c.id]"
+                  [ngModelOptions]="{standalone: true}">
+            <option value="SUBMITTED">SUBMITTED</option>
+            <option value="IN_PROGRESS">IN_PROGRESS</option>
+            <option value="UNDER_PROGRESS">UNDER_PROGRESS</option>
+          </select>
+
+          <button class="adj-btn primary" (click)="updateStatus(c)">Update</button>
+          <button class="adj-btn ghost" (click)="selectClaim(c)">Details</button>
         </div>
       </div>
+    </div>
 
-      <!-- ================= DOCUMENTS ================= -->
-      <hr />
-      <h6>Uploaded Documents</h6>
+    <!-- Ready / Work Queue -->
+    <div class="adj-card">
+      <div class="adj-card-title">Ready to Assign / Work Queue</div>
 
-      <div *ngIf="docsLoading" class="text-muted">
-        Loading documents...
+      <div *ngIf="assignableClaims.length === 0" class="adj-empty">
+        No claims ready for assignment.
       </div>
 
-      <div *ngIf="docsError" class="alert alert-danger p-2">
-        {{ docsError }}
+      <div *ngFor="let c of assignableClaims" class="adj-claim">
+        <div class="adj-claim-top">
+          <div>
+            <div class="adj-type">{{ typeLabel(c.insuranceType) }}</div>
+            <div class="adj-meta">Policy: {{ c.policyNumber || '-' }}</div>
+            <div class="adj-desc">{{ c.description }}</div>
+          </div>
+          <span [class]="badgeClass(c.status)">{{ c.status }}</span>
+        </div>
+
+        <div class="adj-assign-grid">
+          <select class="adj-select"
+                  [(ngModel)]="investigatorDraft[c.id]"
+                  [ngModelOptions]="{standalone: true}">
+            <option [ngValue]="null" disabled>Select Investigator</option>
+            <option *ngFor="let inv of investigators" [ngValue]="inv.id">
+              {{ inv.username }}
+            </option>
+          </select>
+
+          <select class="adj-select"
+                  [(ngModel)]="underwriterDraft[c.id]"
+                  [ngModelOptions]="{standalone: true}">
+            <option [ngValue]="null" disabled>Select Underwriter</option>
+            <option *ngFor="let uw of underwriters" [ngValue]="uw.id">
+              {{ uw.username }}
+            </option>
+          </select>
+
+          <button class="adj-btn warn" (click)="assignInvestigator(c)">Assign Investigator</button>
+          <button class="adj-btn dark" (click)="assignUnderwriter(c)">Assign Underwriter</button>
+          <button class="adj-btn success" (click)="assignBoth(c)">Assign Both</button>
+          <button class="adj-btn ghost" (click)="selectClaim(c)">Details</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Details Panel -->
+  <div *ngIf="selectedClaim" class="adj-details">
+    <div class="adj-details-head">
+      <div class="adj-details-title">Claim Details</div>
+      <button class="adj-btn ghost" (click)="closeDetails()">Close</button>
+    </div>
+
+    <div class="adj-details-grid">
+      <div>
+        <p><b>Type:</b> {{ typeLabel(selectedClaim.insuranceType) }}</p>
+        <p><b>Policy:</b> {{ selectedClaim.policyNumber || '-' }}</p>
+        <p><b>Date:</b> {{ selectedClaim.date | date:'dd-MMM-yyyy' }}</p>
       </div>
 
-      <div *ngIf="!docsLoading && claimDocuments.length === 0" class="text-muted">
-        No documents uploaded for this claim.
+      <div>
+        <p>
+          <b>Status:</b>
+          <span [class]="badgeClass(selectedClaim.status)">{{ selectedClaim.status }}</span>
+        </p>
+        <p><b>Description:</b> {{ selectedClaim.description }}</p>
       </div>
+    </div>
 
-      <ul class="list-group" *ngIf="!docsLoading && claimDocuments.length > 0">
-        <li class="list-group-item d-flex justify-content-between align-items-center"
-            *ngFor="let doc of claimDocuments">
-          <span>{{ doc.originalFileName }}</span>
+    <hr />
 
-          <!-- ✅ Preview (new tab) -->
-          <button class="btn btn-sm btn-outline-primary"
-                  (click)="previewDocument(doc)">
-            Preview
-          </button>
-        </li>
-      </ul>
+    <div class="adj-docs-title">Uploaded Documents</div>
 
+    <div *ngIf="docsLoading" class="adj-muted">Loading documents...</div>
+    <div *ngIf="docsError" class="adj-alert error">{{ docsError }}</div>
+
+    <div *ngIf="!docsLoading && claimDocuments.length === 0" class="adj-muted">
+      No documents uploaded for this claim.
+    </div>
+
+    <div *ngIf="!docsLoading && claimDocuments.length > 0" class="adj-docs">
+      <div *ngFor="let doc of claimDocuments" class="adj-doc-row">
+        <span>{{ doc.originalFileName }}</span>
+        <button class="adj-btn ghost" (click)="previewDocument(doc)">Preview</button>
+      </div>
     </div>
   </div>
 

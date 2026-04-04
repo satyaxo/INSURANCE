@@ -1,68 +1,88 @@
-<div class="container mt-4">
-  <h2 class="text-center mb-4">Underwriter Review</h2>
+<div class="uw-page">
 
-  <!-- Error -->
-  <div *ngIf="showError" class="alert alert-danger">
+  <!-- Header -->
+  <div class="uw-header">
+    <h2>Underwriter Review</h2>
+    <p>Review investigation reports and make final decisions</p>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="showError" class="alert error-box">
     {{ errorMessage }}
   </div>
 
-  <!-- Success -->
-  <div *ngIf="showMessage" class="alert alert-success">
+  <div *ngIf="showMessage" class="alert success-box">
     {{ responseMessage }}
   </div>
 
-  <h4>Assigned Claims</h4>
+  <!-- Main Layout -->
+  <div class="uw-layout">
 
-  <ul class="list-group mb-4">
-    <li
-      *ngFor="let claim of claimList"
-      class="list-group-item list-group-item-action"
-      (click)="selectClaim(claim)"
-      style="cursor: pointer"
-    >
-      <strong>{{ claim.description }}</strong><br />
-      Status: {{ claim.status }}
-    </li>
-  </ul>
+    <!-- LEFT: Claims List -->
+    <div class="uw-list">
 
-  <!-- Claim Details -->
-  <div *ngIf="selectedClaim" class="card">
-    <div class="card-body">
+      <h4>Assigned Claims</h4>
 
-      <h5 class="card-title">Claim Details</h5>
-
-      <p><strong>Description:</strong> {{ selectedClaim.description }}</p>
-      <p><strong>Status:</strong> {{ selectedClaim.status }}</p>
-
-      <!-- ✅ If investigator report NOT present -->
-      <div *ngIf="!hasReport()" class="alert alert-warning">
-        Awaiting investigator report.
+      <div *ngIf="claimList.length === 0" class="empty">
+        No claims assigned.
       </div>
 
-      <!-- ✅ If investigator report present -->
-      <div *ngIf="hasReport()">
-        <hr />
-        <h6>Investigation Report</h6>
-
-        <p>
-          <strong>Investigation Status:</strong>
-          {{ selectedClaim.investigationStatus || 'N/A' }}
-        </p>
-
-        <div class="alert alert-secondary" style="white-space: pre-wrap;">
-          {{ selectedClaim.investigationReport }}
-        </div>
-
-        <div class="mt-3">
-          <button class="btn btn-success me-2" (click)="approveClaim()">
-            Approve
-          </button>
-          <button class="btn btn-danger" (click)="rejectClaim()">
-            Reject
-          </button>
-        </div>
+      <div
+        *ngFor="let claim of claimList"
+        class="claim-row"
+        [class.active]="selectedClaim?.id === claim.id"
+        (click)="selectClaim(claim)"
+      >
+        <div class="claim-title">{{ claim.description }}</div>
+        <div class="claim-status">{{ claim.status }}</div>
       </div>
 
     </div>
+
+    <!-- RIGHT: Claim Details -->
+    <div class="uw-details" *ngIf="selectedClaim">
+
+      <h4>Claim Details</h4>
+
+      <p><b>Description:</b> {{ selectedClaim.description }}</p>
+      <p>
+        <b>Status:</b>
+        <span class="badge">{{ selectedClaim.status }}</span>
+      </p>
+
+      <!-- Awaiting Report -->
+      <div *ngIf="!hasReport()" class="alert warning-box">
+        Awaiting investigator report.
+      </div>
+
+      <!-- Investigation Report -->
+      <div *ngIf="hasReport()" class="report-card fade-in">
+
+        <h5>Investigation Report</h5>
+
+        <p>
+          <b>Investigation Status:</b>
+          {{ selectedClaim.investigationStatus || 'N/A' }}
+        </p>
+
+        <div class="report-text">
+          {{ selectedClaim.investigationReport }}
+        </div>
+
+        <!-- Actions -->
+        <div class="uw-actions">
+          <button class="btn approve" (click)="approveClaim()">
+            ✅ Approve
+          </button>
+          <button class="btn reject" (click)="rejectClaim()">
+            ❌ Reject
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
   </div>
+
 </div>

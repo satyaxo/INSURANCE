@@ -1,34 +1,51 @@
-<div class="container mt-4">
+<div class="uwd-page">
 
-  <h2>Underwriter Dashboard</h2>
+  <!-- Header -->
+  <div class="uwd-header">
+    <h2>Underwriter Dashboard</h2>
+    <p>Claims awaiting final review and decision</p>
+  </div>
 
-  <div *ngIf="showError" class="alert alert-danger">
+  <!-- Error -->
+  <div *ngIf="showError" class="alert error-box">
     {{ errorMessage }}
   </div>
 
-  <div *ngIf="filteredClaims.length === 0 && !showError" class="alert alert-info">
+  <!-- Empty -->
+  <div *ngIf="filteredClaims.length === 0 && !showError" class="empty">
     No claims assigned yet.
   </div>
 
-  <div *ngFor="let claim of filteredClaims" class="claim-card border rounded p-3 mb-3">
+  <!-- Claims Grid -->
+  <div class="claims-grid" *ngIf="filteredClaims.length > 0">
 
-    <h4>Claim #{{ claim.id }}</h4>
+    <div class="claim-card" *ngFor="let claim of filteredClaims">
 
-    <p><strong>Type:</strong> {{ claim.insuranceType || '-' }}</p>
-    <p><strong>Policy Number:</strong> {{ claim.policyNumber || '-' }}</p>
+      <div class="card-top">
+        <div class="claim-id">Claim #{{ claim.id }}</div>
+        <span class="status-badge">{{ claim.status }}</span>
+      </div>
 
-    <p><strong>Description:</strong> {{ claim.description }}</p>
-    <p><strong>Status:</strong> {{ claim.status }}</p>
+      <div class="card-body">
+        <p><b>Type:</b> {{ claim.insuranceType || '-' }}</p>
+        <p><b>Policy:</b> {{ claim.policyNumber || '-' }}</p>
+        <p class="desc">{{ claim.description }}</p>
+      </div>
 
-    <!-- ✅ Show investigator report if DTO includes it -->
-    <div *ngIf="claim.investigationReport" class="alert alert-secondary" style="white-space: pre-wrap;">
-      <strong>Investigation Report:</strong><br />
-      {{ claim.investigationReport }}
+      <!-- Investigator Summary (short, not overwhelming) -->
+      <div *ngIf="claim.investigationReport" class="investigation-preview">
+        <b>Investigation Summary</b>
+        <div class="preview-text">
+          {{ claim.investigationReport }}
+        </div>
+      </div>
+
+      <!-- Action -->
+      <button class="review-btn" (click)="editClaim(claim)">
+        Review & Decide
+      </button>
+
     </div>
-
-    <button class="btn btn-primary btn-sm" (click)="editClaim(claim)">
-      Edit / Review
-    </button>
 
   </div>
 

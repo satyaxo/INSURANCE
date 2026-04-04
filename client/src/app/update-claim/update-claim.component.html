@@ -1,69 +1,95 @@
-<div class="container mt-4">
-  <h2 class="text-center mb-4">Update Claim</h2>
+<div class="uc-page">
 
-  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
-
-    <div class="mb-3">
-      <label>Description</label>
-      <input
-        type="text"
-        class="form-control"
-        formControlName="description"
-      />
-    </div>
-
-    <div class="mb-3">
-      <label>Date</label>
-      <input
-        type="date"
-        class="form-control"
-        formControlName="date"
-      />
-    </div>
-
-    <div class="mb-3">
-      <label>Status</label>
-      <select class="form-select" formControlName="status">
-        <option value="" disabled>Select Status</option>
-
-        <!-- ✅ Two options as you wanted -->
-        <option value="IN_PROGRESS">IN_PROGRESS</option>
-        <option value="UNDER_PROGRESS">UNDER_PROGRESS</option>
-      </select>
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100">
-      Update Claim
-    </button>
-  </form>
-
-  <div *ngIf="showError" class="alert alert-danger mt-3">
-    {{ errorMessage }}
+  <!-- Header -->
+  <div class="uc-header">
+    <h2>Update Claim</h2>
+    <p>Modify claim details and move it to the next processing stage</p>
   </div>
 
-  <div *ngIf="showMessage" class="alert alert-success mt-3">
-    {{ responseMessage }}
+  <!-- Main Card -->
+  <div class="uc-card">
+
+    <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
+
+      <!-- Description -->
+      <div class="uc-field">
+        <label>Description</label>
+        <input
+          type="text"
+          class="uc-input"
+          formControlName="description"
+          placeholder="Claim description"
+        />
+      </div>
+
+      <!-- Date -->
+      <div class="uc-field">
+        <label>Date</label>
+        <input
+          type="date"
+          class="uc-input"
+          formControlName="date"
+        />
+      </div>
+
+      <!-- Status -->
+      <div class="uc-field">
+        <label>Status</label>
+        <select class="uc-input" formControlName="status">
+          <option value="" disabled>Select status</option>
+          <option value="IN_PROGRESS">IN_PROGRESS</option>
+          <option value="UNDER_PROGRESS">UNDER_PROGRESS</option>
+        </select>
+
+        <small class="hint">
+          IN_PROGRESS → Work started<br />
+          UNDER_PROGRESS → Ready for assignment
+        </small>
+      </div>
+
+      <!-- Submit -->
+      <button class="uc-submit" type="submit">
+        Update Claim
+      </button>
+
+    </form>
+
+    <!-- Alerts -->
+    <div *ngIf="showError" class="alert error-box mt">
+      {{ errorMessage }}
+    </div>
+
+    <div *ngIf="showMessage" class="alert success-box mt">
+      {{ responseMessage }}
+    </div>
   </div>
 
-  <h4 class="mt-4">Claims</h4>
+  <!-- Claims List -->
+  <div class="uc-list">
 
-  <div *ngIf="claimList.length === 0" class="alert alert-info">
-    No claims available.
-  </div>
+    <h3>Available Claims</h3>
 
-  <ul class="list-group" *ngIf="claimList.length > 0">
-    <li
+    <div *ngIf="claimList.length === 0" class="empty">
+      No claims available.
+    </div>
+
+    <div
       *ngFor="let claim of claimList"
-      class="list-group-item d-flex justify-content-between align-items-center"
+      class="claim-item"
+      (click)="edit(claim)"
     >
-      <span>
-        <b>{{ claim.description }}</b> — {{ claim.status }}
-        ({{ claim.date | date:'yyyy-MM-dd' }})
-      </span>
+      <div>
+        <div class="claim-desc">{{ claim.description }}</div>
+        <div class="claim-meta">
+          {{ claim.status }} • {{ claim.date | date:'dd-MMM-yyyy' }}
+        </div>
+      </div>
 
-      <button type="button" class="btn btn-sm btn-secondary" (click)="edit(claim)">
+      <button class="edit-btn" type="button">
         Edit
       </button>
-    </li>
-  </ul>
+    </div>
+
+  </div>
+
 </div>

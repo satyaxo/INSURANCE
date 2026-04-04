@@ -1,142 +1,152 @@
-<div class="container mt-4">
-  <h2 class="text-center mb-4">Create Claim</h2>
+<!-- ================= CREATE CLAIM – ClaimSurePro ================= -->
+<div class="ic-create-page">
 
-  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
-
-    <!-- ✅ Insurance Type -->
-    <div class="mb-3">
-      <label>Insurance Type</label>
-      <select class="form-select" formControlName="insuranceType">
-        <option value="" disabled>Select Insurance Type</option>
-        <option *ngFor="let t of insuranceTypes" [value]="t.value">
-          {{ t.label }}
-        </option>
-      </select>
-
-      <small class="text-danger"
-             *ngIf="itemForm.get('insuranceType')?.touched && itemForm.get('insuranceType')?.invalid">
-        Insurance type is required.
-      </small>
+  <!-- Header -->
+  <div class="ic-header">
+    <div class="ic-brand">
+      <span class="ic-logo">⬡</span>
+      <div>
+        <h1>ClaimSure<span class="accent">Pro</span></h1>
+        <p>Insurance Claims & Resource Management Platform</p>
+      </div>
     </div>
 
-    <!-- ✅ Policy Number (auto + readonly) -->
-    <div class="mb-3">
-      <label>Policy Number</label>
-      <input
-        type="text"
-        class="form-control"
-        formControlName="policyNumber"
-        readonly
-        (input)="onPolicyNumberInput()"
-      />
+    <div class="ic-role">
+      Logged in as <b>Policyholder</b>
+    </div>
+  </div>
 
-      <small class="text-muted">
-        Auto-generated. Format: <b># + numbers</b> (example: #12345678)
-      </small>
+  <!-- Card -->
+  <div class="ic-card fade-in">
 
-      <small class="text-danger"
-             *ngIf="policyNumberCtrl?.touched && policyNumberCtrl?.invalid">
-        Policy number must start with <b>#</b> and contain digits only.
-      </small>
+    <div class="ic-card-head">
+      <h2>Create New Insurance Claim</h2>
+      <p>
+        Submit a claim for an insured incident. Claims move through
+        <b>Adjuster → Investigator → Underwriter</b> review.
+      </p>
     </div>
 
-    <!-- ✅ Accident Date (deadline check) -->
-    <div class="mb-3">
-      <label>Accident Date</label>
-      <input
-        type="date"
-        class="form-control"
-        formControlName="date"
-      />
+    <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
 
-      <div class="mt-1" *ngIf="deadlineDays && deadlineDateText">
-        <small class="text-muted">
-          Deadline: file within <b>{{ deadlineDays }}</b> days (before <b>{{ deadlineDateText }}</b>)
+      <!-- Insurance Type -->
+      <div class="ic-field">
+        <label>Insurance Type</label>
+        <select class="ic-select" formControlName="insuranceType">
+          <option value="" disabled>Select Insurance Type</option>
+          <option *ngFor="let t of insuranceTypes" [value]="t.value">
+            {{ t.label }}
+          </option>
+        </select>
+
+        <small class="error"
+          *ngIf="itemForm.get('insuranceType')?.touched && itemForm.get('insuranceType')?.invalid">
+          Insurance type is required.
         </small>
       </div>
 
-      <small class="text-danger"
-             *ngIf="dateCtrl?.touched && dateCtrl?.errors?.['required']">
-        Accident date is required.
-      </small>
+      <!-- Policy Number -->
+      <div class="ic-field">
+        <label>Policy Number</label>
+        <input
+          type="text"
+          class="ic-input"
+          formControlName="policyNumber"
+          readonly
+          (input)="onPolicyNumberInput()"
+        />
 
-      <small class="text-danger"
-             *ngIf="dateCtrl?.touched && dateCtrl?.errors?.['future']">
-        Accident date cannot be in the future.
-      </small>
+        <small class="hint">
+          Auto‑generated unique policy reference.
+        </small>
 
-      <small class="text-danger"
-             *ngIf="dateCtrl?.touched && dateCtrl?.errors?.['deadline']">
-        Claim must be filed within the allowed deadline.
-      </small>
-    </div>
+        <small class="error"
+          *ngIf="policyNumberCtrl?.touched && policyNumberCtrl?.invalid">
+          Policy number must start with # and contain digits only.
+        </small>
+      </div>
 
-    <!-- ✅ Description -->
-    <div class="mb-3">
-      <label>Description</label>
-      <textarea
-        rows="3"
-        class="form-control"
-        formControlName="description"
-        placeholder="Describe the incident..."
-      ></textarea>
+      <!-- Accident Date -->
+      <div class="ic-field">
+        <label>Accident Date</label>
+        <input type="date" class="ic-input" formControlName="date" />
 
-      <small class="text-danger"
-             *ngIf="itemForm.get('description')?.touched && itemForm.get('description')?.invalid">
-        Description is required.
-      </small>
-    </div>
+        <div *ngIf="deadlineDays && deadlineDateText" class="deadline">
+          ⏱ Claim must be filed within
+          <b>{{ deadlineDays }}</b> days (before
+          <b>{{ deadlineDateText }}</b>)
+        </div>
 
-    <!-- ✅ Upload Evidence (Optional) - Multiple files -->
-    <div class="mb-3">
-      <label>Upload Evidence (Optional)</label>
-      <input
-        type="file"
-        class="form-control"
-        multiple
-        accept=".jpg,.jpeg,.png,.pdf"
-        (change)="onFilesSelected($event)"
-      />
-      <small class="text-muted">
-        Supported: JPG, PNG, PDF (max 5MB each).
-      </small>
+        <small class="error" *ngIf="dateCtrl?.touched && dateCtrl?.errors?.['required']">
+          Accident date is required.
+        </small>
 
-      <!-- ✅ Selected files list + remove -->
-      <div class="mt-2" *ngIf="selectedFiles.length > 0">
-        <div class="fw-bold mb-1">Selected files:</div>
-        <ul class="list-group">
-          <li class="list-group-item d-flex justify-content-between align-items-center"
-              *ngFor="let f of selectedFiles; let i = index">
+        <small class="error" *ngIf="dateCtrl?.touched && dateCtrl?.errors?.['future']">
+          Accident date cannot be in the future.
+        </small>
+
+        <small class="error" *ngIf="dateCtrl?.touched && dateCtrl?.errors?.['deadline']">
+          Claim filing deadline exceeded.
+        </small>
+      </div>
+
+      <!-- Description -->
+      <div class="ic-field">
+        <label>Description</label>
+        <textarea
+          rows="4"
+          class="ic-input"
+          formControlName="description"
+          placeholder="Describe what happened..."
+        ></textarea>
+
+        <small class="error"
+          *ngIf="itemForm.get('description')?.touched && itemForm.get('description')?.invalid">
+          Description is required.
+        </small>
+      </div>
+
+      <!-- Upload -->
+      <div class="ic-field">
+        <label>Upload Evidence (Optional)</label>
+        <input
+          type="file"
+          class="ic-input"
+          multiple
+          accept=".jpg,.jpeg,.png,.pdf"
+          (change)="onFilesSelected($event)"
+        />
+
+        <small class="hint">
+          JPG, PNG, PDF • Max 5MB each
+        </small>
+
+        <div *ngIf="selectedFiles.length > 0" class="file-list">
+          <div *ngFor="let f of selectedFiles; let i = index" class="file-row">
             <span>{{ f.name }}</span>
-            <button type="button"
-                    class="btn btn-sm btn-outline-danger"
-                    (click)="removeFile(i)">
-              Remove
-            </button>
-          </li>
-        </ul>
+            <button type="button" (click)="removeFile(i)">✕</button>
+          </div>
+        </div>
+
+        <div *ngIf="uploadInfo" class="upload-info">
+          {{ uploadInfo }}
+        </div>
       </div>
 
-      <!-- ✅ Upload status -->
-      <div class="mt-2 text-info" *ngIf="uploadInfo">
-        {{ uploadInfo }}
-      </div>
+      <!-- Submit -->
+      <button class="ic-btn-primary" type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Submitting Claim…' : 'Create Claim' }}
+      </button>
+    </form>
+
+    <!-- Messages -->
+    <div *ngIf="showError" class="alert error-alert">
+      {{ errorMessage }}
     </div>
 
-    <!-- ✅ Submit button disabled while submitting -->
-    <button type="submit" class="btn btn-primary w-100" [disabled]="isSubmitting">
-      {{ isSubmitting ? 'Submitting...' : 'Create Claim' }}
-    </button>
+    <div *ngIf="showMessage" class="alert success-alert">
+      {{ responseMessage }}
+    </div>
 
-  </form>
-
-  <!-- Error -->
-  <div *ngIf="showError" class="alert alert-danger mt-3">
-    {{ errorMessage }}
-  </div>
-
-  <!-- Success -->
-  <div *ngIf="showMessage" class="alert alert-success mt-3">
-    {{ responseMessage }}
   </div>
 </div>
