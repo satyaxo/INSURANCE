@@ -1,6 +1,9 @@
 package com.edutech.insurance_claims_processing_system.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -12,6 +15,14 @@ public class Claim {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // ✅ NEW: insurance type (CAR / BIKE / LIFE / HEALTH / etc.)
+    @Column(nullable = false)
+    private String insuranceType;
+
+    // ✅ NEW: policy number
+    @Column(nullable = false)
+    private String policyNumber;
+
     private String description;
 
     @Temporal(TemporalType.DATE)
@@ -21,25 +32,29 @@ public class Claim {
 
     @ManyToOne
     @JoinColumn(name = "policyholder_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private Policyholder policyholder;
 
     @ManyToOne
     @JoinColumn(name = "adjuster_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private Adjuster adjuster;
 
     @ManyToOne
     @JoinColumn(name = "underwriter_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private Underwriter underwriter;
 
     @ManyToOne
-    @JoinColumn(name = "investigator_id") // ✅ NEW
+    @JoinColumn(name = "investigator_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private Investigator investigator;
 
     @OneToOne(mappedBy = "claim")
     @JsonIgnore
     private Investigation investigation;
 
-    // -------------------- Getters and Setters --------------------
+    // -------------------- Getters & Setters --------------------
 
     public Long getId() {
         return id;
@@ -47,6 +62,22 @@ public class Claim {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getInsuranceType() {
+        return insuranceType;
+    }
+
+    public void setInsuranceType(String insuranceType) {
+        this.insuranceType = insuranceType;
+    }
+
+    public String getPolicyNumber() {
+        return policyNumber;
+    }
+
+    public void setPolicyNumber(String policyNumber) {
+        this.policyNumber = policyNumber;
     }
 
     public String getDescription() {
@@ -65,9 +96,6 @@ public class Claim {
         this.date = date;
     }
 
-    /**
-     * Status examples: Submitted, Under Review, Approved, Rejected
-     */
     public String getStatus() {
         return status;
     }
@@ -100,14 +128,6 @@ public class Claim {
         this.underwriter = underwriter;
     }
 
-    public Investigation getInvestigation() {
-        return investigation;
-    }
-
-    public void setInvestigation(Investigation investigation) {
-        this.investigation = investigation;
-    }
-
     public Investigator getInvestigator() {
         return investigator;
     }
@@ -116,6 +136,11 @@ public class Claim {
         this.investigator = investigator;
     }
 
-    
+    public Investigation getInvestigation() {
+        return investigation;
+    }
 
+    public void setInvestigation(Investigation investigation) {
+        this.investigation = investigation;
+    }
 }

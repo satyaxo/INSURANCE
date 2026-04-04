@@ -1,7 +1,6 @@
 <div class="container mt-4">
   <h2 class="text-center mb-4">Update Claim</h2>
 
-  <!-- Update Form -->
   <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
 
     <div class="mb-3">
@@ -26,8 +25,10 @@
       <label>Status</label>
       <select class="form-select" formControlName="status">
         <option value="" disabled>Select Status</option>
+
+        <!-- ✅ Two options as you wanted -->
         <option value="IN_PROGRESS">IN_PROGRESS</option>
-        <option value="UNDER_REVIEW">UNDER_REVIEW</option>
+        <option value="UNDER_PROGRESS">UNDER_PROGRESS</option>
       </select>
     </div>
 
@@ -36,7 +37,6 @@
     </button>
   </form>
 
-  <!-- Messages -->
   <div *ngIf="showError" class="alert alert-danger mt-3">
     {{ errorMessage }}
   </div>
@@ -45,18 +45,23 @@
     {{ responseMessage }}
   </div>
 
-  <!-- Claim List -->
   <h4 class="mt-4">Claims</h4>
-  <ul class="list-group">
+
+  <div *ngIf="claimList.length === 0" class="alert alert-info">
+    No claims available.
+  </div>
+
+  <ul class="list-group" *ngIf="claimList.length > 0">
     <li
       *ngFor="let claim of claimList"
       class="list-group-item d-flex justify-content-between align-items-center"
     >
       <span>
-        {{ claim.description }} — {{ claim.status }}
+        <b>{{ claim.description }}</b> — {{ claim.status }}
         ({{ claim.date | date:'yyyy-MM-dd' }})
       </span>
-      <button class="btn btn-sm btn-secondary" (click)="edit(claim)">
+
+      <button type="button" class="btn btn-sm btn-secondary" (click)="edit(claim)">
         Edit
       </button>
     </li>

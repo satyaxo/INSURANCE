@@ -3,95 +3,76 @@
 
   <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="needs-validation">
 
-    <!-- ✅ NEW: Select Assigned Claim -->
+    <!-- ✅ Select Assigned Claim -->
     <div class="form-group mb-3">
       <label for="claimId">Select Assigned Claim</label>
       <select
         id="claimId"
         formControlName="claimId"
         class="form-select"
+        (change)="onClaimChange()"
       >
         <option value="" disabled>Select Claim</option>
         <option *ngFor="let claim of assignedClaims" [value]="claim.id">
-          {{ claim.description }} ({{ claim.status }})
+          {{ claim.policyNumber || '-' }} - {{ claim.insuranceType || '' }} - {{ claim.description }}
         </option>
       </select>
     </div>
 
-    <!-- Report -->
+    <!-- ✅ Full Claim Details Panel -->
+    <div *ngIf="selectedClaim" class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Claim Details</h5>
+
+        <p><strong>Policy Number:</strong> {{ selectedClaim.policyNumber || '-' }}</p>
+        <p><strong>Insurance Type:</strong> {{ selectedClaim.insuranceType || '-' }}</p>
+        <p><strong>Accident Date:</strong> {{ selectedClaim.date | date:'dd-MMM-yyyy' }}</p>
+        <p><strong>Description:</strong> {{ selectedClaim.description }}</p>
+        <p><strong>Status:</strong> {{ selectedClaim.status }}</p>
+
+        <hr />
+
+        <!-- ✅ Documents -->
+        <h6>Uploaded Documents</h6>
+
+        <div *ngIf="docsLoading" class="text-muted">Loading documents...</div>
+
+        <div *ngIf="docsError" class="alert alert-danger p-2">
+          {{ docsError }}
+        </div>
+
+        <div *ngIf="!docsLoading && claimDocuments.length === 0" class="text-muted">
+          No documents uploaded for this claim.
+        </div>
+
+        <ul class="list-group" *ngIf="!docsLoading && claimDocuments.length > 0">
+          <li class="list-group-item d-flex justify-content-between align-items-center"
+              *ngFor="let doc of claimDocuments">
+            <span>{{ doc.originalFileName }}</span>
+
+            <button type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    (click)="previewDocument(doc)">
+              Preview
+            </button>
+          </li>
+        </ul>
+
+      </div>
+    </div>
+
+    <!-- ✅ Report -->
     <div class="form-group mb-3">
       <label for="report">Report</label>
       <textarea
         id="report"
         formControlName="report"
         class="form-control"
+        rows="4"
       ></textarea>
     </div>
 
-    <!-- Status -->
-    <div class="form-group mb-3">
-      <label for="status">Status</label>
-      <select
-        id="status"
-        formControlName="status"
-        class="form-select"
-      >
-        <option value="" disabled>Select Status</option>
-        <option value="Pending">Pending</option>
-        <option value="Completed">Completed</option>
-      </select>
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100">
-      {{ updateId ? 'Update Investigation' : 'Create Investigation' }}
-    </button>
-  </form>
-
-  <!-- Error Message -->
-  <div *ngIf="showError" class="alert alert-danger mt-3">
-    {{ errorMessage }}
-  </div>
-
-  <!-- Success Message -->
-  <div *ngIf="showMessage" class="alert alert-success mt-3">
-    {{ responseMessage }}
-  </div>
-
-  <!-- Investigation List -->
-  <h3 class="mt-4">Investigations</h3>
-  <ul class="list-group">
-    <li
-      *ngFor="let inv of investigationList"
-      class="list-group-item d-flex justify-content-between align-items-center"
-    >
-    
-<strong>Claim:</strong>
-{{ inv.claim?.description || 'Claim not linked' }} <br>
-<strong>Status:</strong> {{ inv.status }}
-
-
-      <button
-        class="btn btn-sm btn-secondary"
-        (click)="edit(inv)"
-      >
-        Edit
-      </button>
-    </li>
-  </ul>
-</div>
-
-
-
-
-<!-- <div class="container mt-4">
-  <h2 class="text-center mb-4">Investigator Report</h2>
-
-  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="needs-validation">
-    <div class="form-group mb-3">
-      <label for="report">Report</label>
-      <textarea id="report" formControlName="report" class="form-control"></textarea>
-    </div>
-
+    <!-- ✅ Status -->
     <div class="form-group mb-3">
       <label for="status">Status</label>
       <select id="status" formControlName="status" class="form-select">
@@ -106,19 +87,35 @@
     </button>
   </form>
 
+  <!-- Error -->
   <div *ngIf="showError" class="alert alert-danger mt-3">
     {{ errorMessage }}
   </div>
 
+  <!-- Success -->
   <div *ngIf="showMessage" class="alert alert-success mt-3">
     {{ responseMessage }}
   </div>
 
+  <!-- Investigation List -->
   <h3 class="mt-4">Investigations</h3>
   <ul class="list-group">
-    <li *ngFor="let inv of investigationList" class="list-group-item d-flex justify-content-between align-items-center">
-      <span>{{ inv.report }} - {{ inv.status }}</span>
-      <button class="btn btn-sm btn-secondary" (click)="edit(inv)">Edit</button>
+    <li
+      *ngFor="let inv of investigationList"
+      class="list-group-item d-flex justify-content-between align-items-center"
+    >
+      <div>
+        <strong>Claim:</strong> {{ inv.claim?.description || 'Claim not linked' }} <br />
+        <strong>Status:</strong> {{ inv.status }}
+      </div>
+
+      <button
+        class="btn btn-sm btn-secondary"
+        *ngIf="inv.status !== 'Completed' && inv.status !== 'COMPLETED'"
+        (click)="edit(inv)"
+      >
+        Edit
+      </button>
     </li>
   </ul>
-</div> -->
+</div>

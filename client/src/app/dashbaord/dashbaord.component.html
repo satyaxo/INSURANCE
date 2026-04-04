@@ -1,0 +1,129 @@
+<div class="container mt-4">
+  <h2 class="text-center mb-4">My Claims Dashboard</h2>
+
+  <!-- Error -->
+  <div *ngIf="showError" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Claims List -->
+  <h4>Your Claims</h4>
+  <ul class="list-group mb-4">
+
+    <li
+      *ngFor="let claim of claimList"
+      class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+      style="cursor: pointer"
+      (click)="selectClaim(claim)"
+    >
+      <div>
+        <!-- ✅ MAIN FIX: Heading should be Policy Number -->
+        <strong>{{ claim.policyNumber || 'Policy Number' }}</strong><br />
+
+        <!-- ✅ Optional: show Claim Type under heading -->
+        <small class="text-muted">
+          {{ typeLabel(claim.insuranceType) }}
+        </small><br />
+
+        <!-- Filed date -->
+        <small>
+          Filed on: {{ claim.date | date:'dd-MMM-yyyy' }}
+        </small>
+      </div>
+
+      <!-- Status badge -->
+      <span [class]="getBadgeClass(claim.stage)">
+        {{ claim.stage }}
+      </span>
+    </li>
+
+  </ul>
+
+  <!-- Claim Tracking Details -->
+  <div *ngIf="selectedClaim" class="card">
+    <div class="card-body">
+
+      <h5 class="card-title">Claim Tracking</h5>
+
+      <!-- ✅ Claim type should show insuranceType -->
+      <p>
+        <strong>Claim Type:</strong>
+        {{ typeLabel(selectedClaim.insuranceType) }}
+      </p>
+
+      <!-- ✅ Policy number -->
+      <p *ngIf="selectedClaim.policyNumber">
+        <strong>Policy Number:</strong>
+        {{ selectedClaim.policyNumber }}
+      </p>
+
+      <!-- Description -->
+      <p>
+        <strong>Description:</strong>
+        {{ selectedClaim.description }}
+      </p>
+
+      <p>
+        <strong>Status:</strong>
+        {{ selectedClaim.status }}
+      </p>
+
+      <hr />
+
+      <!-- Timeline -->
+      <h6>Progress</h6>
+      <ul class="list-group">
+
+        <li class="list-group-item">
+          ✅ Submitted
+        </li>
+
+        <li class="list-group-item"
+            [class.list-group-item-success]="selectedClaim.stage !== 'SUBMITTED'">
+          ✅ Adjuster Review
+        </li>
+
+        <li class="list-group-item"
+            [class.list-group-item-success]="selectedClaim.stage === 'INVESTIGATION'
+              || selectedClaim.stage === 'INVESTIGATION_COMPLETED'
+              || selectedClaim.stage === 'UNDERWRITER_REVIEW'
+              || selectedClaim.stage === 'APPROVED'
+              || selectedClaim.stage === 'REJECTED'">
+          ✅ Investigation Assigned
+        </li>
+
+        <li class="list-group-item"
+            [class.list-group-item-success]="selectedClaim.stage === 'INVESTIGATION_COMPLETED'
+              || selectedClaim.stage === 'UNDERWRITER_REVIEW'
+              || selectedClaim.stage === 'APPROVED'
+              || selectedClaim.stage === 'REJECTED'">
+          ✅ Investigation Completed
+        </li>
+
+        <li class="list-group-item"
+            [class.list-group-item-success]="selectedClaim.stage === 'UNDERWRITER_REVIEW'
+              || selectedClaim.stage === 'APPROVED'
+              || selectedClaim.stage === 'REJECTED'">
+          ✅ Underwriter Review
+        </li>
+
+        <li class="list-group-item"
+            [class.list-group-item-success]="selectedClaim.stage === 'APPROVED'">
+          ✅ Claim Approved
+        </li>
+
+        <li class="list-group-item"
+            [class.list-group-item-danger]="selectedClaim.stage === 'REJECTED'">
+          ❌ Claim Rejected
+        </li>
+
+      </ul>
+
+      <!-- Investigation status -->
+      <div *ngIf="selectedClaim.investigationStatus" class="alert alert-info mt-3">
+        Investigator Status: {{ selectedClaim.investigationStatus }}
+      </div>
+
+    </div>
+  </div>
+</div>

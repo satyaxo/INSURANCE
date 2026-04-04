@@ -34,16 +34,24 @@
       <p><strong>Description:</strong> {{ selectedClaim.description }}</p>
       <p><strong>Status:</strong> {{ selectedClaim.status }}</p>
 
-      <!-- If investigation NOT completed -->
-      <div *ngIf="!selectedClaim.investigation" class="alert alert-warning">
+      <!-- ✅ If investigator report NOT present -->
+      <div *ngIf="!hasReport()" class="alert alert-warning">
         Awaiting investigator report.
       </div>
 
-      <!-- If investigation completed -->
-      <div *ngIf="selectedClaim.investigation">
+      <!-- ✅ If investigator report present -->
+      <div *ngIf="hasReport()">
         <hr />
         <h6>Investigation Report</h6>
-        <p>{{ selectedClaim.investigation.report }}</p>
+
+        <p>
+          <strong>Investigation Status:</strong>
+          {{ selectedClaim.investigationStatus || 'N/A' }}
+        </p>
+
+        <div class="alert alert-secondary" style="white-space: pre-wrap;">
+          {{ selectedClaim.investigationReport }}
+        </div>
 
         <div class="mt-3">
           <button class="btn btn-success me-2" (click)="approveClaim()">

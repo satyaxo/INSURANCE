@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpService } from '../../services/http.service';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-assign-claim',
@@ -37,37 +38,55 @@ export class AssignClaimComponent implements OnInit {
     this.loadUnderwriters();
   }
 
+  // ✅ FIX: load assignable claims (UNDER_PROGRESS only)
   loadClaims(): void {
-    this.httpService.getAllClaims().subscribe({
-      next: res => this.claimList = res,
-      error: () => {
+    this.httpService.getAssignableClaims().subscribe({
+      next: (res: any[]) => {
+        this.claimList = res || [];
+        this.showError = false;
+      },
+      error: (err) => {
+        console.error('Load claims failed:', err);
         this.showError = true;
-        this.errorMessage = 'Error loading claims.';
+        this.errorMessage = `Error loading claims. (${err?.status || 'NO_STATUS'})`;
       }
     });
   }
 
   loadInvestigators(): void {
     this.httpService.getAllInvestigators().subscribe({
-      next: res => this.investigatorList = res,
-      error: () => {
+      next: (res: any[]) => {
+        this.investigatorList = res || [];
+        this.showError = false;
+      },
+      error: (err) => {
+        console.error('Load investigators failed:', err);
         this.showError = true;
-        this.errorMessage = 'Error loading investigators.';
+        this.errorMessage = `Error loading investigators. (${err?.status || 'NO_STATUS'})`;
       }
     });
   }
 
   loadUnderwriters(): void {
     this.httpService.GetAllUnderwriter().subscribe({
-      next: res => this.underwriterList = res,
-      error: () => {
+      next: (res: any[]) => {
+        this.underwriterList = res || [];
+        this.showError = false;
+      },
+      error: (err) => {
+        console.error('Load underwriters failed:', err);
         this.showError = true;
-        this.errorMessage = 'Error loading underwriters.';
+        this.errorMessage = `Error loading underwriters. (${err?.status || 'NO_STATUS'})`;
       }
     });
   }
 
   onSubmit(): void {
+    this.showError = false;
+    this.showMessage = false;
+    this.errorMessage = '';
+    this.responseMessage = '';
+
     if (this.itemForm.invalid) {
       this.showError = true;
       this.errorMessage = 'Please fill all required fields.';
@@ -76,128 +95,21 @@ export class AssignClaimComponent implements OnInit {
 
     const { claimId, investigatorId, underwriterId } = this.itemForm.value;
 
-    // Step 1: Assign to Investigator
-    this.httpService.assignClaimToInvestigator(claimId, investigatorId).subscribe({
+    this.httpService.assignClaimToInvestigator(claimId, investigatorId).pipe(
+      switchMap(() => this.httpService.AssignClaim({ claimId, underwriterId }))
+    ).subscribe({
       next: () => {
-        // Step 2: Assign to Underwriter
-        this.httpService.AssignClaim({
-          claimId,
-          underwriterId
-        }).subscribe({
-          next: () => {
-            this.showMessage = true;
-            this.responseMessage = 'Claim assigned to Investigator and Underwriter successfully.';
-            this.itemForm.reset();
-          },
-          error: () => {
-            this.showError = true;
-            this.errorMessage = 'Error assigning claim to underwriter.';
-          }
-        });
+        this.showMessage = true;
+        this.responseMessage = 'Claim assigned to Investigator and Underwriter successfully.';
+        this.itemForm.reset();
+        this.loadClaims(); // refresh dropdown after assignment
       },
-      error: () => {
+      error: (err) => {
+        console.error('Assign workflow failed:', err);
         this.showError = true;
-        this.errorMessage = 'Error assigning claim to investigator.';
+        const msg = err?.error?.message || err?.message || 'Error assigning claim.';
+        this.errorMessage = `${msg} (${err?.status || 'NO_STATUS'})`;
       }
     });
   }
 }
-``
-
-
-
-
-
-
-
-
-// import { Component, OnInit } from '@angular/core';
-// import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-// import { Router } from '@angular/router';
-// import { AuthService } from '../../services/auth.service';
-// import { HttpService } from '../../services/http.service';
-
-// @Component({
-//   selector: 'app-assign-claim',
-//   templateUrl: './assign-claim.component.html',
-//   styleUrls: ['./assign-claim.component.scss']
-// })
-
-// export class AssignClaimComponent implements OnInit {
-
-//   itemForm: FormGroup;
-//   formModel: any = { claimId: null, underwriterId: null };
-//   showError: boolean = false;
-//   errorMessage: any = '';
-//   assignModel: any = {};
-//   showMessage: any = false;
-//   responseMessage: any = '';
-//   claimList: any[] = [];
-//   underwriterList: any[] = [];
-
-//   constructor(
-//     public router: Router,
-//     public httpService: HttpService,
-//     private formBuilder: FormBuilder,
-//     private authService: AuthService
-//   ) {
-//     this.itemForm = this.formBuilder.group({
-//       claimId: [this.formModel.claimId, Validators.required],
-//       underwriterId: [this.formModel.underwriterId, Validators.required]
-//     });
-//   }
-
-//   ngOnInit(): void {
-//     this.getClaims();
-//     this.getUnderwriter();
-//   }
-
-//   onSubmit(): void {
-//     this.showError = false;
-//     this.showMessage = false;
-
-//     if (this.itemForm.invalid) {
-//       this.showError = true;
-//       this.errorMessage = 'Please fill in all required fields.';
-//       return;
-//     }
-// //this.httpService.AssignClaim(this.itemForm.value).subscribe({
-//     this.httpService.AssignClaim(this.itemForm.value).subscribe({
-//       next: () => {
-//         this.showMessage = true;
-//         this.responseMessage = 'Claim successfully assigned!';
-//         this.itemForm.reset();
-//         //changes
-//        // this.getClaims;
-//       },
-//       error: () => {
-//         this.showError = true;
-//         this.errorMessage = 'Error assigning claim.';
-//       }
-//     });
-//   }
-
-//   getClaims(): void {
-//     this.httpService.getAllClaims().subscribe({
-//       next: (res: any[]) => {
-//         this.claimList = res;
-//       },
-//       error: () => {
-//         this.showError = true;
-//         this.errorMessage = 'Error fetching claims.';
-//       }
-//     });
-//   }
-// // this.httpService.GetAllUnderwriter().subscribe({
-//   getUnderwriter(): void {
-//     this.httpService.GetAllUnderwriter().subscribe({
-//       next: (res: any[]) => {
-//         this.underwriterList = res;
-//       },
-//       error: () => {
-//         this.showError = true;
-//         this.errorMessage = 'Error fetching underwriters.';
-//       }
-//     });
-//   }
-// }

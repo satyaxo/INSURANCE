@@ -2,101 +2,34 @@
 
   <h2>Underwriter Dashboard</h2>
 
-  <div *ngIf="filteredClaims.length === 0">
-    <p>No claims assigned yet.</p>
+  <div *ngIf="showError" class="alert alert-danger">
+    {{ errorMessage }}
   </div>
 
-  <div *ngFor="let claim of filteredClaims" class="claim-card">
+  <div *ngIf="filteredClaims.length === 0 && !showError" class="alert alert-info">
+    No claims assigned yet.
+  </div>
+
+  <div *ngFor="let claim of filteredClaims" class="claim-card border rounded p-3 mb-3">
 
     <h4>Claim #{{ claim.id }}</h4>
 
-    <p><strong>Description:</strong> {{ claim.description }}</p>
+    <p><strong>Type:</strong> {{ claim.insuranceType || '-' }}</p>
+    <p><strong>Policy Number:</strong> {{ claim.policyNumber || '-' }}</p>
 
+    <p><strong>Description:</strong> {{ claim.description }}</p>
     <p><strong>Status:</strong> {{ claim.status }}</p>
 
-    <button class="btn btn-primary"
-            (click)="editClaim(claim)">
-      Edit
-    </button>
+    <!-- ✅ Show investigator report if DTO includes it -->
+    <div *ngIf="claim.investigationReport" class="alert alert-secondary" style="white-space: pre-wrap;">
+      <strong>Investigation Report:</strong><br />
+      {{ claim.investigationReport }}
+    </div>
 
-  </div>
-
-  <!-- EDIT SECTION -->
-  <div *ngIf="selectedClaim" class="detail-box">
-
-    <h3>Edit Claim</h3>
-
-    <p><strong>ID:</strong> {{ selectedClaim.id }}</p>
-    <p><strong>Description:</strong> {{ selectedClaim.description }}</p>
-
-    <button class="btn btn-success"
-            (click)="updateStatus(selectedClaim.id, 'APPROVED')">
-      Approve
-    </button>
-
-    <button class="btn btn-danger"
-            (click)="updateStatus(selectedClaim.id, 'REJECTED')">
-      Reject
+    <button class="btn btn-primary btn-sm" (click)="editClaim(claim)">
+      Edit / Review
     </button>
 
   </div>
 
 </div>
-
-
-<!-- <div class="container mt-4">
-
-  <h2 class="text-center mb-4">Underwriter Dashboard</h2>
-
-  <div *ngIf="showError" class="alert alert-danger">
-    {{ errorMessage }}
-  </div>
-
-  <div class="row">
-    <div class="col-md-6 mb-4" *ngFor="let claim of filteredClaims">
-
-      <div class="claim-card">
-
-        <h5>Claim #{{ claim.id }}</h5>
-
-        <p><strong>Description:</strong> {{ claim.description }}</p>
-
-        <p>
-          <strong>Investigation:</strong>
-          {{ claim.investigation?.report || 'Not Available' }}
-        </p>
-
-    
-        <span class="status"
-              [ngClass]="{
-                'status-completed': claim.status === 'COMPLETED',
-                'status-pending': claim.status === 'PENDING',
-                'status-rejected': claim.status === 'REJECTED'
-              }">
-          {{ claim.status }}
-        </span>
-
-       
-        <div class="mt-3">
-          <button class="btn btn-success btn-sm"
-                  (click)="updateStatus(claim.id, 'APPROVED')">
-            Approve
-          </button>
-
-          <button class="btn btn-danger btn-sm"
-                  (click)="updateStatus(claim.id, 'REJECTED')">
-            Reject
-          </button>
-        </div>
-
-      </div>
-
-    </div>
-  </div>
-
-
-  <div *ngIf="filteredClaims.length === 0" class="text-center mt-5">
-    <p>No claims assigned yet.</p>
-  </div>
-
-</div> -->

@@ -27,20 +27,47 @@ public class InvestigationService {
     }
 
     /**
-     * Creates a new investigation and moves the claim to underwriter stage.
+     * Creates a new investigation.
+     * ✅ Must link claim properly.
+     * ✅ Prevent duplicate investigations for same claim (OneToOne rule).
+     * ✅ Update claim status based on investigation status.
      */
     public Investigation createInvestigation(Investigation investigation) {
 
-        if (investigation == null || investigation.getClaim() == null) {
+        if (investigation == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid investigation");
         }
+
+        if (investigation.getClaim() == null || investigation.getClaim().getId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Claim id is required");
+        }
+
+        Long claimId = investigation.getClaim().getId();
+
+        // ✅ IMPORTANT: Prevent duplicates (this fixes underwriter approve crash)
+        if (investigationRepository.existsByClaimId(claimId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Investigation already exists for this claim. Please update it instead."
+            );
+        }
+
+        // ✅ Fetch claim from DB (ensures it is fully linked)
+        Claim claim = claimRepository.findById(claimId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Claim not found"));
+
+        investigation.setClaim(claim);
 
         // ✅ Save investigation
         Investigation savedInvestigation = investigationRepository.save(investigation);
 
-        // ✅ Update claim status after investigation
-        Claim claim = investigation.getClaim();
-        claim.setStatus("INVESTIGATION_COMPLETED");
+        // ✅ Update claim status based on investigation status
+        if ("COMPLETED".equalsIgnoreCase(investigation.getStatus())
+                || "Completed".equalsIgnoreCase(investigation.getStatus())) {
+            claim.setStatus("INVESTIGATION_COMPLETED");
+        } else {
+            claim.setStatus("INVESTIGATION_IN_PROGRESS");
+        }
 
         claimRepository.save(claim);
 
@@ -49,6 +76,7 @@ public class InvestigationService {
 
     /**
      * Updates an investigation’s details by ID.
+     * ✅ Once Completed, it cannot be edited.
      */
     public Investigation updateInvestigation(Long id, Investigation investigationDetails) {
 
@@ -60,27 +88,40 @@ public class InvestigationService {
                 .orElseThrow(() ->
                         new ResponseStatusException(HttpStatus.NOT_FOUND, "Investigation not found"));
 
+        // ✅ BLOCK edits if already completed
+        if ("COMPLETED".equalsIgnoreCase(existingInvestigation.getStatus())
+                || "Completed".equalsIgnoreCase(existingInvestigation.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Completed investigation cannot be edited");
+        }
+
         existingInvestigation.setReport(investigationDetails.getReport());
         existingInvestigation.setStatus(investigationDetails.getStatus());
 
-        // ✅ Optional: also update claim status if investigation completed
-        if ("Completed".equalsIgnoreCase(investigationDetails.getStatus())
-                && existingInvestigation.getClaim() != null) {
+        Investigation updated = investigationRepository.save(existingInvestigation);
 
-            Claim claim = existingInvestigation.getClaim();
+        // ✅ If updated to Completed -> update claim status
+        if (("COMPLETED".equalsIgnoreCase(updated.getStatus())
+                || "Completed".equalsIgnoreCase(updated.getStatus()))
+                && updated.getClaim() != null) {
+
+            Claim claim = updated.getClaim();
             claim.setStatus("INVESTIGATION_COMPLETED");
+            claimRepository.save(claim);
+
+        } else if (updated.getClaim() != null) {
+
+            Claim claim = updated.getClaim();
+            claim.setStatus("INVESTIGATION_IN_PROGRESS");
             claimRepository.save(claim);
         }
 
-        return investigationRepository.save(existingInvestigation);
+        return updated;
     }
 
     /**
-     * Retrieves all investigations.
+     * Retrieves all investigations with claim loaded.
      */
-  public List<Investigation> getAllInvestigations() {
-    return investigationRepository.findAllWithClaim();
-}
-
-
+    public List<Investigation> getAllInvestigations() {
+        return investigationRepository.findAllWithClaim();
+    }
 }

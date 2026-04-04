@@ -2,89 +2,141 @@
   <h2 class="text-center mb-4">Create Claim</h2>
 
   <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
+
+    <!-- ✅ Insurance Type -->
     <div class="mb-3">
-      <label>Description</label>
+      <label>Insurance Type</label>
+      <select class="form-select" formControlName="insuranceType">
+        <option value="" disabled>Select Insurance Type</option>
+        <option *ngFor="let t of insuranceTypes" [value]="t.value">
+          {{ t.label }}
+        </option>
+      </select>
+
+      <small class="text-danger"
+             *ngIf="itemForm.get('insuranceType')?.touched && itemForm.get('insuranceType')?.invalid">
+        Insurance type is required.
+      </small>
+    </div>
+
+    <!-- ✅ Policy Number (auto + readonly) -->
+    <div class="mb-3">
+      <label>Policy Number</label>
       <input
         type="text"
         class="form-control"
-        formControlName="description"
+        formControlName="policyNumber"
+        readonly
+        (input)="onPolicyNumberInput()"
       />
+
+      <small class="text-muted">
+        Auto-generated. Format: <b># + numbers</b> (example: #12345678)
+      </small>
+
+      <small class="text-danger"
+             *ngIf="policyNumberCtrl?.touched && policyNumberCtrl?.invalid">
+        Policy number must start with <b>#</b> and contain digits only.
+      </small>
     </div>
 
+    <!-- ✅ Accident Date (deadline check) -->
     <div class="mb-3">
-      <label>Date</label>
+      <label>Accident Date</label>
       <input
         type="date"
         class="form-control"
         formControlName="date"
       />
+
+      <div class="mt-1" *ngIf="deadlineDays && deadlineDateText">
+        <small class="text-muted">
+          Deadline: file within <b>{{ deadlineDays }}</b> days (before <b>{{ deadlineDateText }}</b>)
+        </small>
+      </div>
+
+      <small class="text-danger"
+             *ngIf="dateCtrl?.touched && dateCtrl?.errors?.['required']">
+        Accident date is required.
+      </small>
+
+      <small class="text-danger"
+             *ngIf="dateCtrl?.touched && dateCtrl?.errors?.['future']">
+        Accident date cannot be in the future.
+      </small>
+
+      <small class="text-danger"
+             *ngIf="dateCtrl?.touched && dateCtrl?.errors?.['deadline']">
+        Claim must be filed within the allowed deadline.
+      </small>
     </div>
 
-    <button type="submit" class="btn btn-primary w-100">
-      Create Claim
+    <!-- ✅ Description -->
+    <div class="mb-3">
+      <label>Description</label>
+      <textarea
+        rows="3"
+        class="form-control"
+        formControlName="description"
+        placeholder="Describe the incident..."
+      ></textarea>
+
+      <small class="text-danger"
+             *ngIf="itemForm.get('description')?.touched && itemForm.get('description')?.invalid">
+        Description is required.
+      </small>
+    </div>
+
+    <!-- ✅ Upload Evidence (Optional) - Multiple files -->
+    <div class="mb-3">
+      <label>Upload Evidence (Optional)</label>
+      <input
+        type="file"
+        class="form-control"
+        multiple
+        accept=".jpg,.jpeg,.png,.pdf"
+        (change)="onFilesSelected($event)"
+      />
+      <small class="text-muted">
+        Supported: JPG, PNG, PDF (max 5MB each).
+      </small>
+
+      <!-- ✅ Selected files list + remove -->
+      <div class="mt-2" *ngIf="selectedFiles.length > 0">
+        <div class="fw-bold mb-1">Selected files:</div>
+        <ul class="list-group">
+          <li class="list-group-item d-flex justify-content-between align-items-center"
+              *ngFor="let f of selectedFiles; let i = index">
+            <span>{{ f.name }}</span>
+            <button type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="removeFile(i)">
+              Remove
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- ✅ Upload status -->
+      <div class="mt-2 text-info" *ngIf="uploadInfo">
+        {{ uploadInfo }}
+      </div>
+    </div>
+
+    <!-- ✅ Submit button disabled while submitting -->
+    <button type="submit" class="btn btn-primary w-100" [disabled]="isSubmitting">
+      {{ isSubmitting ? 'Submitting...' : 'Create Claim' }}
     </button>
+
   </form>
 
-  <!-- ✅ Success Popup -->
-  <div *ngIf="showMessage" class="alert alert-success mt-3">
-    {{ responseMessage }}
-  </div>
-
-  <!-- ❌ Error Popup -->
+  <!-- Error -->
   <div *ngIf="showError" class="alert alert-danger mt-3">
     {{ errorMessage }}
+  </div>
+
+  <!-- Success -->
+  <div *ngIf="showMessage" class="alert alert-success mt-3">
+    {{ responseMessage }}
   </div>
 </div>
-
-
-
-
-
-
-
-
-
-
-
-<!-- <div class="container mt-4">
-  <h2 class="text-center mb-4">Create Claim</h2>
-
-  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="needs-validation">
-    <div class="form-group mb-3">
-      <label for="description">Description</label>
-      <input id="description" type="text" formControlName="description" class="form-control" />
-    </div>
-
-    <div class="form-group mb-3">
-      <label for="date">Date</label>
-      <input id="date" type="date" formControlName="date" class="form-control" />
-    </div>
-
-    <div class="form-group mb-3">
-      <label for="status">Status</label>
-      <select id="status" formControlName="status" class="form-select">
-        <option value="" disabled>Select Status</option>
-        <option value="Pending">Pending</option>
-        <option value="Approved">Approved</option>
-        <option value="Rejected">Rejected</option>
-      </select>
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100">Create Claim</button>
-  </form>
-
-  <div *ngIf="showError" class="alert alert-danger mt-3">
-    {{ errorMessage }}
-  </div>
-
-  <div *ngIf="showMessage" class="alert alert-success mt-3">
-    {{ responseMessage }}
-  </div>
-
-  <h3 class="mt-4">My Claims</h3>
-  <ul class="list-group">
-    <li *ngFor="let claim of claimList" class="list-group-item">
-      {{ claim.description }} - {{ claim.status }} ({{ claim.date }})
-    </li>
-  </ul>
-</div> -->

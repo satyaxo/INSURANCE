@@ -1,23 +1,16 @@
-<!-- <app-landing></app-landing>> -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
-  <!-- ✅ Platform title now routes to Dashboard -->
-  <!-- <a class="navbar-brand" routerLink="/dashboard">
-    Insurance Claims &amp; Resource Management Platform
-  </a> -->
-  <div class="navbar">
-  
+
   <!-- LEFT SIDE TITLE -->
-  <div class="nav-left">
-    <a (click)="goToHome()" class="app-title">
+  <div class="navbar-brand">
+    <!-- ✅ Role-based home navigation -->
+    <a class="app-title text-light"
+       style="cursor: pointer; text-decoration: none;"
+       (click)="goToHome()">
       Insurance Claims & Resource Management Platform
     </a>
   </div>
 
-  <!-- RIGHT SIDE -->
-  
-
-</div>
-
+  <!-- TOGGLER -->
   <button class="navbar-toggler" type="button"
           data-toggle="collapse"
           data-target="#navbarNav"
@@ -27,136 +20,84 @@
     <span class="navbar-toggler-icon"></span>
   </button>
 
+  <!-- MENU -->
   <div class="collapse navbar-collapse" id="navbarNav">
-    <!-- Left menu -->
+
+    <!-- LEFT MENU -->
     <ul class="navbar-nav">
 
-      <!-- Policyholder -->
-      <li class="nav-item">
-        <a class="nav-link"
-           *ngIf="roleName === 'POLICYHOLDER'"
-           routerLink="/create-claim">
-          Create claim
+      <!-- ✅ POLICYHOLDER -->
+      <li class="nav-item" *ngIf="roleName === 'POLICYHOLDER'">
+        <a class="nav-link" routerLink="/create-claim">
+          Create Claim
         </a>
       </li>
 
-      <!-- ✅ FIXED: View Claim Status now routes to Dashboard -->
-      <li class="nav-item">
-        <a class="nav-link"
-           *ngIf="roleName === 'POLICYHOLDER'"
-           routerLink="/dashboard">
+      <li class="nav-item" *ngIf="roleName === 'POLICYHOLDER'">
+        <a class="nav-link" routerLink="/dashboard">
           View Claim Status
         </a>
       </li>
 
-      <!-- Adjuster -->
-      <li class="nav-item">
-        <a class="nav-link"
-           *ngIf="roleName === 'ADJUSTER'"
-           routerLink="/update-claim">
+      <!-- ✅ ADJUSTER -->
+      <li class="nav-item" *ngIf="roleName === 'ADJUSTER'">
+        <a class="nav-link" routerLink="/adjuster-dashboard">
+          Dashboard
+        </a>
+      </li>
+
+      <!-- <li class="nav-item" *ngIf="roleName === 'ADJUSTER'">
+        <a class="nav-link" routerLink="/update-claim">
           Get &amp; Update Claims
         </a>
       </li>
 
-      <li class="nav-item">
-        <a class="nav-link"
-           *ngIf="roleName === 'ADJUSTER'"
-           routerLink="/assign-claim">
+      <li class="nav-item" *ngIf="roleName === 'ADJUSTER'">
+        <a class="nav-link" routerLink="/assign-claim">
           Assign Claim
         </a>
-      </li>
+      </li> -->
 
-      <!-- Investigator -->
-      <li class="nav-item">
-        <a class="nav-link"
-           *ngIf="roleName === 'INVESTIGATOR'"
-           routerLink="/create-investigator">
+      <!-- ✅ INVESTIGATOR -->
+      <li class="nav-item" *ngIf="roleName === 'INVESTIGATOR'">
+        <a class="nav-link" routerLink="/create-investigator">
           Investigator
         </a>
       </li>
 
-      <!-- Underwriter -->
-      <li class="nav-item">
-        <a class="nav-link"
-           *ngIf="roleName === 'UNDERWRITER'"
-           routerLink="/update-claim-investigator">
+      <!-- ✅ UNDERWRITER -->
+      <li class="nav-item" *ngIf="roleName === 'UNDERWRITER'">
+        <a class="nav-link" routerLink="/underwriter-dashboard">
+          Dashboard
+        </a>
+      </li>
+
+      <!-- ✅ NEW: Underwriter Update Claim option -->
+      <li class="nav-item" *ngIf="roleName === 'UNDERWRITER'">
+        <a class="nav-link" routerLink="/update-claim-investigator">
           Update Claim
         </a>
       </li>
 
     </ul>
 
-    <!-- Right menu: Login / Logout -->
+    <!-- RIGHT MENU -->
     <ul class="navbar-nav ms-auto">
-      <li *ngIf="!IsLoggin" class="nav-item">
-        <a class="nav-link" routerLink="/login">Login</a>
+      <li class="nav-item" *ngIf="!IsLoggin">
+        <a class="nav-link" routerLink="/login">
+          Login
+        </a>
       </li>
-      <li *ngIf="IsLoggin" class="nav-item">
+
+      <li class="nav-item" *ngIf="IsLoggin">
         <a class="nav-link" (click)="logout()" routerLink="/login">
           Logout
         </a>
       </li>
     </ul>
+
   </div>
 </nav>
 
-<!-- ✅ Router outlet -->
-
-  <router-outlet></router-outlet>
-
-
-
-
-<!-- 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
-  <a class="navbar-brand" href="#">Insurance Claims & Resource Management Platform</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarNav">
-    <ul class="navbar-nav">
-      <li class="nav-item">
-        <a class="nav-link" *ngIf="roleName === 'POLICYHOLDER'" [routerLink]="['/create-claim']">Create claim</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" *ngIf="roleName === 'ADJUSTER'" [routerLink]="['/update-claim']">Get & Update Claims</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" *ngIf="roleName === 'ADJUSTER'" [routerLink]="['/assign-claim']">Assign Claim</a>
-      </li>
-      
-      <li class="nav-item">
-        <a class="nav-link" *ngIf="roleName === 'INVESTIGATOR'" [routerLink]="['/create-investigator']">Investigator</a>
-      </li> 
-
-      <li class="nav-item">
-        <a class="nav-link" *ngIf="roleName === 'UNDERWRITER'" [routerLink]="['/update-claim-investigator']">Update Claim</a>
-      </li> 
-
-      <li class="nav-item">
-        <a class="nav-link" *ngIf="roleName === 'POLICYHOLDER'" [routerLink]="['/view-claim-status']">View Claim Status</a>
-      </li>
-     
-    </ul>
-   
- 
-    
-    <ul class="navbar-nav">
-      <li *ngIf="!IsLoggin" class="nav-item">
-        <a class="nav-link" [routerLink]="['/login']">Login</a>
-      </li>
-      <li *ngIf="IsLoggin" class="nav-item">
-        <a class="nav-link" (click)="logout()" [routerLink]="['/login']">Logout</a>
-      </li>
-    </ul>
-  </div>
-</nav>
-
-<body  >
-  <div class="container mt-4 mx-5">
-    <router-outlet>    
-    </router-outlet>
-  </div>
-
-</body>
- -->
+<!-- ✅ ROUTER OUTLET -->
+<router-outlet></router-outlet>

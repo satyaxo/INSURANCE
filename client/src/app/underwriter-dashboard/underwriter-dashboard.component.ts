@@ -10,63 +10,39 @@ import { Router } from '@angular/router';
 export class UnderwriterDashboardComponent implements OnInit {
 
   claims: any[] = [];
-  investigations: any[] = [];
+  filteredClaims: any[] = [];
+
   showError = false;
   errorMessage = '';
 
-  constructor(private httpService: HttpService , private router: Router) {}
+  constructor(private httpService: HttpService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadClaims();
-    
   }
 
+  loadClaims(): void {
+    const userId = localStorage.getItem('userId');
 
-  editClaim(claim: any) {
-  this.router.navigate(['/underwriter-edit', claim.id]);
-}
-  loadClaims() {
-  const userId = localStorage.getItem('userId');
-
-  this.httpService.getClaimsForUnderwriter(+userId!).subscribe({
-    next: (res: any[]) => {
-      this.claims = res;
-      this.filteredClaims = res; // important
-    },
-    error: () => {
+    if (!userId) {
       this.showError = true;
-      this.errorMessage = 'No claims assigned yet.';
+      this.errorMessage = 'Underwriter not logged in.';
+      return;
     }
-  });
-}
 
-//   loadClaims() {
-//     this.httpService.getAllClaims().subscribe({
-//       next: (res: any[]) => this.claims = res,
-//       error: () => {
-//         this.showError = true;
-//         this.errorMessage = 'Unable to fetch claims.';
-//       }
-//     });
-//   }
-
-  loadInvestigations() {
-    this.httpService.getInvestigations().subscribe({
-      next: (res: any[]) => this.investigations = res,
+    this.httpService.getClaimsForUnderwriter(+userId).subscribe({
+      next: (res: any[]) => {
+        this.claims = res || [];
+        this.filteredClaims = res || [];
+      },
       error: () => {
         this.showError = true;
-        this.errorMessage = 'Unable to fetch investigations.';
+        this.errorMessage = 'No claims assigned yet.';
       }
     });
   }
 
-  getInvestigationByClaim(claimId: number) {
-    return this.investigations.find(inv => inv.claim?.id === claimId);
-  }
-
-  filteredClaims: any[] = [];
-
-  filterStatus(status: string) {
+  filterStatus(status: string): void {
     if (status === 'ALL') {
       this.filteredClaims = this.claims;
     } else {
@@ -74,21 +50,10 @@ export class UnderwriterDashboardComponent implements OnInit {
     }
   }
 
-  selectedClaim: any = null;
-
-// editClaim(claim: any) {
-//   this.selectedClaim = claim;
-// }
-
-  updateStatus(claimId: number, status: string) {
-    this.httpService.updateClaimStatus(claimId, status).subscribe({
-      next: () => {
-        this.loadClaims();
-      },
-      error: () => {
-        this.showError = true;
-        this.errorMessage = 'Failed to update claim status.';
-      }
+  // ✅ FIX: Edit should go to Underwriter Update page (final decision page)
+  editClaim(claim: any): void {
+    this.router.navigate(['/update-claim-investigator'], {
+      queryParams: { claimId: claim.id }
     });
   }
 }

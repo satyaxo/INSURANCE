@@ -17,10 +17,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/adjuster")
-@CrossOrigin
+@CrossOrigin(origins = "*")
 public class AdjusterController {
 
-     @Autowired
+    @Autowired
     private ClaimService claimService;
 
     @Autowired
@@ -29,13 +29,42 @@ public class AdjusterController {
     @Autowired
     private InvestigatorRepository investigatorRepository;
 
-    // ✅ Get all claims
+    // ✅ Update page: show only SUBMITTED claims
     @GetMapping("/claims")
+    public List<Claim> getNewUnassignedClaims() {
+        return claimService.getUnassignedSubmittedClaims();
+    }
+
+    // ✅ NEW: Assign page dropdown should use this endpoint
+    @GetMapping("/claims/assignable")
+    public List<Claim> getAssignableClaims() {
+        return claimService.getAssignableClaimsForAdjuster();
+    }
+
+    @GetMapping("/claims/all")
     public List<Claim> getAllClaims() {
         return claimService.getAllClaims();
     }
 
-    // ✅ Update claim (Adjuster workflow)
+    @GetMapping("/claims/assigned/{adjusterId}")
+    public List<Claim> getClaimsAssignedToAdjuster(@PathVariable Long adjusterId) {
+        if (adjusterId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid adjusterId");
+        }
+        return claimService.getClaimsByAdjuster(adjusterId);
+    }
+
+    @PutMapping("/claim/{claimId}/assign-to-me")
+    public ResponseEntity<Claim> assignClaimToMe(
+            @PathVariable Long claimId,
+            @RequestParam Long adjusterId) {
+
+        if (claimId == null || adjusterId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
+        }
+        return ResponseEntity.ok(claimService.assignClaimToAdjuster(claimId, adjusterId));
+    }
+
     @PutMapping("/claim/{id}")
     public ResponseEntity<Claim> updateClaim(
             @PathVariable Long id,
@@ -44,23 +73,19 @@ public class AdjusterController {
         if (id == null || claimDetails == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
         }
-
         return ResponseEntity.ok(claimService.updateClaim(id, claimDetails));
     }
 
-    // ✅ Get all underwriters
     @GetMapping("/underwriters")
     public List<Underwriter> getAllUnderwriters() {
         return underwriterRepository.findAll();
     }
 
-    // ✅ NEW: Get all investigators (THIS FIXES dropdown error)
     @GetMapping("/investigators")
     public List<Investigator> getAllInvestigators() {
         return investigatorRepository.findAll();
     }
 
-    // ✅ Assign claim to underwriter
     @PutMapping("/claim/{claimId}/assign")
     public ResponseEntity<Claim> assignClaimToUnderwriter(
             @PathVariable Long claimId,
@@ -69,30 +94,17 @@ public class AdjusterController {
         if (claimId == null || underwriterId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
         }
-
-        return ResponseEntity.ok(
-                claimService.assignClaimToUnderwriter(claimId, underwriterId)
-        );
+        return ResponseEntity.ok(claimService.assignClaimToUnderwriter(claimId, underwriterId));
     }
 
+    @PutMapping("/claim/{claimId}/assign-investigator")
+    public ResponseEntity<Claim> assignClaimToInvestigator(
+            @PathVariable Long claimId,
+            @RequestParam Long investigatorId) {
 
-    // ✅ Assign claim to investigator
-@PutMapping("/claim/{claimId}/assign-investigator")
-public ResponseEntity<Claim> assignClaimToInvestigator(
-        @PathVariable Long claimId,
-        @RequestParam Long investigatorId) {
-
-    if (claimId == null || investigatorId == null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
+        if (claimId == null || investigatorId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
+        }
+        return ResponseEntity.ok(claimService.assignClaimToInvestigator(claimId, investigatorId));
     }
-
-    return ResponseEntity.ok(
-            claimService.assignClaimToInvestigator(claimId, investigatorId)
-    );
-}
-
-
-
-
-
 }

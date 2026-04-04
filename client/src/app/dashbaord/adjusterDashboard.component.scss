@@ -1,0 +1,44 @@
+.section-card {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.section-title {
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.empty-state {
+  background: #f8f9fa;
+  border: 1px dashed #ced4da;
+  border-radius: 10px;
+  padding: 12px;
+  color: #6c757d;
+}
+
+.action-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.assign-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.assign-grid .btn-group,
+.assign-grid .btn-success,
+.assign-grid .btn-outline-secondary {
+  grid-column: 1 / -1;
+}
+
+.details-card {
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.06);
+}
