@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpService } from '../../services/http.service';
 import { forkJoin } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 type ClaimStatus =
   | 'SUBMITTED'
@@ -20,9 +21,11 @@ type ClaimStatus =
 })
 export class AdjusterDashboardComponent implements OnInit, OnDestroy {
 
+  // ✅ From backend
   allClaims: any[] = [];
-  inboxClaims: any[] = [];
-  assignableClaims: any[] = [];
+
+  // ✅ What we show on UI (allClaims + search filter)
+  displayClaims: any[] = [];
 
   investigators: any[] = [];
   underwriters: any[] = [];
@@ -45,6 +48,7 @@ export class AdjusterDashboardComponent implements OnInit, OnDestroy {
 
   searchText: string = '';
 
+  // ✅ We will use stats.inbox as "SHOWING CLAIMS"
   stats = { total: 0, inbox: 0, ready: 0, closed: 0 };
 
   private timer: any = null;
@@ -69,7 +73,7 @@ export class AdjusterDashboardComponent implements OnInit, OnDestroy {
     this.isLoading = showLoader;
 
     forkJoin({
-      claims: this.httpService.getAllClaims(),            // ✅ MUST be /claims endpoint
+      claims: this.httpService.getAllClaims(),
       investigators: this.httpService.getAllInvestigators(),
       underwriters: this.httpService.GetAllUnderwriter()
     }).subscribe({
@@ -78,7 +82,7 @@ export class AdjusterDashboardComponent implements OnInit, OnDestroy {
         this.investigators = res.investigators || [];
         this.underwriters = res.underwriters || [];
 
-        this.buildQueuesFromAllClaims();
+        this.buildDisplayFromAllClaims();
         this.initDrafts();
         this.computeStats();
 
@@ -99,19 +103,16 @@ export class AdjusterDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  private buildQueuesFromAllClaims(): void {
+  // ✅ IMPORTANT: Show ALL claims (no status-based filtering)
+  private buildDisplayFromAllClaims(): void {
     const claims = this.applySearch(this.allClaims);
 
-    this.inboxClaims = claims.filter(c => (c?.status || '').toUpperCase() === 'SUBMITTED');
-
-    this.assignableClaims = claims.filter(c => {
-      const s = (c?.status || '').toUpperCase();
-      return s === 'UNDER_PROGRESS' || s === 'IN_PROGRESS' || s === 'UNDER_REVIEW' || s === 'INVESTIGATION_IN_PROGRESS';
-    });
+    // ✅ Optional: show latest first (by id desc)
+    this.displayClaims = (claims || []).slice().sort((a: any, b: any) => (b?.id || 0) - (a?.id || 0));
   }
 
   onSearchChange(): void {
-    this.buildQueuesFromAllClaims();
+    this.buildDisplayFromAllClaims();
     this.computeStats();
   }
 
@@ -128,9 +129,13 @@ export class AdjusterDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ✅ Drafts must reflect backend status after update (so it doesn't show old selection)
   private initDrafts(): void {
-    [...this.inboxClaims, ...this.assignableClaims].forEach(c => {
-      if (!this.statusDraft[c.id]) this.statusDraft[c.id] = c.status || 'SUBMITTED';
+    (this.displayClaims || []).forEach(c => {
+      // ✅ always sync status dropdown with backend status
+      this.statusDraft[c.id] = c.status || this.statusDraft[c.id] || 'SUBMITTED';
+
+      // ✅ keep selected investigator/underwriter if already chosen
       if (this.investigatorDraft[c.id] === undefined) this.investigatorDraft[c.id] = null;
       if (this.underwriterDraft[c.id] === undefined) this.underwriterDraft[c.id] = null;
     });
@@ -182,105 +187,63 @@ export class AdjusterDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  updateStatus(claim: any): void {
+  // ✅ Update status + assign investigator + assign underwriter (ONE CLICK)
+  updateStatusAndAssign(claim: any): void {
     this.resetAlerts();
 
-    const newStatus = this.statusDraft[claim.id];
+    const claimId = claim?.id;
+    if (!claimId) {
+      this.showError = true;
+      this.errorMessage = 'Invalid claim id.';
+      return;
+    }
+
+    const newStatus = this.statusDraft[claimId];
+    const investigatorId = this.investigatorDraft[claimId];
+    const underwriterId = this.underwriterDraft[claimId];
+
     if (!newStatus) {
       this.showError = true;
       this.errorMessage = 'Please select a status.';
       return;
     }
-
-    const payload = { description: claim.description, date: claim.date, status: newStatus };
-
-    this.httpService.updateClaims(payload, claim.id).subscribe({
-      next: () => {
-        this.showMessage = true;
-        this.responseMessage = `Status updated to ${newStatus}.`;
-        this.loadAll(false);
-      },
-      error: (err) => {
-        console.error('Update status failed:', err);
-        this.showError = true;
-        this.errorMessage = err?.error?.message || `Failed to update status. (${err?.status || 'NO_STATUS'})`;
-      }
-    });
-  }
-
-  assignInvestigator(claim: any): void {
-    this.resetAlerts();
-
-    const investigatorId = this.investigatorDraft[claim.id];
     if (!investigatorId) {
       this.showError = true;
       this.errorMessage = 'Please select an investigator.';
       return;
     }
-
-    this.httpService.assignClaimToInvestigator(claim.id, investigatorId).subscribe({
-      next: () => {
-        this.showMessage = true;
-        this.responseMessage = 'Investigator assigned successfully.';
-        this.loadAll(false);
-      },
-      error: (err) => {
-        console.error('Assign investigator failed:', err);
-        this.showError = true;
-        this.errorMessage = err?.error?.message || `Failed to assign investigator. (${err?.status || 'NO_STATUS'})`;
-      }
-    });
-  }
-
-  assignUnderwriter(claim: any): void {
-    this.resetAlerts();
-
-    const underwriterId = this.underwriterDraft[claim.id];
     if (!underwriterId) {
       this.showError = true;
       this.errorMessage = 'Please select an underwriter.';
       return;
     }
 
-    this.httpService.AssignClaim({ claimId: claim.id, underwriterId }).subscribe({
+    this.isLoading = true;
+
+    const payload = {
+      description: claim.description,
+      date: claim.date,
+      status: newStatus
+    };
+
+    // ✅ First update status, then assign both (safer)
+    this.httpService.updateClaims(payload, claimId).pipe(
+      switchMap(() => forkJoin([
+        this.httpService.assignClaimToInvestigator(claimId, investigatorId),
+        this.httpService.AssignClaim({ claimId, underwriterId })
+      ]))
+    ).subscribe({
       next: () => {
+        this.isLoading = false;
         this.showMessage = true;
-        this.responseMessage = 'Underwriter assigned successfully.';
+        this.responseMessage = 'Submitted successfully. Claim remains on dashboard with updated status.';
         this.loadAll(false);
       },
       error: (err) => {
-        console.error('Assign underwriter failed:', err);
+        console.error('Update + Assign failed:', err);
+        this.isLoading = false;
         this.showError = true;
-        this.errorMessage = err?.error?.message || `Failed to assign underwriter. (${err?.status || 'NO_STATUS'})`;
-      }
-    });
-  }
-
-  assignBoth(claim: any): void {
-    this.resetAlerts();
-
-    const investigatorId = this.investigatorDraft[claim.id];
-    const underwriterId = this.underwriterDraft[claim.id];
-
-    if (!investigatorId || !underwriterId) {
-      this.showError = true;
-      this.errorMessage = 'Select BOTH investigator and underwriter.';
-      return;
-    }
-
-    forkJoin([
-      this.httpService.assignClaimToInvestigator(claim.id, investigatorId),
-      this.httpService.AssignClaim({ claimId: claim.id, underwriterId })
-    ]).subscribe({
-      next: () => {
-        this.showMessage = true;
-        this.responseMessage = 'Investigator & Underwriter assigned successfully.';
-        this.loadAll(false);
-      },
-      error: (err) => {
-        console.error('Assign both failed:', err);
-        this.showError = true;
-        this.errorMessage = err?.error?.message || `Assign both failed. (${err?.status || 'NO_STATUS'})`;
+        this.errorMessage = err?.error?.message || `Submit failed. (${err?.status || 'NO_STATUS'})`;
       }
     });
   }
@@ -292,16 +255,22 @@ export class AdjusterDashboardComponent implements OnInit, OnDestroy {
     this.responseMessage = '';
   }
 
+  // ✅ Stats always correct
   private computeStats(): void {
     const total = this.allClaims.length;
-    const inbox = this.inboxClaims.length;
-    const ready = this.assignableClaims.length;
+    const showing = this.displayClaims.length;
+
     const closed = this.allClaims.filter(c => {
       const s = (c?.status || '').toUpperCase();
       return s === 'APPROVED' || s === 'REJECTED';
     }).length;
 
-    this.stats = { total, inbox, ready, closed };
+    this.stats = {
+      total,
+      inbox: showing,  // USED AS "SHOWING CLAIMS"
+      ready: 0,        // NOT USED
+      closed
+    };
   }
 
   badgeClass(status: string): string {
