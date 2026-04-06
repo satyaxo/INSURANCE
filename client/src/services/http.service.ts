@@ -85,7 +85,6 @@ export class HttpService {
     let headers = new HttpHeaders();
     headers = headers.set('Content-Type', 'application/json');
     headers = headers.set('Authorization', `Bearer ${authToken}`);
-
     return this.http.get(this.serverName + `/api/adjuster/investigators`, { headers });
   }
 
@@ -97,6 +96,7 @@ export class HttpService {
     return this.http.put(this.serverName + `/api/adjuster/claim/` + claimId, details, { headers });
   }
 
+  // ✅ OLD: assign underwriter only (kept for compatibility)
   AssignClaim(details: any): Observable<any> {
     const authToken = this.authService.getToken();
     let headers = new HttpHeaders();
@@ -110,6 +110,7 @@ export class HttpService {
     );
   }
 
+  // ✅ OLD: assign investigator only (kept for compatibility)
   assignClaimToInvestigator(claimId: number, investigatorId: number): Observable<any> {
     const authToken = this.authService.getToken();
     let headers = new HttpHeaders();
@@ -118,6 +119,20 @@ export class HttpService {
 
     return this.http.put(
       `${this.serverName}/api/adjuster/claim/${claimId}/assign-investigator?investigatorId=${investigatorId}`,
+      {},
+      { headers }
+    );
+  }
+
+  // ✅ NEW: assign BOTH investigator + underwriter in ONE call (this fixes Underwriter missing claims)
+  assignClaimToBoth(claimId: number, investigatorId: number, underwriterId: number): Observable<any> {
+    const authToken = this.authService.getToken();
+    let headers = new HttpHeaders();
+    headers = headers.set('Content-Type', 'application/json');
+    headers = headers.set('Authorization', `Bearer ${authToken}`);
+
+    return this.http.put(
+      `${this.serverName}/api/adjuster/claim/${claimId}/assign-all?investigatorId=${investigatorId}&underwriterId=${underwriterId}`,
       {},
       { headers }
     );
@@ -214,7 +229,6 @@ export class HttpService {
   // ================= Policyholder tracking =================
   getPolicyholderClaimsTracking(policyholderId: number): Observable<any[]> {
     const authToken = this.authService.getToken();
-
     let headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
       .set('Authorization', `Bearer ${authToken}`);

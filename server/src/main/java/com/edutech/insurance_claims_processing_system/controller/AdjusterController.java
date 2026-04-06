@@ -35,7 +35,7 @@ public class AdjusterController {
         return claimService.getUnassignedSubmittedClaims();
     }
 
-    // ✅ NEW: Assign page dropdown should use this endpoint
+    // ✅ Assign page dropdown should use this endpoint
     @GetMapping("/claims/assignable")
     public List<Claim> getAssignableClaims() {
         return claimService.getAssignableClaimsForAdjuster();
@@ -86,6 +86,7 @@ public class AdjusterController {
         return investigatorRepository.findAll();
     }
 
+    // ✅ Assign Underwriter (single)
     @PutMapping("/claim/{claimId}/assign")
     public ResponseEntity<Claim> assignClaimToUnderwriter(
             @PathVariable Long claimId,
@@ -97,6 +98,7 @@ public class AdjusterController {
         return ResponseEntity.ok(claimService.assignClaimToUnderwriter(claimId, underwriterId));
     }
 
+    // ✅ Assign Investigator (single)
     @PutMapping("/claim/{claimId}/assign-investigator")
     public ResponseEntity<Claim> assignClaimToInvestigator(
             @PathVariable Long claimId,
@@ -106,5 +108,32 @@ public class AdjusterController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
         }
         return ResponseEntity.ok(claimService.assignClaimToInvestigator(claimId, investigatorId));
+    }
+
+    /* =========================================================
+       ✅ NEW: Assign BOTH Investigator + Underwriter in ONE call
+       =========================================================
+       Why needed?
+       - Prevents status being overwritten incorrectly due to call order.
+       - Ensures claim ends up in UNDER_REVIEW so Underwriter dashboard shows it.
+    */
+    @PutMapping("/claim/{claimId}/assign-all")
+    public ResponseEntity<Claim> assignClaimToBoth(
+            @PathVariable Long claimId,
+            @RequestParam Long investigatorId,
+            @RequestParam Long underwriterId) {
+
+        if (claimId == null || investigatorId == null || underwriterId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
+        }
+
+        // ✅ Order matters:
+        // investigator assignment may set status INVESTIGATION_IN_PROGRESS
+        // underwriter assignment sets status UNDER_REVIEW
+        // final status = UNDER_REVIEW -> Underwriter dashboard will show it
+        claimService.assignClaimToInvestigator(claimId, investigatorId);
+        Claim finalClaim = claimService.assignClaimToUnderwriter(claimId, underwriterId);
+
+        return ResponseEntity.ok(finalClaim);
     }
 }

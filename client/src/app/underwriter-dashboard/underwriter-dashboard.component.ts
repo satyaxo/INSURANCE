@@ -11,9 +11,10 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
   // Raw claims for this underwriter
   allClaims: any[] = [];
 
-  // Workbench split lists
-  pendingReview: any[] = [];   // UNDER_REVIEW
-  decisions: any[] = [];       // APPROVED / REJECTED
+  // ✅ Workbench split lists
+  waitingInvestigation: any[] = []; // Assigned to underwriter but not ready for decision
+  pendingReview: any[] = [];        // UNDER_REVIEW (ready for approve/reject)
+  decisions: any[] = [];            // APPROVED / REJECTED
 
   // Selected claim for review panel
   selectedClaim: any = null;
@@ -76,7 +77,7 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
 
         // keep selection consistent
         if (this.selectedClaim) {
-          const updated = this.allClaims.find(c => c.id === this.selectedClaim.id);
+          const updated = this.allClaims.find(c => Number(c.id) === Number(this.selectedClaim.id));
           this.selectedClaim = updated || this.selectedClaim;
 
           if (this.selectedClaim?.id) {
@@ -93,11 +94,39 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * ✅ Real-world buckets:
+   * 1) waitingInvestigation -> assigned to underwriter but still not in UNDER_REVIEW
+   * 2) pendingReview -> UNDER_REVIEW (ready to approve/reject)
+   * 3) decisions -> APPROVED/REJECTED
+   */
   private splitLists(): void {
     const list = this.allClaims || [];
 
+    // ✅ Ready for final review
     this.pendingReview = list.filter(c => (c?.status || '').toUpperCase() === 'UNDER_REVIEW');
 
+    // ✅ Assigned but not ready yet (still in investigation / in-progress stages)
+    this.waitingInvestigation = list.filter(c => {
+      const st = (c?.status || '').toUpperCase();
+
+      // Anything that is not a final decision and not under_review goes to waiting
+      if (st === 'APPROVED' || st === 'REJECTED') return false;
+      if (st === 'UNDER_REVIEW') return false;
+
+      // Common statuses in your system
+      if (st === 'INVESTIGATION_IN_PROGRESS') return true;
+      if (st === 'INVESTIGATION_COMPLETED') return true;
+      if (st === 'UNDER_PROGRESS') return true;
+      if (st === 'IN_PROGRESS') return true;
+      if (st === 'ASSIGNED_TO_ADJUSTER') return true;
+      if (st === 'SUBMITTED') return true;
+
+      // Fallback: treat other non-final statuses as waiting
+      return true;
+    });
+
+    // ✅ Final decisions
     this.decisions = list.filter(c => {
       const st = (c?.status || '').toUpperCase();
       return st === 'APPROVED' || st === 'REJECTED';
@@ -107,17 +136,21 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
   // ---------------------------
   // Search filter
   // ---------------------------
+  filteredWaiting(): any[] {
+    const q = this.normalize(this.policySearch);
+    if (!q) return this.waitingInvestigation;
+    return (this.waitingInvestigation || []).filter(c => this.normalize(c?.policyNumber).includes(q));
+  }
+
   filteredPending(): any[] {
     const q = this.normalize(this.policySearch);
     if (!q) return this.pendingReview;
-
     return (this.pendingReview || []).filter(c => this.normalize(c?.policyNumber).includes(q));
   }
 
   filteredDecisions(): any[] {
     const q = this.normalize(this.policySearch);
     if (!q) return this.decisions;
-
     return (this.decisions || []).filter(c => this.normalize(c?.policyNumber).includes(q));
   }
 
@@ -163,7 +196,7 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Preview doc in new tab (JWT safe)
+  // Preview doc in new tab
   previewDocument(doc: any): void {
     if (!doc?.id) return;
 
@@ -183,8 +216,6 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
 
   // ---------------------------
   // Investigation report getters (supports BOTH shapes)
-  // Some APIs return claim.investigation.report
-  // Some APIs return investigationReport/investigationStatus fields in DTO
   // ---------------------------
   getInvestigationStatus(claim: any): string {
     return claim?.investigation?.status || claim?.investigationStatus || 'Not Available';
@@ -201,7 +232,7 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
   }
 
   // ---------------------------
-  // Approve / Reject
+  // Approve / Reject (works only when report exists)
   // ---------------------------
   approve(): void {
     this.reviewSelected('APPROVED');
@@ -216,6 +247,7 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
 
     if (!this.selectedClaim) return;
 
+    // ✅ Block decision until investigation report exists
     if (!this.hasInvestigation(this.selectedClaim)) {
       this.showError = true;
       this.errorMessage = 'Investigation report not completed yet.';
@@ -231,7 +263,7 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
 
         // Update local view immediately
         this.selectedClaim = { ...this.selectedClaim, status };
-        this.allClaims = this.allClaims.map(c => c.id === claimId ? this.selectedClaim : c);
+        this.allClaims = this.allClaims.map(c => Number(c.id) === Number(claimId) ? this.selectedClaim : c);
 
         this.splitLists();
       },
@@ -258,7 +290,9 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
     if (s === 'UNDER_REVIEW') return 'badge bg-dark';
     if (s === 'APPROVED') return 'badge bg-success';
     if (s === 'REJECTED') return 'badge bg-danger';
-    if (s.includes('COMPLETED')) return 'badge bg-primary';
+    if (s.includes('INVESTIGATION')) return 'badge bg-warning text-dark';
+    if (s.includes('PROGRESS')) return 'badge bg-primary';
+    if (s === 'SUBMITTED') return 'badge bg-secondary';
     return 'badge bg-secondary';
   }
 

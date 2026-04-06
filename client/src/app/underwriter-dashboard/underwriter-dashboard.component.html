@@ -4,7 +4,7 @@
   <div class="page-header">
     <div>
       <h2 class="title">Underwriter Review Workbench</h2>
-      <p class="subtitle">Review investigator report + evidence and finalize claim decision.</p>
+      <p class="subtitle">Review evidence and investigator report, then finalize the claim decision.</p>
     </div>
 
     <div class="actions">
@@ -45,6 +45,34 @@
 
     <!-- LEFT: Lists -->
     <div class="col-lg-5">
+
+      <!-- ✅ NEW: Assigned (Waiting for Investigation) -->
+      <div class="panel mb-4">
+        <div class="panel-head">
+          <h5 class="panel-title">Assigned (Waiting for Investigation)</h5>
+          <small class="muted">Read-only until report is completed</small>
+        </div>
+
+        <div *ngIf="filteredWaiting().length === 0" class="empty">
+          No assigned claims waiting for investigation.
+        </div>
+
+        <div class="list" *ngIf="filteredWaiting().length > 0">
+          <button class="list-item"
+                  *ngFor="let c of filteredWaiting()"
+                  (click)="selectClaim(c)">
+            <div class="li-left">
+              <div class="li-title">{{ c.policyNumber || '-' }} • {{ typeLabel(c.insuranceType) }}</div>
+              <div class="li-desc">{{ c.description }}</div>
+            </div>
+            <span [class]="badgeClass(c.status)">{{ c.status }}</span>
+          </button>
+        </div>
+
+        <small class="muted d-block mt-2">
+          These are assigned to you but cannot be approved/rejected until investigation report exists.
+        </small>
+      </div>
 
       <!-- Pending Review -->
       <div class="panel">

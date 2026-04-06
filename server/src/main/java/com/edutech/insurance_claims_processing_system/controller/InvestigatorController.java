@@ -15,25 +15,28 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/investigator")
-@CrossOrigin
+@CrossOrigin(origins = "*")
 public class InvestigatorController {
 
     @Autowired
     private InvestigationService investigationService;
 
-    // ✅ FIX: Properly injected
     @Autowired
     private ClaimService claimService;
 
     @PostMapping("/investigation")
-    public ResponseEntity<Investigation> createInvestigation(
-            @RequestBody Investigation investigation) {
+    public ResponseEntity<Investigation> createInvestigation(@RequestBody Investigation investigation) {
 
         if (investigation == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
         }
 
-        return ResponseEntity.ok(investigationService.createInvestigation(investigation));
+        Investigation saved = investigationService.createInvestigation(investigation);
+
+        // ✅ IMPORTANT FIX: if investigator completes report, move claim to UNDER_REVIEW
+        moveClaimToUnderwriterReviewIfCompleted(saved);
+
+        return ResponseEntity.ok(saved);
     }
 
     @PutMapping("/investigation/{id}")
@@ -41,8 +44,16 @@ public class InvestigatorController {
             @PathVariable Long id,
             @RequestBody Investigation investigationDetails) {
 
-        return ResponseEntity.ok(
-                investigationService.updateInvestigation(id, investigationDetails));
+        if (id == null || investigationDetails == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
+        }
+
+        Investigation saved = investigationService.updateInvestigation(id, investigationDetails);
+
+        // ✅ IMPORTANT FIX: if investigator completes report, move claim to UNDER_REVIEW
+        moveClaimToUnderwriterReviewIfCompleted(saved);
+
+        return ResponseEntity.ok(saved);
     }
 
     @GetMapping("/investigations")
@@ -50,16 +61,31 @@ public class InvestigatorController {
         return investigationService.getAllInvestigations();
     }
 
-    // ✅ FIX: Investigator receives assigned claims
+    // ✅ Investigator receives assigned claims
     @GetMapping("/claims")
     public List<Claim> getAssignedClaims(@RequestParam Long investigatorId) {
         return claimService.getClaimsByInvestigator(investigatorId);
     }
+
+    /* =========================================================
+       ✅ Helper: if investigation status is completed => claim UNDER_REVIEW
+       ========================================================= */
+    private void moveClaimToUnderwriterReviewIfCompleted(Investigation inv) {
+
+        if (inv == null) return;
+
+        String st = inv.getStatus();
+        if (st == null) return;
+
+        // Accept both "Completed" and "INVESTIGATION_COMPLETED"
+        String up = st.trim().toUpperCase();
+        boolean completed = up.equals("COMPLETED") || up.contains("COMPLETED");
+
+        if (!completed) return;
+
+        if (inv.getClaim() == null || inv.getClaim().getId() == null) return;
+
+        // ✅ Move claim to UNDER_REVIEW so underwriter dashboard can see it
+        claimService.moveClaimToUnderwriterReview(inv.getClaim().getId());
+    }
 }
-
-
-
-
-
-
-

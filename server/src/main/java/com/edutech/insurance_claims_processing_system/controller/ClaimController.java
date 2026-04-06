@@ -1,5 +1,6 @@
 package com.edutech.insurance_claims_processing_system.controller;
 
+import com.edutech.insurance_claims_processing_system.dto.UnderwriterClaimDTO;
 import com.edutech.insurance_claims_processing_system.entity.Claim;
 import com.edutech.insurance_claims_processing_system.service.ClaimService;
 
@@ -24,11 +25,17 @@ public class ClaimController {
         return claimService.getAllClaims();
     }
 
-    // ✅ Get claims for Underwriter
+    // ✅ Get claims for Underwriter (ENTITY list - old usage)
     @GetMapping("/underwriter/{id}")
     public List<Claim> getClaimsByUnderwriter(@PathVariable Long id) {
-        // If you already have claimService.getClaimsForReview(id), use it
         return claimService.getClaimsForReview(id);
+    }
+
+    // ✅ Get claims for Underwriter (DTO list with report + policy fields) - best for workbench UI
+    // Use this if your HttpService is calling /api/claims/underwriter-dto/{id}
+    @GetMapping("/underwriter-dto/{id}")
+    public List<UnderwriterClaimDTO> getClaimsByUnderwriterDTO(@PathVariable Long id) {
+        return claimService.getUnderwriterClaimsWithReport(id);
     }
 
     // ✅ Update claim status (Approve / Reject)
@@ -41,7 +48,7 @@ public class ClaimController {
     }
 
     /* =========================================================
-       ✅ ADJUSTER ENDPOINTS (THIS IS WHAT YOU NEED)
+       ✅ ADJUSTER ENDPOINTS
        ========================================================= */
 
     // ✅ Adjuster sees all SUBMITTED claims that are not assigned yet
@@ -56,52 +63,25 @@ public class ClaimController {
         return claimService.getClaimsByAdjuster(adjusterId);
     }
 
-    // ✅ Adjuster assigns a claim to themselves (or admin assigns)
+    // ✅ Adjuster assigns a claim to themselves
     @PutMapping("/{claimId}/assign-adjuster/{adjusterId}")
     public Claim assignClaimToAdjuster(@PathVariable Long claimId, @PathVariable Long adjusterId) {
         return claimService.assignClaimToAdjuster(claimId, adjusterId);
     }
+
+    /* =========================================================
+       ✅ MISSING ENDPOINTS (THIS FIXES YOUR PROBLEM)
+       ========================================================= */
+
+    // ✅ Adjuster assigns claim to Investigator
+    @PutMapping("/{claimId}/assign-investigator/{investigatorId}")
+    public Claim assignClaimToInvestigator(@PathVariable Long claimId, @PathVariable Long investigatorId) {
+        return claimService.assignClaimToInvestigator(claimId, investigatorId);
+    }
+
+    // ✅ Adjuster assigns claim to Underwriter
+    @PutMapping("/{claimId}/assign-underwriter/{underwriterId}")
+    public Claim assignClaimToUnderwriter(@PathVariable Long claimId, @PathVariable Long underwriterId) {
+        return claimService.assignClaimToUnderwriter(claimId, underwriterId);
+    }
 }
-
-// package com.edutech.insurance_claims_processing_system.controller;
-
-// import com.edutech.insurance_claims_processing_system.entity.Claim;
-// import com.edutech.insurance_claims_processing_system.repository.ClaimRepository;
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.web.bind.annotation.*;
-
-// import java.util.List;
-
-// @RestController
-// @RequestMapping("/api/claims")
-// @CrossOrigin(origins = "*")
-// public class ClaimController {
-
-//     @Autowired
-//     private ClaimRepository claimRepository;
-
-//     // ✅ Get all claims (optional)
-//     @GetMapping
-//     public List<Claim> getAllClaims() {
-//         return claimRepository.findAll();
-//     }
-
-//     // ✅ Get claims for Underwriter
-//     @GetMapping("/underwriter/{id}")
-//     public List<Claim> getClaimsByUnderwriter(@PathVariable Long id) {
-//         return claimRepository.findByUnderwriterId(id);
-//     }
-
-
-
-//     // ✅ Update claim status (Approve / Reject)
-//     @PutMapping("/{id}/status")
-//     public Claim updateStatus(@PathVariable Long id, @RequestBody Claim updatedClaim) {
-
-//         Claim claim = claimRepository.findById(id).orElseThrow();
-
-//         claim.setStatus(updatedClaim.getStatus());
-
-//         return claimRepository.save(claim);
-//     }
-// }

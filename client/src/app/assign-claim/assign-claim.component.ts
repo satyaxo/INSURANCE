@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpService } from '../../services/http.service';
-import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-assign-claim',
@@ -22,7 +21,7 @@ export class AssignClaimComponent implements OnInit {
   docsLoading = false;
   docsError = '';
 
-  // ✅ Keep assigned claims visible in page (read-only)
+  // ✅ Recently assigned (read-only record)
   recentlyAssigned: any[] = [];
 
   showError = false;
@@ -52,16 +51,16 @@ export class AssignClaimComponent implements OnInit {
     });
   }
 
-  // ✅ Load assignable claims only (UNDER_PROGRESS and still needs assignment)
+  // ✅ Load assignable claims
   loadClaims(): void {
     this.httpService.getAssignableClaims().subscribe({
       next: (res: any[]) => {
         this.claimList = res || [];
         this.showError = false;
 
-        // If selected claim is no longer in dropdown, clear preview
+        // If selected claim no longer available, clear preview
         const currentClaimId = this.itemForm.get('claimId')?.value;
-        if (currentClaimId && !this.claimList.some(c => c.id === currentClaimId)) {
+        if (currentClaimId && !this.claimList.some(c => Number(c.id) === Number(currentClaimId))) {
           this.selectedClaim = null;
           this.claimDocuments = [];
           this.docsError = '';
@@ -104,7 +103,7 @@ export class AssignClaimComponent implements OnInit {
     });
   }
 
-  // ✅ When a claim is selected from dropdown
+  // ✅ Claim selection -> show details/docs
   private onClaimSelected(claimId: any): void {
     if (!claimId) {
       this.selectedClaim = null;
@@ -114,7 +113,8 @@ export class AssignClaimComponent implements OnInit {
       return;
     }
 
-    this.selectedClaim = this.claimList.find(c => c.id === Number(claimId)) || null;
+    const id = Number(claimId);
+    this.selectedClaim = (this.claimList || []).find(c => Number(c.id) === id) || null;
 
     if (this.selectedClaim) {
       this.loadDocumentsForClaim(this.selectedClaim.id);
@@ -174,20 +174,21 @@ export class AssignClaimComponent implements OnInit {
       return;
     }
 
-    const { claimId, investigatorId, underwriterId } = this.itemForm.value;
+    const claimId = Number(this.itemForm.value.claimId);
+    const investigatorId = Number(this.itemForm.value.investigatorId);
+    const underwriterId = Number(this.itemForm.value.underwriterId);
 
     // ✅ Snapshot claim before it disappears from dropdown
-    const assignedClaimSnapshot = this.claimList.find(c => c.id === Number(claimId)) || this.selectedClaim;
+    const assignedClaimSnapshot =
+      (this.claimList || []).find(c => Number(c.id) === claimId) || this.selectedClaim;
 
-    // Step 1 assign investigator, Step 2 assign underwriter
-    this.httpService.assignClaimToInvestigator(claimId, investigatorId).pipe(
-      switchMap(() => this.httpService.AssignClaim({ claimId, underwriterId }))
-    ).subscribe({
+    // ✅ SINGLE API CALL: assign-all (prevents status override + partial assignment)
+    this.httpService.assignClaimToBoth(claimId, investigatorId, underwriterId).subscribe({
       next: () => {
         this.showMessage = true;
         this.responseMessage = 'Claim assigned to Investigator and Underwriter successfully.';
 
-        // ✅ Move it into "Recently Assigned" read-only list
+        // ✅ Move to Recently Assigned record
         if (assignedClaimSnapshot) {
           this.addToRecentlyAssigned({
             ...assignedClaimSnapshot,
@@ -196,18 +197,18 @@ export class AssignClaimComponent implements OnInit {
           });
         }
 
-        // ✅ Clear form fields (claim will be removed from dropdown on reload)
+        // ✅ Reset UI
         this.itemForm.reset();
         this.selectedClaim = null;
         this.claimDocuments = [];
         this.docsError = '';
         this.docsLoading = false;
 
-        // ✅ Refresh claim dropdown (assigned claim disappears from dropdown)
+        // ✅ refresh dropdown so assigned claim disappears
         this.loadClaims();
       },
       error: (err) => {
-        console.error('Assign workflow failed:', err);
+        console.error('Assign-all failed:', err);
         this.showError = true;
         const msg = err?.error?.message || err?.message || 'Error assigning claim.';
         this.errorMessage = `${msg} (${err?.status || 'NO_STATUS'})`;
@@ -218,13 +219,12 @@ export class AssignClaimComponent implements OnInit {
   private addToRecentlyAssigned(claim: any): void {
     const exists = this.recentlyAssigned.some(c => c.id === claim.id);
     if (!exists) {
-      this.recentlyAssigned.unshift(claim); // newest first
+      this.recentlyAssigned.unshift(claim);
     } else {
       this.recentlyAssigned = this.recentlyAssigned.map(c => c.id === claim.id ? claim : c);
     }
   }
 
-  // Optional label helper
   typeLabel(type: string): string {
     const t = (type || '').toUpperCase();
     if (t === 'CAR') return 'Car Insurance';

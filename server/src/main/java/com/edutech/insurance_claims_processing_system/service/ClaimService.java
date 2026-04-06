@@ -181,6 +181,12 @@ public class ClaimService {
         return claimRepository.findByUnderwriter(underwriter);
     }
 
+    /**
+     * ✅ Assign claim to Underwriter
+     * IMPORTANT: Do NOT always force UNDER_REVIEW here.
+     * - If investigation is not completed, claim should remain in investigation stage.
+     * - Only after investigator marks COMPLETED, we move to UNDER_REVIEW.
+     */
     public Claim assignClaimToUnderwriter(Long claimId, Long underwriterId) {
         if (claimId == null || underwriterId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
@@ -193,11 +199,19 @@ public class ClaimService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Underwriter not found"));
 
         claim.setUnderwriter(underwriter);
-        claim.setStatus("UNDER_REVIEW");
+
+        // ✅ Only set UNDER_REVIEW if investigation already completed
+        if (claim.getInvestigation() != null && isCompletedStatus(claim.getInvestigation().getStatus())) {
+            claim.setStatus("UNDER_REVIEW");
+        }
 
         return claimRepository.save(claim);
     }
 
+    /**
+     * ✅ Assign claim to Investigator
+     * This always moves claim into investigation stage.
+     */
     public Claim assignClaimToInvestigator(Long claimId, Long investigatorId) {
         if (claimId == null || investigatorId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
@@ -231,7 +245,7 @@ public class ClaimService {
         return claimRepository.findByAdjusterIsNullAndStatus("SUBMITTED");
     }
 
-    // ✅ FIXED: Ready-to-Assign shows claims where investigator OR underwriter missing
+    // ✅ Ready-to-Assign shows claims where investigator OR underwriter missing
     public List<Claim> getAssignableClaimsForAdjuster() {
         return claimRepository.findAssignableClaims("UNDER_PROGRESS");
     }
@@ -287,7 +301,31 @@ public class ClaimService {
         return claimRepository.save(claim);
     }
 
-    // ✅ Underwriter DTO (UPDATED FIX HERE)
+    /* =========================================================
+       ✅ NEW: Move claim to UNDER_REVIEW after investigation completed
+       This is called from InvestigatorController when status becomes Completed.
+       ========================================================= */
+    public Claim moveClaimToUnderwriterReview(Long claimId) {
+        if (claimId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid claimId");
+        }
+
+        Claim claim = claimRepository.findById(claimId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Claim not found"));
+
+        if (claim.getInvestigation() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Investigation not found for claim");
+        }
+
+        if (!isCompletedStatus(claim.getInvestigation().getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Investigation not completed yet");
+        }
+
+        claim.setStatus("UNDER_REVIEW");
+        return claimRepository.save(claim);
+    }
+
+    // ✅ Underwriter DTO (includes policyNumber/type/date + report)
     public List<UnderwriterClaimDTO> getUnderwriterClaimsWithReport(Long underwriterId) {
         if (underwriterId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
@@ -305,7 +343,6 @@ public class ClaimService {
                 invReport = c.getInvestigation().getReport();
             }
 
-            // ✅ FIX: Use 8-arg constructor so Underwriter gets policyNumber/type/date
             UnderwriterClaimDTO dto = new UnderwriterClaimDTO(
                     c.getId(),
                     c.getInsuranceType(),
@@ -370,5 +407,12 @@ public class ClaimService {
         if ("REJECTED".equals(s)) return "REJECTED";
 
         return s;
+    }
+
+    // ✅ helper: treat "Completed" and anything containing "COMPLETED" as completed
+    private boolean isCompletedStatus(String status) {
+        if (status == null) return false;
+        String st = status.trim().toUpperCase();
+        return st.equals("COMPLETED") || st.contains("COMPLETED");
     }
 }
