@@ -1,52 +1,124 @@
-<div class="uwd-page">
+<div class="uwd2-page">
 
   <!-- Header -->
-  <div class="uwd-header">
+  <div class="uwd2-header">
     <h2>Underwriter Dashboard</h2>
-    <p>Claims awaiting final review and decision</p>
+    <p>View claims. Approve/Reject only after investigator completion.</p>
   </div>
 
-  <!-- Error -->
-  <div *ngIf="showError" class="alert error-box">
-    {{ errorMessage }}
-  </div>
+  <!-- Controls -->
+  <div class="uwd2-controls">
 
-  <!-- Empty -->
-  <div *ngIf="filteredClaims.length === 0 && !showError" class="empty">
-    No claims assigned yet.
-  </div>
-
-  <!-- Claims Grid -->
-  <div class="claims-grid" *ngIf="filteredClaims.length > 0">
-
-    <div class="claim-card" *ngFor="let claim of filteredClaims">
-
-      <div class="card-top">
-        <div class="claim-id">Claim #{{ claim.id }}</div>
-        <span class="status-badge">{{ claim.status }}</span>
-      </div>
-
-      <div class="card-body">
-        <p><b>Type:</b> {{ claim.insuranceType || '-' }}</p>
-        <p><b>Policy:</b> {{ claim.policyNumber || '-' }}</p>
-        <p class="desc">{{ claim.description }}</p>
-      </div>
-
-      <!-- Investigator Summary (short, not overwhelming) -->
-      <div *ngIf="claim.investigationReport" class="investigation-preview">
-        <b>Investigation Summary</b>
-        <div class="preview-text">
-          {{ claim.investigationReport }}
-        </div>
-      </div>
-
-      <!-- Action -->
-      <button class="review-btn" (click)="editClaim(claim)">
-        Review & Decide
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab==='ALL'" (click)="setTab('ALL')">
+        All ({{ allCount }})
       </button>
+      <button class="tab" [class.active]="activeTab==='READY'" (click)="setTab('READY')">
+        Ready ({{ readyCount }})
+      </button>
+      <button class="tab" [class.active]="activeTab==='WAITING'" (click)="setTab('WAITING')">
+        Waiting ({{ waitingCount }})
+      </button>
+      <button class="tab" [class.active]="activeTab==='COMPLETED'" (click)="setTab('COMPLETED')">
+        Completed ({{ completedCount }})
+      </button>
+    </div>
 
+    <!-- Search + Refresh -->
+    <div class="search">
+      <input
+        type="text"
+        placeholder="Search by Claim ID / Policy No / Type / Description..."
+        [(ngModel)]="searchText"
+        (input)="applyFilters()"
+      />
+      <button class="refresh" (click)="loadClaims()">Refresh</button>
     </div>
 
   </div>
+
+  <!-- Loading / Error -->
+  <div *ngIf="loading" class="info-box">Loading claims...</div>
+  <div *ngIf="showError" class="error-box">{{ errorMessage }}</div>
+
+  <!-- Empty -->
+  <div *ngIf="!loading && !showError && filteredClaims.length === 0" class="info-box">
+    No claims found for this filter.
+  </div>
+
+  <!-- Claims Table -->
+  <div *ngIf="!loading && !showError && filteredClaims.length > 0" class="table-wrap">
+    <table class="claims-table">
+      <thead>
+        <tr>
+          <th>Claim</th>
+          <th>Type</th>
+          <th>Policy No</th>
+          <th>Description</th>
+          <th>Stage</th>
+          <th>Decision</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let claim of filteredClaims">
+
+          <td class="id">#{{ claim.claimId || claim.id }}</td>
+          <td>{{ claim.insuranceType }}</td>
+          <td>{{ claim.policyNumber }}</td>
+          <td class="desc">{{ claim.description }}</td>
+
+          <!-- Stage -->
+          <td>
+            <span class="badge"
+              [class.ready]="claim.readyForDecision"
+              [class.wait]="!claim.investigationCompleted && !claim.finalCompleted"
+              [class.done]="claim.finalCompleted">
+              {{ stageLabel(claim) }}
+            </span>
+
+            <div class="hint" *ngIf="!claim.finalCompleted">
+              <span *ngIf="claim.readyForDecision">Investigation done ✅ You can decide.</span>
+              <span *ngIf="!claim.readyForDecision && !claim.finalCompleted">Awaiting investigator report ⏳</span>
+            </div>
+
+            <div class="hint" *ngIf="claim.finalCompleted">
+              Final Status: <b>{{ claim.statusRaw }}</b>
+            </div>
+          </td>
+
+          <!-- Decision -->
+          <td>
+            <div class="actions">
+              <button class="btn approve"
+                      [disabled]="!claim.readyForDecision"
+                      (click)="approve(claim)">
+                Approve
+              </button>
+
+              <button class="btn reject"
+                      [disabled]="!claim.readyForDecision"
+                      (click)="reject(claim)">
+                Reject
+              </button>
+            </div>
+
+            <div class="disabled-text" *ngIf="!claim.readyForDecision && !claim.finalCompleted">
+              Decision disabled until investigator completes.
+            </div>
+
+            <div class="completed-text" *ngIf="claim.finalCompleted">
+              Decision already done.
+            </div>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" *ngIf="showToast">{{ toast }}</div>
 
 </div>
