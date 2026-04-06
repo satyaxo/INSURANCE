@@ -12,12 +12,14 @@
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/controller/UnderwriterController.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/InsuranceClaimsProcessingSystemApplication.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/service/ClaimDocumentStorageService.java
+/home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/service/EmailService.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/controller/PolicyholderController.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/entity/Adjuster.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/service/ClaimService.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/controller/InvestigatorController.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/controller/ClaimController.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/jwt/JwtRequestFilter.java
+/home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/service/EmailOtpService.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/service/InvestigationService.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/dto/LoginRequest.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/controller/RegisterAndLoginController.java
@@ -32,6 +34,9 @@
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/config/Configurations.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/entity/Claim.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/entity/Policyholder.java
+/home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/repository/EmailOtpRepository.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/repository/UserRepository.java
+/home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/entity/EmailOtp.java
+/home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/controller/EmailOtpController.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/repository/PolicyholderRepository.java
 /home/coder/app/server/src/main/java/com/edutech/insurance_claims_processing_system/entity/User.java

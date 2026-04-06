@@ -1,6 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpService } from '../../services/http.service';
 
+type TrackStep = {
+  key: string;
+  title: string;
+  subtitle: string;
+};
+
 @Component({
   selector: 'app-dashbaord',
   templateUrl: './dashbaord.component.html',
@@ -8,45 +14,115 @@ import { HttpService } from '../../services/http.service';
 })
 export class DashbaordComponent implements OnInit {
 
-  claimList: any[] = [];
-  selectedClaim: any = null;
-
+  isLoading = false;
   showError = false;
   errorMessage = '';
+
+  trackingList: any[] = [];
+  selected: any = null;
+
+  policySearch = '';
+
+  steps: TrackStep[] = [
+    { key: 'SUBMITTED',               title: 'Submitted',              subtitle: 'Claim received successfully' },
+    { key: 'ADJUSTER_REVIEW',         title: 'Adjuster Review',         subtitle: 'Claim validation in progress' },
+    { key: 'INVESTIGATION',           title: 'Investigation Assigned',  subtitle: 'Investigator assigned to case' },
+    { key: 'INVESTIGATION_COMPLETED', title: 'Investigation Completed', subtitle: 'Investigation report submitted' },
+    { key: 'UNDERWRITER_REVIEW',      title: 'Underwriter Review',      subtitle: 'Final decision under review' },
+    { key: 'APPROVED',                title: 'Approved',               subtitle: 'Claim approved for settlement' },
+    { key: 'REJECTED',                title: 'Rejected',               subtitle: 'Claim rejected after review' }
+  ];
 
   constructor(private httpService: HttpService) {}
 
   ngOnInit(): void {
-    this.loadClaims();
+    this.loadTracking();
   }
 
-  private loadClaims(): void {
-    const userId = localStorage.getItem('userId');
+  loadTracking(): void {
+    this.isLoading = true;
+    this.showError = false;
+    this.errorMessage = '';
 
-    if (!userId) {
+    const policyholderId = Number(localStorage.getItem('userId'));
+    if (!policyholderId) {
+      this.isLoading = false;
       this.showError = true;
-      this.errorMessage = 'User not logged in.';
+      this.errorMessage = 'Policyholder not logged in.';
       return;
     }
 
-    // ✅ IMPORTANT: use tracking endpoint (not normal claims)
-    this.httpService.getPolicyholderClaimsTracking(+userId).subscribe({
+    this.httpService.getPolicyholderClaimsTracking(policyholderId).subscribe({
       next: (res: any[]) => {
-        this.claimList = res || [];
+        this.trackingList = res || [];
+        this.isLoading = false;
+
+        if (!this.selected && this.trackingList.length > 0) {
+          this.selectClaim(this.trackingList[0]);
+        }
       },
       error: (err) => {
-        console.error('Tracking API error:', err);
+        console.error(err);
+        this.isLoading = false;
         this.showError = true;
-        this.errorMessage = `Unable to fetch claim tracking details. (${err?.status || 'NO_STATUS'})`;
+        this.errorMessage = `Unable to load claim tracking. (${err?.status || 'NO_STATUS'})`;
       }
     });
   }
 
-  selectClaim(claim: any): void {
-    this.selectedClaim = claim;
+  selectClaim(item: any): void {
+    this.selected = item;
   }
 
-  // ✅ FIX: Used by dashboard HTML to show "Bike Insurance" instead of "BIKE"
+  clearSearch(): void {
+    this.policySearch = '';
+  }
+
+  filteredList(): any[] {
+    const q = (this.policySearch || '').trim().toLowerCase().replace('#', '');
+    if (!q) return this.trackingList;
+
+    return (this.trackingList || []).filter(c =>
+      ((c?.policyNumber || '').toString().toLowerCase().replace('#','')).includes(q)
+    );
+  }
+
+  activeIndex(item: any): number {
+    const stage = (item?.stage || item?.status || '').toString().trim().toUpperCase();
+
+    if (stage === 'REJECTED') return this.steps.findIndex(s => s.key === 'REJECTED');
+
+    const idx = this.steps.findIndex(s => s.key === stage);
+    return idx >= 0 ? idx : 0;
+  }
+
+  isDone(item: any, stepIndex: number): boolean {
+    const ai = this.activeIndex(item);
+    const stage = (item?.stage || item?.status || '').toString().trim().toUpperCase();
+
+    if (stage === 'REJECTED') return stepIndex < ai;
+    return stepIndex < ai;
+  }
+
+  isActive(item: any, stepIndex: number): boolean {
+    return this.activeIndex(item) === stepIndex;
+  }
+
+  isRejected(item: any): boolean {
+    const stage = (item?.stage || item?.status || '').toString().trim().toUpperCase();
+    return stage === 'REJECTED' || (item?.status || '').toString().trim().toUpperCase() === 'REJECTED';
+  }
+
+  badgeClass(item: any): string {
+    const st = (item?.status || '').toString().trim().toUpperCase();
+    if (st === 'APPROVED') return 'ic-badge approved';
+    if (st === 'REJECTED') return 'ic-badge rejected';
+    if (st === 'UNDER_REVIEW') return 'ic-badge review';
+    if (st.includes('INVESTIGATION')) return 'ic-badge invest';
+    if (st === 'SUBMITTED') return 'ic-badge submitted';
+    return 'ic-badge progress';
+  }
+
   typeLabel(type: string): string {
     const t = (type || '').toUpperCase();
     if (t === 'CAR') return 'Car Insurance';
@@ -59,16 +135,9 @@ export class DashbaordComponent implements OnInit {
     return type || '-';
   }
 
-  getBadgeClass(stage: string): string {
-    switch (stage) {
-      case 'SUBMITTED': return 'badge bg-secondary';
-      case 'ADJUSTER_REVIEW': return 'badge bg-info';
-      case 'INVESTIGATION': return 'badge bg-warning';
-      case 'INVESTIGATION_COMPLETED': return 'badge bg-primary';
-      case 'UNDERWRITER_REVIEW': return 'badge bg-dark';
-      case 'APPROVED': return 'badge bg-success';
-      case 'REJECTED': return 'badge bg-danger';
-      default: return 'badge bg-secondary';
-    }
+  progressPercent(item: any): number {
+    const ai = this.activeIndex(item);
+    const total = this.steps.length - 1;
+    return total <= 0 ? 0 : Math.round((ai / total) * 100);
   }
 }

@@ -1,24 +1,369 @@
-.container {
-  max-width: 800px;
+/* =========================
+   PAGE WRAPPER (Login Theme)
+   ========================= */
+.ic-auth-page.policy-track-page {
+  min-height: calc(100vh - 56px); /* navbar height */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 14px;
 
-  h2 {
-    color: #333;
-  }
+  /* ✅ Same background style as login */
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.35), transparent 60%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.25), transparent 60%),
+    #020617;
+  color: #E5E7EB;
+}
 
-  .card {
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    background: #f8f9fa;
+/* ✅ Center layout (fix "half screen" issue) */
+.policy-layout {
+  width: min(1200px, 96vw);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 18px;
+}
 
-    .card-body {
-      padding: 20px;
-    }
+/* =========================
+   LEFT + RIGHT CARDS (Premium)
+   ========================= */
+.policy-list-card,
+.policy-track-card {
+  background: #0F172A;
+  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.55);
+  color: #E5E7EB;
+  min-height: 620px;
+}
 
-    ul {
-      margin-top: 10px;
-      li {
-        margin-bottom: 5px;
-      }
-    }
-  }
+.empty-card .empty-state {
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255,255,255,0.14);
+  background: rgba(2,6,23,0.45);
+  color: #CBD5F5;
+}
+
+/* =========================
+   HEADER
+   ========================= */
+.policy-list-head,
+.track-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.policy-title,
+.track-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.policy-sub {
+  margin: 6px 0 0;
+  color: #CBD5F5;
+  font-size: .85rem;
+}
+
+.track-meta {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.meta-pill {
+  background: rgba(2,6,23,0.6);
+  border: 1px solid rgba(255,255,255,0.10);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: .78rem;
+  color: #CBD5F5;
+}
+
+/* =========================
+   INPUTS + BUTTONS (Same Theme)
+   ========================= */
+.ic-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #020617;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #E5E7EB;
+  outline: none;
+}
+.ic-input::placeholder { color: #64748B; }
+.ic-input:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
+}
+
+.ic-mini-btn {
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-weight: 800;
+  border: none;
+  background: linear-gradient(135deg, #3B82F6, #22D3EE);
+  color: #020617;
+  cursor: pointer;
+}
+.ic-mini-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(59, 130, 246, 0.35);
+}
+
+.ic-mini-btn.ghost {
+  background: transparent;
+  color: #93C5FD;
+  border: 1px solid rgba(147,197,253,0.35);
+  box-shadow: none;
+}
+.ic-mini-btn.ghost:hover {
+  background: rgba(59, 130, 246, 0.10);
+}
+
+/* Search Row */
+.policy-search {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 14px 0 10px;
+}
+
+/* =========================
+   ALERTS / INFO
+   ========================= */
+.ic-alert-error {
+  margin-top: 10px;
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 4px solid #EF4444;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  color: #FCA5A5;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.ic-info {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(59,130,246,0.10);
+  border: 1px solid rgba(59,130,246,0.18);
+  border-radius: 10px;
+  color: #cfe6ff;
+  font-size: .85rem;
+}
+
+/* =========================
+   CLAIM LIST
+   ========================= */
+.claim-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.claim-item {
+  width: 100%;
+  text-align: left;
+  background: rgba(2,6,23,0.65);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  padding: 12px;
+  color: #E5E7EB;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform .15s ease, border-color .15s ease, background .15s ease;
+}
+.claim-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(96,165,250,0.55);
+}
+.claim-item.active {
+  border-color: rgba(59,130,246,0.9);
+  background: rgba(59,130,246,0.12);
+}
+
+.claim-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.claim-pn { font-weight: 900; }
+.claim-type { color: #CBD5F5; font-size: .85rem; margin-top: 4px; }
+.claim-date { color: #94A3B8; font-size: .8rem; margin-top: 2px; }
+.claim-chevron { font-size: 22px; color: #93C5FD; }
+
+/* =========================
+   BADGES
+   ========================= */
+.ic-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: .75rem;
+  border: 1px solid rgba(255,255,255,0.12);
+  white-space: nowrap;
+}
+
+.ic-badge.submitted { background: rgba(148,163,184,0.15); color: #E5E7EB; }
+.ic-badge.progress  { background: rgba(59,130,246,0.15); color: #93C5FD; }
+.ic-badge.invest    { background: rgba(234,179,8,0.16); color: #fde68a; }
+.ic-badge.review    { background: rgba(30,41,59,0.65); color: #E5E7EB; }
+.ic-badge.approved  { background: rgba(34,197,94,0.18); color: #bbf7d0; }
+.ic-badge.rejected  { background: rgba(239,68,68,0.18); color: #fecaca; }
+
+/* =========================
+   TRACK INFO BOX
+   ========================= */
+.track-info {
+  background: rgba(2,6,23,0.55);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.info-k {
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #93C5FD;
+}
+.info-v { margin-top: 6px; color: #E5E7EB; }
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+.info-cell {
+  background: rgba(15,23,42,0.75);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+/* =========================
+   STEPPER (Animated Tracking)
+   ========================= */
+.stepper {
+  position: relative;
+  padding: 8px 6px 6px;
+}
+
+.stepper-line {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 22px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(148,163,184,0.18);
+  overflow: hidden;
+}
+
+.stepper-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #3B82F6, #22D3EE);
+  border-radius: 999px;
+  transition: width .65s cubic-bezier(.2,.8,.2,1);
+}
+.stepper-fill.rejected {
+  background: linear-gradient(90deg, #ef4444, #fb7185);
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 6px;
+  position: relative;
+}
+
+.dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 2px solid rgba(148,163,184,0.35);
+  background: rgba(2,6,23,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex: 0 0 26px;
+}
+
+.step.done .dot {
+  border-color: rgba(34,197,94,0.75);
+  background: rgba(34,197,94,0.18);
+}
+.step.active .dot {
+  border-color: rgba(59,130,246,0.95);
+  background: rgba(59,130,246,0.20);
+}
+.step.rejected .dot {
+  border-color: rgba(239,68,68,0.95);
+  background: rgba(239,68,68,0.20);
+}
+
+.check {
+  font-weight: 900;
+  color: #bbf7d0;
+  font-size: 14px;
+}
+
+.pulse {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 2px solid rgba(59,130,246,0.65);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%   { transform: scale(1); opacity: .85; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.step-text .step-title {
+  font-weight: 900;
+  color: #E5E7EB;
+}
+.step-text .step-sub {
+  font-size: .82rem;
+  color: #94A3B8;
+  margin-top: 4px;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+@media (max-width: 960px) {
+  .policy-layout { grid-template-columns: 1fr; }
+  .policy-list-card, .policy-track-card { min-height: auto; }
+  .info-grid { grid-template-columns: 1fr; }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .stepper-fill { transition: none; }
+  .pulse { animation: none; }
+  .claim-item { transition: none; }
 }

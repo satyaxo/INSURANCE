@@ -1,121 +1,210 @@
-<div class="container mt-4">
-  <h2 class="text-center mb-4">Investigator Report</h2>
+<div class="container mt-4 investigator-page">
 
-  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="needs-validation">
-
-    <!-- ✅ Select Assigned Claim -->
-    <div class="form-group mb-3">
-      <label for="claimId">Select Assigned Claim</label>
-      <select
-        id="claimId"
-        formControlName="claimId"
-        class="form-select"
-        (change)="onClaimChange()"
-      >
-        <option value="" disabled>Select Claim</option>
-        <option *ngFor="let claim of assignedClaims" [value]="claim.id">
-          {{ claim.policyNumber || '-' }} - {{ claim.insuranceType || '' }} - {{ claim.description }}
-        </option>
-      </select>
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h2 class="title">Investigation Workbench</h2>
+      <p class="subtitle">
+        Review assigned claims, verify evidence, and submit your investigation report.
+      </p>
     </div>
+    <span class="pill">Investigator</span>
+  </div>
 
-    <!-- ✅ Full Claim Details Panel -->
-    <div *ngIf="selectedClaim" class="card mb-3">
-      <div class="card-body">
-        <h5 class="card-title mb-3">Claim Details</h5>
-
-        <p><strong>Policy Number:</strong> {{ selectedClaim.policyNumber || '-' }}</p>
-        <p><strong>Insurance Type:</strong> {{ selectedClaim.insuranceType || '-' }}</p>
-        <p><strong>Accident Date:</strong> {{ selectedClaim.date | date:'dd-MMM-yyyy' }}</p>
-        <p><strong>Description:</strong> {{ selectedClaim.description }}</p>
-        <p><strong>Status:</strong> {{ selectedClaim.status }}</p>
-
-        <hr />
-
-        <!-- ✅ Documents -->
-        <h6>Uploaded Documents</h6>
-
-        <div *ngIf="docsLoading" class="text-muted">Loading documents...</div>
-
-        <div *ngIf="docsError" class="alert alert-danger p-2">
-          {{ docsError }}
-        </div>
-
-        <div *ngIf="!docsLoading && claimDocuments.length === 0" class="text-muted">
-          No documents uploaded for this claim.
-        </div>
-
-        <ul class="list-group" *ngIf="!docsLoading && claimDocuments.length > 0">
-          <li class="list-group-item d-flex justify-content-between align-items-center"
-              *ngFor="let doc of claimDocuments">
-            <span>{{ doc.originalFileName }}</span>
-
-            <button type="button"
-                    class="btn btn-sm btn-outline-primary"
-                    (click)="previewDocument(doc)">
-              Preview
-            </button>
-          </li>
-        </ul>
-
-      </div>
-    </div>
-
-    <!-- ✅ Report -->
-    <div class="form-group mb-3">
-      <label for="report">Report</label>
-      <textarea
-        id="report"
-        formControlName="report"
-        class="form-control"
-        rows="4"
-      ></textarea>
-    </div>
-
-    <!-- ✅ Status -->
-    <div class="form-group mb-3">
-      <label for="status">Status</label>
-      <select id="status" formControlName="status" class="form-select">
-        <option value="" disabled>Select Status</option>
-        <option value="Pending">Pending</option>
-        <option value="Completed">Completed</option>
-      </select>
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100">
-      {{ updateId ? 'Update Investigation' : 'Create Investigation' }}
-    </button>
-  </form>
-
-  <!-- Error -->
-  <div *ngIf="showError" class="alert alert-danger mt-3">
+  <!-- Alerts -->
+  <div *ngIf="showError" class="alert alert-danger">
     {{ errorMessage }}
   </div>
 
-  <!-- Success -->
-  <div *ngIf="showMessage" class="alert alert-success mt-3">
+  <div *ngIf="showMessage" class="alert alert-success">
     {{ responseMessage }}
   </div>
 
-  <!-- Investigation List -->
-  <h3 class="mt-4">Investigations</h3>
-  <ul class="list-group">
-    <li
-      *ngFor="let inv of investigationList"
-      class="list-group-item d-flex justify-content-between align-items-center"
-    >
+  <div class="row g-4">
+
+    <!-- LEFT: Claim + Evidence -->
+    <div class="col-lg-6">
+      <div class="panel">
+        <div class="panel-head">
+          <h5 class="panel-title">Assigned Claim</h5>
+          <small class="muted">Completed investigations are removed only from dropdown.</small>
+        </div>
+
+        <!-- ✅ NO nested form here -->
+        <div class="mb-3" [formGroup]="itemForm">
+          <label class="form-label">Select Assigned Claim</label>
+          <select class="form-select" formControlName="claimId" (change)="onClaimChange()">
+            <option value="" disabled>Select Claim</option>
+            <option *ngFor="let claim of pendingAssignedClaims" [value]="claim.id">
+              {{ claim.policyNumber || '-' }} • {{ typeLabel(claim.insuranceType) }} • {{ claim.description }}
+            </option>
+          </select>
+
+          <small class="text-danger"
+                 *ngIf="itemForm.get('claimId')?.touched && itemForm.get('claimId')?.invalid">
+            Claim selection is required.
+          </small>
+        </div>
+
+        <div *ngIf="!selectedClaim" class="empty">
+          Select a claim from dropdown to view details and evidence.
+        </div>
+
+        <div *ngIf="selectedClaim">
+          <div class="grid">
+            <div class="kv">
+              <div class="k">Policy Number</div>
+              <div class="v">{{ selectedClaim.policyNumber || '-' }}</div>
+            </div>
+
+            <div class="kv">
+              <div class="k">Insurance Type</div>
+              <div class="v">{{ typeLabel(selectedClaim.insuranceType) }}</div>
+            </div>
+
+            <div class="kv">
+              <div class="k">Accident Date</div>
+              <div class="v">{{ selectedClaim.date | date:'dd-MMM-yyyy' }}</div>
+            </div>
+
+            <div class="kv">
+              <div class="k">Current Claim Status</div>
+              <div class="v">{{ selectedClaim.status }}</div>
+            </div>
+          </div>
+
+          <div class="desc-box">
+            <div class="k">Incident Description</div>
+            <div class="v">{{ selectedClaim.description }}</div>
+          </div>
+
+          <div class="docs">
+            <div class="docs-head">
+              <h6 class="m-0">Evidence / Documents</h6>
+              <span class="muted small" *ngIf="docsLoading">Loading…</span>
+            </div>
+
+            <div *ngIf="docsError" class="alert alert-danger p-2 mt-2">
+              {{ docsError }}
+            </div>
+
+            <div *ngIf="!docsLoading && claimDocuments.length === 0" class="muted mt-2">
+              No documents uploaded for this claim.
+            </div>
+
+            <div class="doc-list" *ngIf="!docsLoading && claimDocuments.length > 0">
+              <button type="button" class="doc-item"
+                      *ngFor="let doc of claimDocuments"
+                      (click)="previewDocument(doc)">
+                <span class="doc-name">{{ doc.originalFileName }}</span>
+                <span class="doc-action">Preview</span>
+              </button>
+            </div>
+
+            <small class="muted d-block mt-2">Preview opens file in a new tab.</small>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT: Report + Status -->
+    <div class="col-lg-6">
+      <div class="panel">
+        <div class="panel-head">
+          <h5 class="panel-title">Investigation Report</h5>
+          <small class="muted">Submit findings after reviewing evidence.</small>
+        </div>
+
+        <!-- ✅ Only ONE form in the page -->
+        <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
+
+          <div class="mb-3">
+            <label class="form-label">Report</label>
+            <textarea class="form-control"
+                      rows="7"
+                      formControlName="report"
+                      placeholder="Write findings: verification notes, damage assessment, fraud indicators, supporting evidence...">
+            </textarea>
+
+            <small class="text-danger"
+                   *ngIf="itemForm.get('report')?.touched && itemForm.get('report')?.invalid">
+              Report is required.
+            </small>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Investigation Status</label>
+            <select class="form-select" formControlName="status">
+              <option value="" disabled>Select Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Completed">Completed</option>
+            </select>
+
+            <small class="text-danger"
+                   *ngIf="itemForm.get('status')?.touched && itemForm.get('status')?.invalid">
+              Status is required.
+            </small>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100" [disabled]="itemForm.invalid">
+            {{ updateId ? 'Update Investigation' : 'Submit Investigation' }}
+          </button>
+
+          <div class="note mt-3">
+            <b>Note:</b> If you mark status as <b>Completed</b>, the claim will disappear only from dropdown,
+            but it will remain in <b>Investigation Records</b> below.
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Records -->
+  <div class="panel mt-4">
+    <div class="panel-head records-head">
       <div>
-        <strong>Claim:</strong> {{ inv.claim?.description || 'Claim not linked' }} <br />
-        <strong>Status:</strong> {{ inv.status }}
+        <h5 class="panel-title">Investigation Records (Read‑only History)</h5>
+        <small class="muted">Completed items stay here permanently.</small>
       </div>
 
-      <button
-        class="btn btn-sm btn-secondary"
-        *ngIf="inv.status !== 'Completed' && inv.status !== 'COMPLETED'"
-        (click)="edit(inv)"
-      >
-        Edit
-      </button>
-    </li>
-  </ul>
+      <div class="records-search">
+        <input class="form-control form-control-sm"
+               [(ngModel)]="recordSearch"
+               [ngModelOptions]="{standalone: true}"
+               placeholder="Search records (policy / description / status)" />
+      </div>
+    </div>
+
+    <div *ngIf="filteredInvestigations().length === 0" class="empty">
+      No investigation records found.
+    </div>
+
+    <div class="record-list" *ngIf="filteredInvestigations().length > 0">
+      <div class="record-item" *ngFor="let inv of filteredInvestigations()">
+        <div class="left">
+          <div class="t">
+            {{ inv?.claim?.policyNumber || '-' }} • {{ typeLabel(inv?.claim?.insuranceType) }}
+          </div>
+          <div class="d">{{ inv?.claim?.description || 'Claim not linked' }}</div>
+        </div>
+
+        <div class="right">
+          <span class="badge"
+                [ngClass]="(inv?.status || '').toString().toUpperCase().includes('COMPLETED') ? 'bg-success' : 'bg-warning text-dark'">
+            {{ inv.status }}
+          </span>
+
+          <button class="btn btn-sm btn-outline-secondary ms-2"
+                  *ngIf="!(inv?.status || '').toString().toUpperCase().includes('COMPLETED')"
+                  (click)="edit(inv)">
+            Edit
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>

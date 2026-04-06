@@ -1,129 +1,120 @@
-<div class="container mt-4">
-  <h2 class="text-center mb-4">My Claims Dashboard</h2>
+<!-- Full-page background wrapper (matches login) -->
+<div class="ic-auth-page policy-track-page">
 
-  <!-- Error -->
-  <div *ngIf="showError" class="alert alert-danger">
-    {{ errorMessage }}
-  </div>
+  <div class="policy-layout">
 
-  <!-- Claims List -->
-  <h4>Your Claims</h4>
-  <ul class="list-group mb-4">
-
-    <li
-      *ngFor="let claim of claimList"
-      class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-      style="cursor: pointer"
-      (click)="selectClaim(claim)"
-    >
-      <div>
-        <!-- ✅ MAIN FIX: Heading should be Policy Number -->
-        <strong>{{ claim.policyNumber || 'Policy Number' }}</strong><br />
-
-        <!-- ✅ Optional: show Claim Type under heading -->
-        <small class="text-muted">
-          {{ typeLabel(claim.insuranceType) }}
-        </small><br />
-
-        <!-- Filed date -->
-        <small>
-          Filed on: {{ claim.date | date:'dd-MMM-yyyy' }}
-        </small>
+    <!-- LEFT: Claims list card -->
+    <div class="policy-list-card">
+      <div class="policy-list-head">
+        <div>
+          <h3 class="policy-title">Your Claims</h3>
+          <p class="policy-sub">Track claim progress in real time</p>
+        </div>
+        <button class="ic-mini-btn" (click)="loadTracking()">Refresh</button>
       </div>
 
-      <!-- Status badge -->
-      <span [class]="getBadgeClass(claim.stage)">
-        {{ claim.stage }}
-      </span>
-    </li>
+      <!-- Alerts -->
+      <div *ngIf="isLoading" class="ic-info">Loading claims...</div>
+      <div *ngIf="showError" class="ic-alert-error">{{ errorMessage }}</div>
 
-  </ul>
-
-  <!-- Claim Tracking Details -->
-  <div *ngIf="selectedClaim" class="card">
-    <div class="card-body">
-
-      <h5 class="card-title">Claim Tracking</h5>
-
-      <!-- ✅ Claim type should show insuranceType -->
-      <p>
-        <strong>Claim Type:</strong>
-        {{ typeLabel(selectedClaim.insuranceType) }}
-      </p>
-
-      <!-- ✅ Policy number -->
-      <p *ngIf="selectedClaim.policyNumber">
-        <strong>Policy Number:</strong>
-        {{ selectedClaim.policyNumber }}
-      </p>
-
-      <!-- Description -->
-      <p>
-        <strong>Description:</strong>
-        {{ selectedClaim.description }}
-      </p>
-
-      <p>
-        <strong>Status:</strong>
-        {{ selectedClaim.status }}
-      </p>
-
-      <hr />
-
-      <!-- Timeline -->
-      <h6>Progress</h6>
-      <ul class="list-group">
-
-        <li class="list-group-item">
-          ✅ Submitted
-        </li>
-
-        <li class="list-group-item"
-            [class.list-group-item-success]="selectedClaim.stage !== 'SUBMITTED'">
-          ✅ Adjuster Review
-        </li>
-
-        <li class="list-group-item"
-            [class.list-group-item-success]="selectedClaim.stage === 'INVESTIGATION'
-              || selectedClaim.stage === 'INVESTIGATION_COMPLETED'
-              || selectedClaim.stage === 'UNDERWRITER_REVIEW'
-              || selectedClaim.stage === 'APPROVED'
-              || selectedClaim.stage === 'REJECTED'">
-          ✅ Investigation Assigned
-        </li>
-
-        <li class="list-group-item"
-            [class.list-group-item-success]="selectedClaim.stage === 'INVESTIGATION_COMPLETED'
-              || selectedClaim.stage === 'UNDERWRITER_REVIEW'
-              || selectedClaim.stage === 'APPROVED'
-              || selectedClaim.stage === 'REJECTED'">
-          ✅ Investigation Completed
-        </li>
-
-        <li class="list-group-item"
-            [class.list-group-item-success]="selectedClaim.stage === 'UNDERWRITER_REVIEW'
-              || selectedClaim.stage === 'APPROVED'
-              || selectedClaim.stage === 'REJECTED'">
-          ✅ Underwriter Review
-        </li>
-
-        <li class="list-group-item"
-            [class.list-group-item-success]="selectedClaim.stage === 'APPROVED'">
-          ✅ Claim Approved
-        </li>
-
-        <li class="list-group-item"
-            [class.list-group-item-danger]="selectedClaim.stage === 'REJECTED'">
-          ❌ Claim Rejected
-        </li>
-
-      </ul>
-
-      <!-- Investigation status -->
-      <div *ngIf="selectedClaim.investigationStatus" class="alert alert-info mt-3">
-        Investigator Status: {{ selectedClaim.investigationStatus }}
+      <!-- Search -->
+      <div class="policy-search">
+        <input class="ic-input"
+               [(ngModel)]="policySearch"
+               [ngModelOptions]="{standalone:true}"
+               placeholder="Search by Policy Number (e.g., #45033512)" />
+        <button class="ic-mini-btn ghost" (click)="clearSearch()" [disabled]="!policySearch">Clear</button>
       </div>
 
+      <div class="claim-list" *ngIf="filteredList().length > 0">
+        <button class="claim-item"
+                *ngFor="let c of filteredList()"
+                [class.active]="selected?.id === c.id"
+                (click)="selectClaim(c)">
+          <div class="claim-item-main">
+            <div class="claim-row">
+              <div class="claim-pn">{{ c.policyNumber }}</div>
+              <span [class]="badgeClass(c)">{{ c.status }}</span>
+            </div>
+            <div class="claim-type">{{ typeLabel(c.insuranceType) }}</div>
+            <div class="claim-date">Filed on: {{ c.date | date:'dd-MMM-yyyy' }}</div>
+          </div>
+          <div class="claim-chevron">›</div>
+        </button>
+      </div>
+
+      <div class="ic-info" *ngIf="!isLoading && filteredList().length === 0">
+        No claims found.
+      </div>
     </div>
+
+    <!-- RIGHT: Tracking Workbench card -->
+    <div class="policy-track-card" *ngIf="selected">
+      <div class="track-head">
+        <div>
+          <h3 class="track-title">Claim Tracking</h3>
+          <div class="track-meta">
+            <span class="meta-pill">{{ typeLabel(selected.insuranceType) }}</span>
+            <span class="meta-pill">Policy: {{ selected.policyNumber }}</span>
+          </div>
+        </div>
+        <span [class]="badgeClass(selected)">{{ selected.status }}</span>
+      </div>
+
+      <div class="track-body">
+        <div class="track-info">
+          <div class="info-block">
+            <div class="info-k">Description</div>
+            <div class="info-v">{{ selected.description }}</div>
+          </div>
+          <div class="info-grid">
+            <div class="info-cell">
+              <div class="info-k">Accident Date</div>
+              <div class="info-v">{{ selected.date | date:'dd-MMM-yyyy' }}</div>
+            </div>
+            <div class="info-cell">
+              <div class="info-k">Stage</div>
+              <div class="info-v">{{ selected.stage }}</div>
+            </div>
+            <div class="info-cell">
+              <div class="info-k">Investigation</div>
+              <div class="info-v">{{ selected.investigationStatus || 'N/A' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Animated Stepper -->
+        <div class="stepper">
+          <div class="stepper-line">
+            <div class="stepper-fill"
+                 [style.width.%]="progressPercent(selected)"
+                 [class.rejected]="isRejected(selected)">
+            </div>
+          </div>
+          <div class="step"
+               *ngFor="let s of steps; let i = index"
+               [class.done]="isDone(selected,i)"
+               [class.active]="isActive(selected,i)"
+               [class.rejected]="isRejected(selected) && s.key === 'REJECTED' && isActive(selected,i)">
+            <div class="dot">
+              <span class="check" *ngIf="isDone(selected,i)">✓</span>
+              <span class="pulse" *ngIf="isActive(selected,i)"></span>
+            </div>
+            <div class="step-text">
+              <div class="step-title">{{ s.title }}</div>
+              <div class="step-sub">{{ s.subtitle }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No selection -->
+    <div class="policy-track-card empty-card" *ngIf="!selected && !isLoading">
+      <div class="empty-state">
+        Select a claim from the left to view tracking.
+      </div>
+    </div>
+
   </div>
 </div>

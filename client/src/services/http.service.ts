@@ -63,7 +63,7 @@ export class HttpService {
     return this.http.get(this.serverName + `/api/adjuster/claims`, { headers });
   }
 
-  // ✅ NEW: Assign page dropdown should use this (UNDER_PROGRESS only)
+  // ✅ Assign page dropdown should use this (UNDER_PROGRESS only)
   getAssignableClaims(): Observable<any> {
     const authToken = this.authService.getToken();
     let headers = new HttpHeaders();
@@ -191,63 +191,81 @@ export class HttpService {
     return this.http.post(this.serverName + `/api/user/register`, details, { headers });
   }
 
+  // ✅ OTP: Send OTP (NO JWT needed)
+  sendOtp(email: string): Observable<any> {
+    let headers = new HttpHeaders().set('Content-Type', 'application/json');
+    return this.http.post(
+      `${this.serverName}/api/user/send-otp`,
+      { email },
+      { headers }
+    );
+  }
 
-getPolicyholderClaimsTracking(policyholderId: number): Observable<any[]> {
-  const authToken = this.authService.getToken();
+  // ✅ OTP: Verify OTP (NO JWT needed)
+  verifyOtp(email: string, otp: string): Observable<any> {
+    let headers = new HttpHeaders().set('Content-Type', 'application/json');
+    return this.http.post(
+      `${this.serverName}/api/user/verify-otp`,
+      { email, otp },
+      { headers }
+    );
+  }
 
-  let headers = new HttpHeaders()
-    .set('Content-Type', 'application/json')
-    .set('Authorization', `Bearer ${authToken}`);
+  // ================= Policyholder tracking =================
+  getPolicyholderClaimsTracking(policyholderId: number): Observable<any[]> {
+    const authToken = this.authService.getToken();
 
-  return this.http.get<any[]>(
-    `${this.serverName}/api/policyholder/claims/tracking?policyholderId=${policyholderId}`,
-    { headers }
-  );
-}
+    let headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
 
+    return this.http.get<any[]>(
+      `${this.serverName}/api/policyholder/claims/tracking?policyholderId=${policyholderId}`,
+      { headers }
+    );
+  }
 
-// ✅ Upload ONE document for a claim (multipart)
-uploadClaimDocument(claimId: number, file: File): Observable<any> {
-  const authToken = this.authService.getToken();
+  // ================= Documents =================
 
-  const headers = new HttpHeaders()
-    .set('Authorization', `Bearer ${authToken}`);
+  // ✅ Upload ONE document for a claim (multipart)
+  uploadClaimDocument(claimId: number, file: File): Observable<any> {
+    const authToken = this.authService.getToken();
 
-  const formData = new FormData();
-  formData.append('file', file);
+    const headers = new HttpHeaders()
+      .set('Authorization', `Bearer ${authToken}`);
 
-  return this.http.post(
-    `${this.serverName}/api/policyholder/claim/${claimId}/documents`,
-    formData,
-    { headers }
-  );
-}
+    const formData = new FormData();
+    formData.append('file', file);
 
-// ✅ List documents for a claim
-getClaimDocuments(claimId: number): Observable<any[]> {
-  const authToken = this.authService.getToken();
-  const headers = new HttpHeaders()
-    .set('Content-Type', 'application/json')
-    .set('Authorization', `Bearer ${authToken}`);
+    return this.http.post(
+      `${this.serverName}/api/policyholder/claim/${claimId}/documents`,
+      formData,
+      { headers }
+    );
+  }
 
-  return this.http.get<any[]>(
-    `${this.serverName}/api/claim/${claimId}/documents`,
-    { headers }
-  );
-}
+  // ✅ List documents for a claim
+  getClaimDocuments(claimId: number): Observable<any[]> {
+    const authToken = this.authService.getToken();
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
 
-// ✅ Download document (Blob)
-downloadClaimDocument(docId: number): Observable<Blob> {
-  const authToken = this.authService.getToken();
-  const headers = new HttpHeaders()
-    .set('Authorization', `Bearer ${authToken}`);
+    return this.http.get<any[]>(
+      `${this.serverName}/api/claim/${claimId}/documents`,
+      { headers }
+    );
+  }
 
-  return this.http.get(
-    `${this.serverName}/api/documents/${docId}/download`,
-    { headers, responseType: 'blob' }
-  );
-}
+  // ✅ Download document (Blob)
+  downloadClaimDocument(docId: number): Observable<Blob> {
+    const authToken = this.authService.getToken();
+    const headers = new HttpHeaders()
+      .set('Authorization', `Bearer ${authToken}`);
 
-
-
+    return this.http.get(
+      `${this.serverName}/api/documents/${docId}/download`,
+      { headers, responseType: 'blob' }
+    );
+  }
 }

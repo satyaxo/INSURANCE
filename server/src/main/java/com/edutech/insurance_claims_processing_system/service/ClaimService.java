@@ -89,7 +89,7 @@ public class ClaimService {
      * ✅ Policyholder submits claim
      * Rules:
      * - insuranceType required
-     * - policyNumber must match ^#\\d+$
+     * - policyNumber must match ^#\d+$
      * - accident date must not be future
      * - claim must be filed within allowed deadline based on insuranceType
      */
@@ -146,7 +146,7 @@ public class ClaimService {
         return claimRepository.save(claim);
     }
 
-    // ✅ Deadline rules per type (simple + realistic)
+    // ✅ Deadline rules per type
     private int getDeadlineDaysByInsuranceType(String insuranceType) {
         if (insuranceType == null) return DEADLINE_DEFAULT_DAYS;
 
@@ -231,9 +231,8 @@ public class ClaimService {
         return claimRepository.findByAdjusterIsNullAndStatus("SUBMITTED");
     }
 
-    // ✅ FIXED: Ready-to-Assign should show claims where investigator OR underwriter is still missing
+    // ✅ FIXED: Ready-to-Assign shows claims where investigator OR underwriter missing
     public List<Claim> getAssignableClaimsForAdjuster() {
-        // Requires ClaimRepository.findAssignableClaims("UNDER_PROGRESS")
         return claimRepository.findAssignableClaims("UNDER_PROGRESS");
     }
 
@@ -280,8 +279,7 @@ public class ClaimService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Investigation report not completed yet");
         }
 
-        if (status == null ||
-                (!"APPROVED".equalsIgnoreCase(status) && !"REJECTED".equalsIgnoreCase(status))) {
+        if (status == null || (!"APPROVED".equalsIgnoreCase(status) && !"REJECTED".equalsIgnoreCase(status))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
         }
 
@@ -289,14 +287,14 @@ public class ClaimService {
         return claimRepository.save(claim);
     }
 
-    // ✅ Underwriter DTO
+    // ✅ Underwriter DTO (UPDATED FIX HERE)
     public List<UnderwriterClaimDTO> getUnderwriterClaimsWithReport(Long underwriterId) {
         if (underwriterId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
         }
 
         List<Claim> claims = claimRepository.findClaimsWithInvestigation(underwriterId);
-        List<UnderwriterClaimDTO> result = new ArrayList<UnderwriterClaimDTO>();
+        List<UnderwriterClaimDTO> result = new ArrayList<>();
 
         for (Claim c : claims) {
             String invStatus = null;
@@ -307,13 +305,18 @@ public class ClaimService {
                 invReport = c.getInvestigation().getReport();
             }
 
+            // ✅ FIX: Use 8-arg constructor so Underwriter gets policyNumber/type/date
             UnderwriterClaimDTO dto = new UnderwriterClaimDTO(
                     c.getId(),
+                    c.getInsuranceType(),
+                    c.getPolicyNumber(),
                     c.getDescription(),
+                    c.getDate(),
                     c.getStatus(),
                     invStatus,
                     invReport
             );
+
             result.add(dto);
         }
 
@@ -327,7 +330,7 @@ public class ClaimService {
         }
 
         List<Claim> claims = claimRepository.findPolicyholderClaimsWithInvestigation(policyholderId);
-        List<PolicyholderClaimTrackingDTO> result = new ArrayList<PolicyholderClaimTrackingDTO>();
+        List<PolicyholderClaimTrackingDTO> result = new ArrayList<>();
 
         for (Claim c : claims) {
 

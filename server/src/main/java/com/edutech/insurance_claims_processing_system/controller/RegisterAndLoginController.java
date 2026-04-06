@@ -1,33 +1,30 @@
 package com.edutech.insurance_claims_processing_system.controller;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.bind.annotation.*;
 
 import com.edutech.insurance_claims_processing_system.dto.LoginRequest;
 import com.edutech.insurance_claims_processing_system.dto.LoginResponse;
 import com.edutech.insurance_claims_processing_system.entity.User;
 import com.edutech.insurance_claims_processing_system.jwt.JwtUtil;
 import com.edutech.insurance_claims_processing_system.service.UserService;
+import com.edutech.insurance_claims_processing_system.service.EmailOtpService;
 
 @RestController
 @RequestMapping("/api/user")
+@CrossOrigin(origins = "*")
 public class RegisterAndLoginController {
 
-
-    
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private EmailOtpService emailOtpService;   // ✅ NEW
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -35,15 +32,23 @@ public class RegisterAndLoginController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    // ✅ OTP VERIFIED REQUIRED REGISTER
     @PostMapping("/register")
     public ResponseEntity<User> registerUser(@RequestBody User user) {
+
+        if (user == null || user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        // ✅ BLOCK registration unless OTP verified
+        emailOtpService.requireEmailVerified(user.getEmail());
+
         User registeredUser = userService.registerUser(user);
         return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> loginUser(
-            @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> loginUser(@RequestBody LoginRequest loginRequest) {
 
         try {
             authenticationManager.authenticate(
@@ -53,7 +58,6 @@ public class RegisterAndLoginController {
                 )
             );
         } catch (AuthenticationException ex) {
-            // ✅ Required for testLoginWithWrongUsernameOrPassword
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -70,6 +74,4 @@ public class RegisterAndLoginController {
 
         return ResponseEntity.ok(response);
     }
-
-
 }

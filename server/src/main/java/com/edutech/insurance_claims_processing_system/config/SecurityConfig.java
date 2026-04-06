@@ -48,7 +48,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
 
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            .antMatchers("/api/user/register", "/api/user/login").permitAll()
+
+            // ✅ Public endpoints (NO JWT required)
+            .antMatchers(
+                "/api/user/register",
+                "/api/user/login",
+                "/api/user/send-otp",
+                "/api/user/verify-otp"
+            ).permitAll()
 
             // ✅ Make role checks robust (handles ROLE_ADJUSTER vs ADJUSTER)
             .antMatchers("/api/policyholder/**").hasAnyAuthority("ROLE_POLICYHOLDER", "POLICYHOLDER")
@@ -67,6 +74,3 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 }
-
-
-

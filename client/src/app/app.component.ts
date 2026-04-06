@@ -1,35 +1,48 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../services/auth.service';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
-  IsLoggin: any = false;
-  roleName: string | null;
+  IsLoggin: boolean = false;
+  roleName: string | null = null;
 
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(private authService: AuthService, private router: Router) {}
 
-    // ✅ load session state
+  ngOnInit(): void {
+    // ✅ Load session state on startup
+    this.syncAuthState();
+
+    // ✅ Update navbar state whenever route changes (login/logout/navigation)
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => this.syncAuthState());
+  }
+
+  private syncAuthState(): void {
+    // ✅ Your AuthService exposes getters
     this.IsLoggin = this.authService.getLoginStatus;
     this.roleName = this.authService.getRole;
-
-    // ✅ if not logged in, always go landing
-    if (!this.IsLoggin) {
-      this.router.navigateByUrl('/landing');
-    }
   }
 
   logout(): void {
     this.authService.logout();
-    window.location.reload();
+
+    // ✅ Immediately update navbar
+    this.IsLoggin = false;
+    this.roleName = null;
+
+    // ✅ Reverted: go back to normal login page
+    this.router.navigateByUrl('/login');
   }
 
-  // ✅ FIXED: role-based home navigation
+  // ✅ Role-based home navigation
   goToHome(): void {
     const role = (localStorage.getItem('role') || '').toUpperCase();
 
@@ -42,6 +55,7 @@ export class AppComponent {
     } else if (role === 'POLICYHOLDER') {
       this.router.navigateByUrl('/dashboard');
     } else {
+      // ✅ Not logged in
       this.router.navigateByUrl('/landing');
     }
   }

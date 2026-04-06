@@ -1,23 +1,221 @@
-.container {
-  max-width: 600px;
+/* ✅ Uses SAME background style as login */
+.ic-auth-page.ic-claim-page {
+  min-height: calc(100vh - 56px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 14px;
 
-  h2, h3 {
-    color: #333;
-  }
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.35), transparent 60%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.25), transparent 60%),
+    #020617;
 
-  form {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-  }
+  color: #E5E7EB;
+}
 
-  .alert {
-    text-align: center;
-    font-weight: bold;
-  }
+/* ✅ Card like Login */
+.ic-claim-card {
+  width: 100%;
+  max-width: 620px;
+  background: #0F172A;
+  border-radius: 18px;
+  padding: 34px 30px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.55);
+}
 
-  ul.list-group {
-    margin-top: 10px;
+/* Header */
+.ic-claim-header {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.ic-claim-header .ic-shield {
+  font-size: 2rem;
+  color: #60A5FA;
+}
+
+.ic-claim-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  margin-top: 10px;
+}
+
+.ic-brand-accent {
+  color: #60A5FA;
+}
+
+.ic-claim-sub {
+  font-size: 0.9rem;
+  color: #CBD5F5;
+  margin-top: 6px;
+}
+
+/* Form */
+.ic-form-group {
+  margin-bottom: 16px;
+}
+
+.ic-form-group label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #93C5FD;
+  margin-bottom: 6px;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Inputs */
+.ic-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #020617;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #E5E7EB;
+  outline: none;
+}
+
+.ic-input::placeholder {
+  color: #64748B;
+}
+
+.ic-input:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
+}
+
+.ic-textarea {
+  resize: vertical;
+}
+
+/* Helper + error text */
+.ic-help {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: #94A3B8;
+}
+
+.ic-field-error {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: #FCA5A5;
+}
+
+/* Submit button like login */
+.ic-btn-primary {
+  margin-top: 10px;
+  padding: 12px;
+  font-weight: 800;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3B82F6, #22D3EE);
+  border: none;
+  color: #020617;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ic-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(59, 130, 246, 0.45);
+}
+
+.ic-btn-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Files list */
+.ic-files {
+  margin-top: 10px;
+  background: rgba(2, 6, 23, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.ic-files-title {
+  font-weight: 900;
+  color: #CBD5F5;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.ic-file-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ic-file-row:first-of-type {
+  border-top: none;
+}
+
+.ic-file-name {
+  font-size: 0.85rem;
+  color: #E5E7EB;
+  word-break: break-all;
+}
+
+/* Mini buttons */
+.ic-mini-btn {
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+}
+
+.ic-mini-btn.ghost {
+  background: transparent;
+  border: 1px solid rgba(147, 197, 253, 0.35);
+  color: #93C5FD;
+}
+
+.ic-mini-btn.danger {
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #FCA5A5;
+}
+
+/* Upload info */
+.ic-upload-info {
+  margin-top: 10px;
+  color: #93C5FD;
+  font-size: 0.85rem;
+}
+
+/* Alerts */
+.ic-alert-error {
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 4px solid #EF4444;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  color: #FCA5A5;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.ic-alert-success {
+  background: rgba(34, 197, 94, 0.15);
+  border-left: 4px solid #22C55E;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  color: #BBF7D0;
+  border-radius: 6px;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .ic-claim-card {
+    padding: 28px 18px;
   }
 }

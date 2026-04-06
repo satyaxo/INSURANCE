@@ -1,35 +1,213 @@
-<div class="container mt-4">
+<div class="container mt-4 underwriter-page">
 
-  <h2>Underwriter Dashboard</h2>
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h2 class="title">Underwriter Review Workbench</h2>
+      <p class="subtitle">Review investigator report + evidence and finalize claim decision.</p>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-outline-secondary btn-sm" (click)="refreshNow()">Refresh</button>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="isLoading" class="alert alert-info">Loading...</div>
 
   <div *ngIf="showError" class="alert alert-danger">
     {{ errorMessage }}
   </div>
 
-  <div *ngIf="filteredClaims.length === 0 && !showError" class="alert alert-info">
-    No claims assigned yet.
+  <div *ngIf="showMessage" class="alert alert-success">
+    {{ responseMessage }}
   </div>
 
-  <div *ngFor="let claim of filteredClaims" class="claim-card border rounded p-3 mb-3">
+  <!-- Search -->
+  <div class="mb-3 d-flex gap-2">
+    <input
+      type="text"
+      class="form-control form-control-sm"
+      [(ngModel)]="policySearch"
+      [ngModelOptions]="{standalone: true}"
+      placeholder="Search by Policy Number (e.g., #44710572)"
+    />
+    <button
+      class="btn btn-sm btn-outline-secondary"
+      type="button"
+      (click)="clearSearch()"
+      [disabled]="!policySearch || policySearch.trim().length === 0">
+      Clear
+    </button>
+  </div>
 
-    <h4>Claim #{{ claim.id }}</h4>
+  <div class="row g-4">
 
-    <p><strong>Type:</strong> {{ claim.insuranceType || '-' }}</p>
-    <p><strong>Policy Number:</strong> {{ claim.policyNumber || '-' }}</p>
+    <!-- LEFT: Lists -->
+    <div class="col-lg-5">
 
-    <p><strong>Description:</strong> {{ claim.description }}</p>
-    <p><strong>Status:</strong> {{ claim.status }}</p>
+      <!-- Pending Review -->
+      <div class="panel">
+        <div class="panel-head">
+          <h5 class="panel-title">Pending Review</h5>
+          <small class="muted">UNDER_REVIEW</small>
+        </div>
 
-    <!-- ✅ Show investigator report if DTO includes it -->
-    <div *ngIf="claim.investigationReport" class="alert alert-secondary" style="white-space: pre-wrap;">
-      <strong>Investigation Report:</strong><br />
-      {{ claim.investigationReport }}
+        <div *ngIf="filteredPending().length === 0" class="empty">
+          No pending review claims.
+        </div>
+
+        <div class="list" *ngIf="filteredPending().length > 0">
+          <button class="list-item"
+                  *ngFor="let c of filteredPending()"
+                  (click)="selectClaim(c)">
+            <div class="li-left">
+              <div class="li-title">{{ c.policyNumber || '-' }} • {{ typeLabel(c.insuranceType) }}</div>
+              <div class="li-desc">{{ c.description }}</div>
+            </div>
+            <span [class]="badgeClass(c.status)">{{ c.status }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Decision Records -->
+      <div class="panel mt-4" *ngIf="decisions.length > 0">
+        <div class="panel-head">
+          <h5 class="panel-title">Decision Records</h5>
+          <small class="muted">Read-only</small>
+        </div>
+
+        <div *ngIf="filteredDecisions().length === 0" class="empty">
+          No matching decisions.
+        </div>
+
+        <div class="list" *ngIf="filteredDecisions().length > 0">
+          <button class="list-item"
+                  *ngFor="let c of filteredDecisions()"
+                  (click)="selectClaim(c)">
+            <div class="li-left">
+              <div class="li-title">{{ c.policyNumber || '-' }} • {{ typeLabel(c.insuranceType) }}</div>
+              <div class="li-desc">{{ c.description }}</div>
+            </div>
+            <span [class]="badgeClass(c.status)">{{ c.status }}</span>
+          </button>
+        </div>
+      </div>
+
     </div>
 
-    <button class="btn btn-primary btn-sm" (click)="editClaim(claim)">
-      Edit / Review
-    </button>
+    <!-- RIGHT: Review Panel -->
+    <div class="col-lg-7">
+      <div class="panel">
+        <div class="panel-head">
+          <h5 class="panel-title">Claim Review Panel</h5>
+          <small class="muted">Claim + Report + Evidence</small>
+        </div>
+
+        <div *ngIf="!selectedClaim" class="empty">
+          Select a claim from the left list to review.
+        </div>
+
+        <div *ngIf="selectedClaim">
+
+          <!-- Claim summary -->
+          <div class="grid">
+            <div class="kv">
+              <div class="k">Policy Number</div>
+              <div class="v">{{ selectedClaim.policyNumber || '-' }}</div>
+            </div>
+
+            <div class="kv">
+              <div class="k">Insurance Type</div>
+              <div class="v">{{ typeLabel(selectedClaim.insuranceType) }}</div>
+            </div>
+
+            <div class="kv">
+              <div class="k">Accident Date</div>
+              <div class="v">{{ selectedClaim.date ? (selectedClaim.date | date:'dd-MMM-yyyy') : '-' }}</div>
+            </div>
+
+            <div class="kv">
+              <div class="k">Claim Status</div>
+              <div class="v">
+                <span [class]="badgeClass(selectedClaim.status)">{{ selectedClaim.status }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="desc-box">
+            <div class="k">Description</div>
+            <div class="v">{{ selectedClaim.description }}</div>
+          </div>
+
+          <!-- Investigator report -->
+          <div class="report-box">
+            <div class="rb-head">
+              <h6 class="m-0">Investigator Report</h6>
+              <span class="muted small">Status: {{ getInvestigationStatus(selectedClaim) }}</span>
+            </div>
+
+            <div *ngIf="!hasInvestigation(selectedClaim)" class="empty small mt-2">
+              Investigation report not completed yet.
+            </div>
+
+            <div *ngIf="hasInvestigation(selectedClaim)" class="rb-text">
+              {{ getInvestigationReport(selectedClaim) || 'No report text provided.' }}
+            </div>
+          </div>
+
+          <!-- Documents -->
+          <div class="docs mt-3">
+            <div class="docs-head">
+              <h6 class="m-0">Uploaded Documents</h6>
+              <span class="muted small" *ngIf="docsLoading">Loading…</span>
+            </div>
+
+            <div *ngIf="docsError" class="alert alert-danger p-2 mt-2">
+              {{ docsError }}
+            </div>
+
+            <div *ngIf="!docsLoading && claimDocuments.length === 0" class="muted mt-2">
+              No documents uploaded for this claim.
+            </div>
+
+            <div class="doc-list" *ngIf="!docsLoading && claimDocuments.length > 0">
+              <button type="button"
+                      class="doc-item"
+                      *ngFor="let doc of claimDocuments"
+                      (click)="previewDocument(doc)">
+                <span class="doc-name">{{ doc.originalFileName }}</span>
+                <span class="doc-action">Preview</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Decision buttons -->
+          <div class="decision mt-3">
+            <button class="btn btn-success"
+                    (click)="approve()"
+                    [disabled]="!hasInvestigation(selectedClaim) || (selectedClaim.status || '').toUpperCase() === 'APPROVED'">
+              Approve
+            </button>
+
+            <button class="btn btn-danger"
+                    (click)="reject()"
+                    [disabled]="!hasInvestigation(selectedClaim) || (selectedClaim.status || '').toUpperCase() === 'REJECTED'">
+              Reject
+            </button>
+
+            <button class="btn btn-outline-secondary ms-auto" (click)="closeDetails()">
+              Close
+            </button>
+          </div>
+
+          <small class="muted d-block mt-2">
+            Approve/Reject is enabled only when an investigation report exists.
+          </small>
+
+        </div>
+      </div>
+    </div>
 
   </div>
-
 </div>

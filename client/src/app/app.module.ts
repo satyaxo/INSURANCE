@@ -20,9 +20,10 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
 import { HttpService } from '../services/http.service';
-
-// ✅ ADD THIS IMPORT
 import { AdjusterDashboardComponent } from './dashbaord/adjusterDashboard.component';
+
+// ✅ NEW: Add your animated Auth page component
+
 
 @NgModule({
   declarations: [
@@ -37,9 +38,10 @@ import { AdjusterDashboardComponent } from './dashbaord/adjusterDashboard.compon
     UpdateClaimInvestigatorComponent,
     UnderwriterDashboardComponent,
     LandingComponent,
+    AdjusterDashboardComponent,
 
-    // ✅ ADD THIS
-    AdjusterDashboardComponent
+    // ✅ NEW: Declare AuthComponent so Angular recognizes [formGroup]
+
   ],
   imports: [
     BrowserModule,
@@ -49,7 +51,6 @@ import { AdjusterDashboardComponent } from './dashbaord/adjusterDashboard.compon
     HttpClientModule,
     CommonModule
   ],
-  // ✅ FIX THIS (remove HttpClientModule from providers)
   providers: [HttpService],
   bootstrap: [AppComponent]
 })

@@ -10,23 +10,28 @@ import { HttpService } from '../../services/http.service';
 export class CreateInvestigatorComponent implements OnInit {
 
   itemForm: FormGroup;
+
   assignedClaims: any[] = [];
   investigationList: any[] = [];
 
-  updateId: number | null = null;
+  // ✅ Dropdown list (hide completed only)
+  pendingAssignedClaims: any[] = [];
 
-  // ✅ Selected claim full details
+  // ✅ Selected claim + docs
   selectedClaim: any = null;
-
-  // ✅ Claim documents
   claimDocuments: any[] = [];
   docsLoading = false;
   docsError = '';
+
+  updateId: number | null = null;
 
   showError = false;
   errorMessage = '';
   showMessage = false;
   responseMessage = '';
+
+  // ✅ record search
+  recordSearch = '';
 
   constructor(
     private httpService: HttpService,
@@ -48,14 +53,25 @@ export class CreateInvestigatorComponent implements OnInit {
       return;
     }
 
-    this.loadAssignedClaims(+investigatorId);
-    this.getInvestigation();
+    this.loadAll(+investigatorId);
+
+    // ✅ When claim dropdown changes -> show details/docs
+    this.itemForm.get('claimId')?.valueChanges.subscribe(() => {
+      this.onClaimChange();
+    });
   }
 
-  loadAssignedClaims(investigatorId: number): void {
+  private loadAll(investigatorId: number): void {
+    this.loadInvestigations(() => {
+      this.loadAssignedClaims(investigatorId);
+    });
+  }
+
+  private loadAssignedClaims(investigatorId: number): void {
     this.httpService.getClaimsByInvestigator(investigatorId).subscribe({
       next: (res: any[]) => {
         this.assignedClaims = res || [];
+        this.applyDropdownFilter();
       },
       error: () => {
         this.showError = true;
@@ -64,35 +80,80 @@ export class CreateInvestigatorComponent implements OnInit {
     });
   }
 
-  getInvestigation(): void {
+  private loadInvestigations(after?: () => void): void {
     this.httpService.getInvestigations().subscribe({
       next: (res: any[]) => {
         this.investigationList = res || [];
+        this.applyDropdownFilter();
+        if (after) after();
       },
       error: () => {
         this.showError = true;
         this.errorMessage = 'Unable to load investigations.';
+        if (after) after();
       }
     });
   }
 
-  // ✅ Called when investigator changes claim dropdown
+  // ✅ Status check (robust)
+  private isCompletedStatus(status: any): boolean {
+    const st = (status || '').toString().trim().toUpperCase();
+    return st.includes('COMPLETED'); // matches Completed / INVESTIGATION_COMPLETED / COMPLETED_REPORT etc.
+  }
+
+  // ✅ Hide completed from dropdown only
+  private applyDropdownFilter(): void {
+    const completedClaimIds = new Set<number>();
+
+    (this.investigationList || []).forEach(inv => {
+      const claimId = inv?.claim?.id;
+      if (claimId && this.isCompletedStatus(inv?.status)) {
+        completedClaimIds.add(Number(claimId));
+      }
+    });
+
+    this.pendingAssignedClaims = (this.assignedClaims || []).filter(c => {
+      const id = Number(c?.id);
+      return id && !completedClaimIds.has(id);
+    });
+
+    // if selected claim becomes completed -> clear selection
+    const selectedId = Number(this.itemForm.get('claimId')?.value);
+    if (selectedId && completedClaimIds.has(selectedId)) {
+      this.itemForm.patchValue({ claimId: '' });
+      this.clearSelection();
+    }
+  }
+
+  // ✅ FIXED: always sets selectedClaim correctly (handles string/number)
   onClaimChange(): void {
-    const claimId = Number(this.itemForm.value.claimId);
+    const raw = this.itemForm.get('claimId')?.value;
+    const claimId = Number(raw);
 
     if (!claimId) {
-      this.selectedClaim = null;
-      this.claimDocuments = [];
-      this.docsError = '';
-      this.docsLoading = false;
+      this.clearSelection();
       return;
     }
 
-    // ✅ Set selected claim details
-    this.selectedClaim = this.assignedClaims.find(c => c.id === claimId) || null;
+    // ✅ IMPORTANT FIX: compare numeric id to numeric id
+    this.selectedClaim = (this.assignedClaims || []).find(c => Number(c.id) === claimId) || null;
 
-    // ✅ Load documents for selected claim
-    this.loadDocumentsForClaim(claimId);
+    if (this.selectedClaim) {
+      this.loadDocumentsForClaim(claimId);
+    } else {
+      this.clearDocs();
+    }
+  }
+
+  private clearSelection(): void {
+    this.selectedClaim = null;
+    this.clearDocs();
+  }
+
+  private clearDocs(): void {
+    this.claimDocuments = [];
+    this.docsError = '';
+    this.docsLoading = false;
   }
 
   private loadDocumentsForClaim(claimId: number): void {
@@ -113,7 +174,6 @@ export class CreateInvestigatorComponent implements OnInit {
     });
   }
 
-  // ✅ Preview document in new tab (JWT-safe: blob -> url)
   previewDocument(doc: any): void {
     if (!doc?.id) return;
 
@@ -133,18 +193,15 @@ export class CreateInvestigatorComponent implements OnInit {
   }
 
   edit(inv: any): void {
-    // ✅ Block edit if already completed
-    if (inv?.status === 'Completed' || inv?.status === 'COMPLETED') return;
+    if (this.isCompletedStatus(inv?.status)) return;
 
     this.updateId = inv.id;
-
     this.itemForm.patchValue({
       claimId: inv.claim?.id,
       report: inv.report,
       status: inv.status
     });
 
-    // ✅ auto-load selected claim details + docs
     setTimeout(() => this.onClaimChange(), 0);
   }
 
@@ -157,6 +214,7 @@ export class CreateInvestigatorComponent implements OnInit {
     if (this.itemForm.invalid) {
       this.showError = true;
       this.errorMessage = 'All fields are required.';
+      this.itemForm.markAllAsTouched();
       return;
     }
 
@@ -168,47 +226,26 @@ export class CreateInvestigatorComponent implements OnInit {
 
     const investigatorId = Number(localStorage.getItem('userId'));
 
-    // ✅ update existing investigation
     if (this.updateId) {
       this.httpService.updateInvestigation(payload, this.updateId).subscribe({
         next: () => {
           this.showMessage = true;
           this.responseMessage = 'Investigation updated successfully!';
-
-          this.itemForm.reset();
           this.updateId = null;
-
-          this.selectedClaim = null;
-          this.claimDocuments = [];
-          this.docsError = '';
-          this.docsLoading = false;
-
-          this.loadAssignedClaims(investigatorId);
-          this.getInvestigation();
+          this.resetAfterSubmit(investigatorId);
         },
         error: (err) => {
           this.showError = true;
           this.errorMessage = err?.error?.message || 'Failed to update investigation.';
         }
       });
-    }
-    // ✅ create new investigation
-    else {
+    } else {
       this.httpService.createInvestigation(payload).subscribe({
         next: () => {
           this.showMessage = true;
-          this.responseMessage = 'Investigation submitted successfully and sent to Underwriter.';
-
-          this.itemForm.reset();
+          this.responseMessage = 'Investigation submitted successfully!';
           this.updateId = null;
-
-          this.selectedClaim = null;
-          this.claimDocuments = [];
-          this.docsError = '';
-          this.docsLoading = false;
-
-          this.loadAssignedClaims(investigatorId);
-          this.getInvestigation();
+          this.resetAfterSubmit(investigatorId);
         },
         error: (err) => {
           this.showError = true;
@@ -216,5 +253,46 @@ export class CreateInvestigatorComponent implements OnInit {
         }
       });
     }
+  }
+
+  // ✅ FIX: clean method name + correct calls with this.resetAfterSubmit(...)
+  private resetAfterSubmit(investigatorId: number): void {
+    const st = (this.itemForm.value.status || '').toString();
+
+    // clear report/status
+    this.itemForm.patchValue({ report: '', status: '' });
+
+    // reload lists
+    this.loadAll(investigatorId);
+
+    // if completed -> remove only from dropdown by clearing selection
+    if (this.isCompletedStatus(st)) {
+      this.itemForm.patchValue({ claimId: '' });
+      this.clearSelection();
+    }
+  }
+
+  filteredInvestigations(): any[] {
+    const q = (this.recordSearch || '').trim().toLowerCase();
+    if (!q) return this.investigationList || [];
+
+    return (this.investigationList || []).filter(inv => {
+      const pn = (inv?.claim?.policyNumber || '').toString().toLowerCase();
+      const desc = (inv?.claim?.description || '').toString().toLowerCase();
+      const st = (inv?.status || '').toString().toLowerCase();
+      return pn.includes(q) || desc.includes(q) || st.includes(q);
+    });
+  }
+
+  typeLabel(type: string): string {
+    const t = (type || '').toUpperCase();
+    if (t === 'CAR') return 'Car Insurance';
+    if (t === 'BIKE') return 'Bike Insurance';
+    if (t === 'HEALTH') return 'Health Insurance';
+    if (t === 'LIFE') return 'Life Insurance';
+    if (t === 'TERM') return 'Term Insurance';
+    if (t === 'TRAVEL') return 'Travel Insurance';
+    if (t === 'HOME') return 'Home Insurance';
+    return type || '-';
   }
 }

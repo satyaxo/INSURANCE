@@ -6,7 +6,7 @@
     <a class="app-title text-light"
        style="cursor: pointer; text-decoration: none;"
        (click)="goToHome()">
-      Insurance Claims & Resource Management Platform
+      Insurance Claims &amp; Resource Management Platform
     </a>
   </div>
 
@@ -46,17 +46,11 @@
         </a>
       </li>
 
-      <!-- <li class="nav-item" *ngIf="roleName === 'ADJUSTER'">
-        <a class="nav-link" routerLink="/update-claim">
-          Get &amp; Update Claims
-        </a>
-      </li>
-
       <li class="nav-item" *ngIf="roleName === 'ADJUSTER'">
         <a class="nav-link" routerLink="/assign-claim">
           Assign Claim
         </a>
-      </li> -->
+      </li>
 
       <!-- ✅ INVESTIGATOR -->
       <li class="nav-item" *ngIf="roleName === 'INVESTIGATOR'">
@@ -72,28 +66,32 @@
         </a>
       </li>
 
-      <!-- ✅ NEW: Underwriter Update Claim option -->
-      <li class="nav-item" *ngIf="roleName === 'UNDERWRITER'">
-        <a class="nav-link" routerLink="/update-claim-investigator">
-          Update Claim
-        </a>
-      </li>
-
     </ul>
 
     <!-- RIGHT MENU -->
     <ul class="navbar-nav ms-auto">
+
+      <!-- ✅ Reverted: Login goes to /login -->
       <li class="nav-item" *ngIf="!IsLoggin">
         <a class="nav-link" routerLink="/login">
           Login
         </a>
       </li>
 
+      <!-- ✅ Optional: Show Register link too (if you want separate page) -->
+      <li class="nav-item" *ngIf="!IsLoggin">
+        <a class="nav-link" routerLink="/registration">
+          Register
+        </a>
+      </li>
+
+      <!-- ✅ Logout: click only (your logout() can route to /login) -->
       <li class="nav-item" *ngIf="IsLoggin">
-        <a class="nav-link" (click)="logout()" routerLink="/login">
+        <a class="nav-link" (click)="logout()" style="cursor:pointer;">
           Logout
         </a>
       </li>
+
     </ul>
 
   </div>
