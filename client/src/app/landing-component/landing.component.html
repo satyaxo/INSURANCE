@@ -1,419 +1,573 @@
-<div class="lp">
+<!-- ================= NAVBAR ================= -->
+<nav class="navbar fixed-top ic-nav">
+  <div class="container d-flex align-items-center justify-content-between">
 
-  <!-- Minimal motion background -->
-  <div class="bg-mesh" aria-hidden="true"></div>
-  <div class="bg-noise" aria-hidden="true"></div>
-
-  <!-- NAV -->
-  <header class="nav">
-    <div class="brand" (click)="scrollTo('top')">
-      <span class="mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" class="ic">
-          <path d="M12 2l8.5 5v10L12 22 3.5 17V7L12 2z" fill="none" stroke="currentColor" stroke-width="1.6"/>
-          <path d="M12 7.2l4 2.3v4.9l-4 2.3-4-2.3V9.5l4-2.3z" fill="currentColor" opacity=".22"/>
-        </svg>
+    <!-- Brand -->
+    <a class="ic-brand" routerLink="/" [replaceUrl]="true">
+      <span class="ic-shield">⬡</span>
+      <span class="ic-brand-text">
+        ClaimSure<span class="ic-brand-accent">Pro</span>
       </span>
-      <div class="brandText">
-        <div class="brandName">ClaimSure<span class="accent">Pro</span></div>
-        <div class="brandSub">Claims made simple. Updates in real time.</div>
-      </div>
+    </a>
+
+    <!-- Middle Links (Desktop) -->
+    <div class="ic-nav-links d-none d-md-flex">
+      <!-- <a class="ic-nav-link" href="#" (click)="scrollTo('features', $event)">Features</a> -->
+      <a class="ic-nav-link" href="#" (click)="scrollTo('workflow', $event)">Workflow</a>
+      <a class="ic-nav-link" href="#" (click)="scrollTo('roles', $event)">Roles</a>
+      <!-- <a class="ic-nav-link" href="#" (click)="scrollTo('security', $event)">Security</a> -->
+      <a class="ic-nav-link" href="#" (click)="scrollTo('comments', $event)">Community</a>
     </div>
 
-    <nav class="links">
-      <button class="link" [class.active]="activeSection==='products'" (click)="scrollTo('products')">Products</button>
-      <button class="link" [class.active]="activeSection==='how'" (click)="scrollTo('how')">How it works</button>
-      <button class="link" [class.active]="activeSection==='tracking'" (click)="scrollTo('tracking')">Tracking</button>
-      <button class="link" [class.active]="activeSection==='trust'" (click)="scrollTo('trust')">Trust</button>
-      <button class="link" [class.active]="activeSection==='faq'" (click)="scrollTo('faq')">FAQ</button>
-    </nav>
-
-    <div class="actions">
-      <button class="btn ghost" *ngIf="!isLoggedIn" (click)="goLogin()">Login</button>
-      <button class="btn ghost" *ngIf="!isLoggedIn" (click)="goRegister()">Register</button>
-      <button class="btn primary" *ngIf="isLoggedIn" (click)="goDashboard()">Go to dashboard</button>
-      <button class="btn primary" *ngIf="!isLoggedIn" (click)="goPrimary()">Get started</button>
+    <!-- Auth Buttons -->
+    <div class="d-flex gap-2">
+      <a class="ic-btn-ghost" routerLink="/login" [replaceUrl]="true">Login</a>
+      <a class="ic-btn-primary" routerLink="/registration" [replaceUrl]="true">Register</a>
     </div>
-  </header>
 
-  <!-- HERO -->
-  <section class="hero" id="top">
-    <div class="shell heroShell">
+  </div>
+</nav>
 
-      <div class="heroLeft">
-        <div class="pill" data-reveal>
-          <span class="dot"></span>
-          <span>Secure OTP onboarding • Evidence preview • Transparent status updates</span>
-        </div>
+<!-- ================= HERO ================= -->
+<section class="ic-hero" id="top">
 
-        <h1 class="h1" data-reveal>
-          Claims made simple —
-          <span class="glow">submit</span>, <span class="glow">track</span>, and get a <span class="glow">clear decision</span>.
+  <!-- Background Video -->
+  <video class="ic-bg-video" autoplay muted loop playsinline preload="auto">
+    <source src="/assets/vecteezy.mp4" type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+
+  <!-- VFX layers -->
+  <div class="ic-bg-overlay"></div>
+  <div class="ic-hero-grid"></div>
+  <div class="ic-orb orb-1"></div>
+  <div class="ic-orb orb-2"></div>
+
+  <div class="container ic-hero-content" >
+    <div class="row justify-content-center text-center min-vh-100 align-items-center">
+      <div class="col-lg-10">
+
+     
+        <h1 class="ic-hero-title ic-fade-up">
+          Insurance Claims<br />
+          <span class="ic-gradient-text">Handled Smarter</span>
         </h1>
 
-        <p class="lead" data-reveal>
-          A consumer-first claims experience inspired by modern insurers:
-          fast submission, optional evidence upload, and step-by-step tracking until decision.
+        <p class="ic-hero-sub ic-fade-up">
+          ClaimSurePro is a modern portal that enables policyholders to file claims, adjusters to assign,
+          investigators to report, and underwriters to approve/reject — all secured via JWT and role-based access.
         </p>
 
-        <div class="ctaRow" data-reveal>
-          <button class="btn cta primary" (click)="goFileClaim()">
-            <svg viewBox="0 0 24 24" class="ic">
-              <path d="M7 3h7l3 3v15H7V3z" fill="none" stroke="currentColor" stroke-width="1.6"/>
-              <path d="M14 3v4h4" fill="none" stroke="currentColor" stroke-width="1.6"/>
-              <path d="M9 12h6M9 16h6" stroke="currentColor" stroke-width="1.6" fill="none"/>
-            </svg>
-            File a claim
-          </button>
+        <div class="ic-hero-actions ic-fade-up justify-content-center">
+          <a class="ic-btn-primary ic-btn-xl" routerLink="/registration">
+            Get Started
+            <span class="ic-btn-glow"></span>
+          </a>
 
-          <button class="btn cta soft" (click)="goTrackClaim()">
-            <svg viewBox="0 0 24 24" class="ic">
-              <path d="M4 12a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="1.6"/>
-              <path d="M12 12l4-2" fill="none" stroke="currentColor" stroke-width="1.6"/>
-              <circle cx="12" cy="12" r="1.4" fill="currentColor"/>
-            </svg>
-            Track claim
-          </button>
-
-          <button class="btn cta ghost" (click)="scrollTo('how')">
-            <svg viewBox="0 0 24 24" class="ic">
-              <path d="M9 6l9 6-9 6V6z" fill="currentColor"/>
-            </svg>
-            See how it works
-          </button>
+          <!-- <a class="ic-btn-video" href="#" (click)="openOverview($event)">
+            <span class="ic-play-icon"><i class="fa-solid fa-play"></i></span>
+            View Platform Overview
+          </a> -->
         </div>
+<!-- 
+        <div class="ic-hero-pills ic-fade-up">
+          <div class="ic-pill"><i class="fa-solid fa-shield-halved"></i> JWT + Spring Security</div>
+          <div class="ic-pill"><i class="fa-solid fa-user-check"></i> Role‑based dashboards</div>
+          <div class="ic-pill"><i class="fa-solid fa-bolt"></i> Faster claim lifecycle</div>
+        </div> -->
 
-        <div class="chipRow" data-reveal>
-          <span class="chip">OTP verified access</span>
-          <span class="chip">Evidence upload optional</span>
-          <span class="chip">Preview documents</span>
-          <span class="chip">History stays visible</span>
-        </div>
+        <a class="ic-scroll" href="#" (click)="scrollTo('stats', $event)">
+          <span></span>
+        </a>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STATS ================= -->
+<section class="ic-stats-section" id="stats">
+  <div class="container">
+    <div class="row g-4 justify-content-center text-center">
+
+      <div class="col-md-4 ic-reveal">
+        <div class="ic-big-num ic-count" data-target="50000">0</div>
+        <div class="ic-big-label">Portal‑scale ready (demo metric)</div>
       </div>
 
-      <!-- Hero Product Mock -->
-      <div class="heroRight" data-reveal>
-        <div class="mock">
-          <div class="mockTop">
-            <div class="dots"><span></span><span></span><span></span></div>
-            <div class="mockTitle">Live tracking preview</div>
-            <div class="miniPill">Realtime</div>
-          </div>
-
-          <div class="mockBody">
-            <div class="metrics">
-              <div class="metric">
-                <div class="k">Claim</div>
-                <div class="v">CLM‑2048</div>
-              </div>
-              <div class="metric">
-                <div class="k">Status</div>
-                <div class="v badge">UNDER_REVIEW</div>
-              </div>
-            </div>
-
-            <div class="timeline">
-              <div class="row done">
-                <span class="tDot"></span>
-                <div>
-                  <div class="tTitle">Submitted</div>
-                  <div class="tSub">Claim received</div>
-                </div>
-              </div>
-
-              <div class="row done">
-                <span class="tDot"></span>
-                <div>
-                  <div class="tTitle">Review</div>
-                  <div class="tSub">Validation in progress</div>
-                </div>
-              </div>
-
-              <div class="row active">
-                <span class="tDot"></span>
-                <div>
-                  <div class="tTitle">Verification</div>
-                  <div class="tSub">Evidence checked (if required)</div>
-                </div>
-              </div>
-
-              <div class="row">
-                <span class="tDot"></span>
-                <div>
-                  <div class="tTitle">Decision</div>
-                  <div class="tSub">Approved / Rejected</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="tags">
-              <span class="tag">OTP verified</span>
-              <span class="tag">Evidence preview</span>
-              <span class="tag">Decision history</span>
-            </div>
-          </div>
+      <div class="col-md-4 ic-reveal">
+        <div class="ic-big-num">
+          <span class="ic-count" data-target="98">0</span>%
         </div>
+        <div class="ic-big-label">Workflow confidence (demo metric)</div>
+      </div>
+
+      <div class="col-md-4 ic-reveal">
+        <div class="ic-big-num ic-count" data-target="1200">0</div>
+        <div class="ic-big-label">Tasks streamlined daily (demo metric)</div>
       </div>
 
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- PRODUCTS -->
-  <section class="sec" id="products">
-    <div class="shell">
-      <div class="secHead" data-reveal>
-        <h2>Products</h2>
-        <p>Clean, quick-to-understand coverage options — consumer-first design.</p>
+<!-- ================= PROBLEM / WHY ================= -->
+<section class="ic-section">
+  <div class="container">
+
+    <div class="ic-section-header text-center ic-reveal">
+      <div class="ic-section-tag">Why ClaimSurePro</div>
+      <h2 class="ic-section-title">
+        Fixing delays and confusion in
+        <span class="ic-gradient-text">claim processing</span>
+      </h2>
+      <p class="ic-section-sub">
+        Traditional systems are slow and fragmented. Our portal creates a single workflow with clear ownership,
+        live tracking, and secure access for every role.
+      </p>
+    </div>
+
+    <div class="row g-4 mt-4">
+      <div class="col-md-4 ic-reveal">
+        <div class="ic-card">
+          <i class="fa-solid fa-clock"></i>
+          <h4>Reduce delays</h4>
+          <p>Role-based steps prevent handoff confusion and speed up approvals.</p>
+        </div>
       </div>
 
-      <div class="grid3" data-reveal>
-        <div class="card">
-          <div class="iconBox">
-            <svg viewBox="0 0 24 24" class="ic">
-              <path d="M5 14l2-5h10l2 5" fill="none" stroke="currentColor" stroke-width="1.6"/>
-              <path d="M7 14v4M17 14v4" fill="none" stroke="currentColor" stroke-width="1.6"/>
-              <circle cx="8" cy="18" r="1.4" fill="currentColor"/>
-              <circle cx="16" cy="18" r="1.4" fill="currentColor"/>
-            </svg>
-          </div>
-          <div class="cardT">Motor (Car/Bike)</div>
-          <div class="cardS">Accident claims with optional evidence upload and review.</div>
+      <div class="col-md-4 ic-reveal">
+        <div class="ic-card">
+          <i class="fa-solid fa-eye"></i>
+          <h4>Live visibility</h4>
+          <p>Track claim status end-to-end with real-time updates in dashboards.</p>
         </div>
+      </div>
 
-        <div class="card">
-          <div class="iconBox">
-            <svg viewBox="0 0 24 24" class="ic">
-              <path d="M12 21s-7-4.7-7-10a4 4 0 0 1 7-2.4A4 4 0 0 1 19 11c0 5.3-7 10-7 10z" fill="none" stroke="currentColor" stroke-width="1.6"/>
-            </svg>
-          </div>
-          <div class="cardT">Health</div>
-          <div class="cardS">Document-driven claims, transparent updates and final decision.</div>
-        </div>
-
-        <div class="card">
-          <div class="iconBox">
-            <svg viewBox="0 0 24 24" class="ic">
-              <path d="M4 12l8-8 8 8v8H4v-8z" fill="none" stroke="currentColor" stroke-width="1.6"/>
-              <path d="M9 20v-6h6v6" fill="none" stroke="currentColor" stroke-width="1.6"/>
-            </svg>
-          </div>
-          <div class="cardT">Home / Travel / Life</div>
-          <div class="cardS">Built for cases where verification and approval are required.</div>
+      <div class="col-md-4 ic-reveal">
+        <div class="ic-card">
+          <i class="fa-solid fa-shield"></i>
+          <h4>Secure access</h4>
+          <p>JWT authentication + RBAC ensures only authorized users access actions.</p>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- HOW IT WORKS (consumer language) -->
-  <section class="sec" id="how">
-    <div class="shell">
-      <div class="secHead" data-reveal>
-        <h2>How it works</h2>
-        <p>Simple steps for customers — the processing happens behind the scenes.</p>
+  </div>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<!-- <section class="ic-section ic-section-alt" id="features">
+  <div class="container">
+
+    <div class="ic-section-header ic-reveal">
+      <div class="ic-section-tag">Platform Features</div>
+      <h2 class="ic-section-title">
+        Built with modern UI + secure APIs for
+        <span class="ic-gradient-text">ClaimSurePro</span>
+      </h2>
+      <p class="ic-section-sub">
+        Angular frontend with Spring Boot backend — structured entities, repositories, services and controllers,
+        all protected by Spring Security & JWT.
+      </p>
+    </div>
+
+    <div class="row g-4 mt-4">
+      <div class="col-md-4 ic-reveal">
+        <div class="ic-card">
+          <i class="fa-solid fa-bolt"></i>
+          <h4>Guided Workflow</h4>
+          <p>File → Assign → Investigate → Review → Decision (Approve/Reject).</p>
+        </div>
       </div>
 
-      <div class="grid4" data-reveal>
-        <div class="stepCard">
-          <div class="stepNum">1</div>
-          <div class="stepT">Submit</div>
-          <div class="stepS">Add incident details and policy number.</div>
+      <div class="col-md-4 ic-reveal">
+        <div class="ic-card">
+          <i class="fa-solid fa-lock"></i>
+          <h4>JWT Security</h4>
+          <p>Secure login + stateless token authentication for all protected APIs.</p>
         </div>
-        <div class="stepCard">
-          <div class="stepNum">2</div>
-          <div class="stepT">We review</div>
-          <div class="stepS">Claim is validated and routed for processing.</div>
+      </div>
+
+      <div class="col-md-4 ic-reveal">
+        <div class="ic-card">
+          <i class="fa-solid fa-chart-line"></i>
+          <h4>Dashboards</h4>
+          <p>Status counts & distributions help each role focus on the right tasks.</p>
         </div>
-        <div class="stepCard">
-          <div class="stepNum">3</div>
-          <div class="stepT">We verify</div>
-          <div class="stepS">Evidence is checked if required for the case.</div>
+      </div>
+
+      <div class="col-md-4 ic-reveal">
+        <div class="ic-card">
+          <i class="fa-solid fa-user-check"></i>
+          <h4>Role Separation</h4>
+          <p>Clean UI: Policyholder / Adjuster / Investigator / Underwriter views.</p>
         </div>
-        <div class="stepCard">
-          <div class="stepNum">4</div>
-          <div class="stepT">Decision</div>
-          <div class="stepS">Approved or rejected — and history stays visible.</div>
+      </div>
+
+      <div class="col-md-4 ic-reveal">
+        <div class="ic-card">
+          <i class="fa-solid fa-clipboard-list"></i>
+          <h4>Investigation Reports</h4>
+          <p>Create and update investigations linked to claims for evidence & verification.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 ic-reveal">
+        <div class="ic-card">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <h4>Modern Experience</h4>
+          <p>Glass cards, smooth animations, neon focus states — same theme as login.</p>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- TRACKING SECTION (consumer wow section) -->
-  <section class="sec" id="tracking">
-    <div class="shell">
-      <div class="secHead" data-reveal>
-        <h2>Tracking that feels transparent</h2>
-        <p>Customers can see exactly where their claim is — without calling support.</p>
+  </div>
+</section> -->
+
+<!-- ================= WORKFLOW ================= -->
+<!-- <section class="ic-section" id="workflow">
+  <div class="container">
+
+    <div class="ic-section-header text-center ic-reveal">
+      <div class="ic-section-tag">How It Works</div>
+      <h2 class="ic-section-title">
+        A complete claim lifecycle in
+        <span class="ic-gradient-text">4 roles</span>
+      </h2>
+      <p class="ic-section-sub">
+        Every stage is mapped to a role to ensure accountability and faster resolution.
+      </p>
+    </div>
+
+    <div class="ic-timeline mt-4">
+      <div class="ic-step ic-reveal">
+        <div class="ic-step-num">01</div>
+        <div class="ic-step-body">
+          <h4>Policyholder</h4>
+          <p>Files a claim and tracks the live status updates from the dashboard.</p>
+        </div>
       </div>
 
-      <div class="trackingPanel" data-reveal>
-        <div class="tpLeft">
-          <div class="tpTitle">Stage timeline</div>
-          <div class="tpSub">Submitted → Review → Verification → Underwriter → Decision</div>
-
-          <div class="tpBar">
-            <div class="tpFill"></div>
-          </div>
-
-          <div class="tpLegend">
-            <span class="dot done"></span><span>Completed</span>
-            <span class="dot active"></span><span>In progress</span>
-            <span class="dot todo"></span><span>Upcoming</span>
-          </div>
+      <div class="ic-step ic-reveal">
+        <div class="ic-step-num">02</div>
+        <div class="ic-step-body">
+          <h4>Adjuster</h4>
+          <p>Validates claims and assigns them for investigation or underwriter review.</p>
         </div>
+      </div>
 
-        <div class="tpRight">
-          <div class="tpCard">
-            <div class="tpRow">
-              <div class="k">Policy</div>
-              <div class="v">#44710572</div>
-            </div>
-            <div class="tpRow">
-              <div class="k">Current</div>
-              <div class="v badge">UNDER_REVIEW</div>
-            </div>
-            <div class="tpRow">
-              <div class="k">Evidence</div>
-              <div class="v">Available (preview)</div>
-            </div>
-          </div>
+      <div class="ic-step ic-reveal">
+        <div class="ic-step-num">03</div>
+        <div class="ic-step-body">
+          <h4>Investigator</h4>
+          <p>Creates investigation reports and updates investigation status for the claim.</p>
+        </div>
+      </div>
 
-          <div class="tpHint">
-            Tracking is designed to reduce uncertainty and improve customer experience.
-          </div>
+      <div class="ic-step ic-reveal">
+        <div class="ic-step-num">04</div>
+        <div class="ic-step-body">
+          <h4>Underwriter</h4>
+          <p>Reviews evidence and finalizes the decision: Approved or Rejected.</p>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- WORKFLOW (behind the scenes — still consumer-friendly) -->
-  <section class="sec" id="workflow">
-    <div class="shell">
-      <div class="secHead" data-reveal>
-        <h2>Behind the scenes (for confidence)</h2>
-        <p>Scroll the steps — the preview updates. Customers don’t see complexity, but benefit from it.</p>
-      </div>
+  </div>
+</section>-->
 
-      <div class="wf" data-reveal>
-        <div class="wfLeft">
-          <div class="wfStep"
-               *ngFor="let w of workflow; let i = index"
-               [class.active]="activeWorkflowIndex===i"
-               [attr.data-wf]="i">
-            <div class="wfNum">{{ i+1 }}</div>
-            <div class="wfBody">
-              <div class="wfTitle">{{ w.title }}</div>
-              <div class="wfMeta">Owner: <b>{{ w.ownerLabel }}</b> • Status: <b>{{ w.status }}</b></div>
-              <div class="wfDesc">{{ w.description }}</div>
-            </div>
+<!-- ================= ROLES ================= -->
+<section class="ic-section ic-section-alt" id="roles">
+  <div class="container">
+
+    <div class="ic-section-header ic-reveal">
+      <div class="ic-section-tag">Role-Based Portal</div>
+      <h2 class="ic-section-title">
+        Designed for every user of
+        <span class="ic-gradient-text">ClaimSurePro</span>
+      </h2>
+      <p class="ic-section-sub">
+        Each role gets a focused dashboard with only relevant actions.
+      </p>
+    </div>
+
+    <div class="row g-4 mt-4">
+      <div class="col-md-3 ic-reveal">
+        <div class="ic-role-card">
+          <div class="ic-role-top">
+            <i class="fa-solid fa-user"></i>
+            <h4>Policyholder</h4>
           </div>
+          <ul>
+            <li>Submit claims</li>
+            <li>View claim history</li>
+            <li>Track status</li>
+          </ul>
         </div>
+      </div>
 
-        <div class="wfRight">
-          <div class="wb">
-            <div class="wbTop">
-              <div class="wbTitle">Live preview</div>
-              <div class="wbPill">{{ workflowActive().status }}</div>
-            </div>
-
-            <div class="wbCard">
-              <div class="wbRow"><div class="k">Active step</div><div class="v">{{ workflowActive().title }}</div></div>
-              <div class="wbRow"><div class="k">Owner</div><div class="v">{{ workflowActive().ownerLabel }}</div></div>
-
-              <div class="bar">
-                <div class="fill" [style.width.%]="workflowProgress()"></div>
-              </div>
-
-              <div class="wbTags">
-                <span class="tag">OTP verified</span>
-                <span class="tag">Evidence preview</span>
-                <span class="tag">History</span>
-              </div>
-            </div>
-
-            <div class="wbNote">
-              This gives customers confidence: clear progress, clear ownership, clear outcome.
-            </div>
+      <div class="col-md-3 ic-reveal">
+        <div class="ic-role-card">
+          <div class="ic-role-top">
+            <i class="fa-solid fa-user-tie"></i>
+            <h4>Adjuster</h4>
           </div>
+          <ul>
+            <li>View claims</li>
+            <li>Assign underwriter</li>
+            <li>Update claim details</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-md-3 ic-reveal">
+        <div class="ic-role-card">
+          <div class="ic-role-top">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <h4>Investigator</h4>
+          </div>
+          <ul>
+            <li>Create report</li>
+            <li>Update investigation</li>
+            <li>Support evidence</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-md-3 ic-reveal">
+        <div class="ic-role-card">
+          <div class="ic-role-top">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <h4>Underwriter</h4>
+          </div>
+          <ul>
+            <li>Review assigned claims</li>
+            <li>Approve / Reject</li>
+            <li>Finalize decision</li>
+          </ul>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- TRUST -->
-  <section class="sec" id="trust">
-    <div class="shell">
-      <div class="secHead" data-reveal>
-        <h2>Trust &amp; security</h2>
-        <p>Insurance is trust-first. We design the experience like a bank: secure, clear, accountable.</p>
+  </div>
+</section>
+
+<!-- ================= SECURITY ================= -->
+<!-- <section class="ic-section" id="security">
+  <div class="container">
+
+    <div class="ic-security-block ic-reveal">
+      <div class="ic-security-left">
+        <div class="ic-section-tag">Security</div>
+        <h2 class="ic-section-title">
+          Secure by design with
+          <span class="ic-gradient-text">JWT + RBAC</span>
+        </h2>
+        <p class="ic-section-sub">
+          Every action is protected by Spring Security. Tokens are validated, roles are enforced,
+          and sessions remain stateless.
+        </p>
+
+        <div class="ic-security-points">
+          <div class="ic-point"><i class="fa-solid fa-check"></i> Password encryption</div>
+          <div class="ic-point"><i class="fa-solid fa-check"></i> JWT validation filter</div>
+          <div class="ic-point"><i class="fa-solid fa-check"></i> Role-based API access</div>
+          <div class="ic-point"><i class="fa-solid fa-check"></i> CORS enabled for frontend-backend</div>
+        </div>
       </div>
 
-      <div class="grid3" data-reveal>
-        <div class="card">
-          <div class="cardT">OTP verification</div>
-          <div class="cardS">Secure onboarding that reduces fake registrations.</div>
-        </div>
-        <div class="card">
-          <div class="cardT">Evidence handling</div>
-          <div class="cardS">Optional uploads + preview access for better transparency.</div>
-        </div>
-        <div class="card">
-          <div class="cardT">Decision history</div>
-          <div class="cardS">Approved/Rejected stays visible as read-only record.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FAQ -->
-  <section class="sec" id="faq">
-    <div class="shell">
-      <div class="secHead" data-reveal>
-        <h2>FAQ</h2>
-        <p>Quick answers that customers expect from modern insurers.</p>
-      </div>
-
-      <div class="faqGrid" data-reveal>
-        <div class="faq">
-          <div class="q">Can I submit a claim without documents?</div>
-          <div class="a">Yes. Evidence upload is optional. You can submit first and add evidence later.</div>
-        </div>
-        <div class="faq">
-          <div class="q">How do I track my claim?</div>
-          <div class="a">Open Track Claim to view a stage-by-stage timeline and current status.</div>
-        </div>
-        <div class="faq">
-          <div class="q">Will my outcome remain visible?</div>
-          <div class="a">Yes. Decisions remain visible in history as a record for transparency.</div>
+      <div class="ic-security-right">
+        <div class="ic-code-card">
+          <div class="ic-code-top">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+            <span class="ic-code-title">API Highlights</span>
+          </div>
+          <pre class="ic-code">
+/api/user/login
+/api/user/register
+/api/policyholder/claims
+/api/adjuster/claims
+/api/investigator/investigations
+/api/underwriter/claims</pre>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- FOOTER -->
-  <footer class="foot" data-reveal>
-    <div class="shell footShell">
-      <div class="footLeft">
-        <div class="footBrand">
-          <span class="mark small" aria-hidden="true">
-            <svg viewBox="0 0 24 24" class="ic">
-              <path d="M12 2l8.5 5v10L12 22 3.5 17V7L12 2z" fill="none" stroke="currentColor" stroke-width="1.6"/>
-              <path d="M12 7.2l4 2.3v4.9l-4 2.3-4-2.3V9.5l4-2.3z" fill="currentColor" opacity=".22"/>
-            </svg>
-          </span>
+  </div>
+</section> -->
+
+<!-- ================= CTA ================= -->
+<section class="ic-cta">
+  <div class="container text-center ic-reveal">
+    <h2>Ready to try ClaimSurePro?</h2>
+    <p>Create your account and experience a clean role‑based claim workflow.</p>
+    <a class="ic-btn-primary ic-btn-xl" routerLink="/registration">
+      Create Account
+      <span class="ic-btn-glow"></span>
+    </a>
+  </div>
+</section>
+
+<!-- ================= FOOTER + COMMENTS ================= -->
+<footer class="ic-footer" id="comments">
+  <div class="container">
+
+    <div class="row g-4">
+      <div class="col-lg-5 ic-reveal">
+        <div class="ic-footer-brand">
+          <div class="ic-footer-logo">⬡</div>
           <div>
-            <div class="brandName">ClaimSure<span class="accent">Pro</span></div>
-            <div class="brandSub">Claims made simple. Updates in real time.</div>
+            <div class="ic-footer-title">ClaimSure<span>Pro</span></div>
+            <div class="ic-footer-sub">
+              A modern role‑based insurance claims platform — file, assign, investigate and review.
+            </div>
           </div>
         </div>
 
-        <div class="footNote">© {{ currentYear }} ClaimSurePro • All rights reserved</div>
+        <div class="ic-footer-links">
+          <a href="#" (click)="scrollTo('top', $event)">Back to top</a>
+          <a routerLink="/login">Login</a>
+          <a routerLink="/registration">Register</a>
+        </div>
+
+        <div class="ic-footer-note">
+          <i class="fa-solid fa-circle-info"></i>
+         
+        </div>
       </div>
 
-      <div class="footRight">
-        <button class="footLink" (click)="scrollTo('top')">Back to top</button>
-        <button class="footLink" (click)="goLogin()">Login</button>
-        <button class="footLink" (click)="goRegister()">Register</button>
+      <div class="col-lg-7 ic-reveal">
+        <div class="ic-comment-card">
+          <div class="ic-comment-head">
+            <h3>Community Comments</h3>
+            <span class="ic-comment-count">{{ comments.length }} messages</span>
+          </div>
+
+          <div class="ic-comment-form">
+            <div class="row g-3">
+
+              <div class="col-md-6">
+                <label class="ic-label">Your Name</label>
+                <input class="ic-input"
+                       type="text"
+                       [value]="commentName"
+                       (input)="commentName = $any($event.target).value"
+                       maxlength="30"
+                       placeholder="e.g., Samruddhi" />
+              </div>
+
+              <div class="col-md-6">
+                <label class="ic-label">Rating</label>
+                <select class="ic-input"
+                        [value]="commentRating"
+                        (change)="commentRating = +$any($event.target).value">
+                  <option value="5">★★★★★ (5)</option>
+                  <option value="4">★★★★☆ (4)</option>
+                  <option value="3">★★★☆☆ (3)</option>
+                  <option value="2">★★☆☆☆ (2)</option>
+                  <option value="1">★☆☆☆☆ (1)</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label class="ic-label">Your Message</label>
+                <textarea class="ic-input ic-textarea"
+                          rows="3"
+                          [value]="commentText"
+                          (input)="commentText = $any($event.target).value"
+                          maxlength="240"
+                          placeholder="Write feedback about ClaimSurePro..."></textarea>
+
+                <div class="ic-char-row">
+                  <span class="ic-muted">Be kind • Keep it useful</span>
+                  <span class="ic-muted">{{ commentText.length }}/240</span>
+                </div>
+              </div>
+
+              <div class="col-12 d-flex gap-2 align-items-center flex-wrap">
+                <button type="button" class="ic-btn-primary" (click)="submitComment()">
+                  Post Comment
+                </button>
+                <button type="button" class="ic-btn-ghost" (click)="clearComments()">
+                  Clear All
+                </button>
+                <span *ngIf="commentMessage" class="ic-form-msg">{{ commentMessage }}</span>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="ic-comment-list" *ngIf="comments.length > 0">
+            <div class="ic-comment" *ngFor="let c of comments; let i = index">
+              <div class="ic-comment-avatar">{{ (c.name?.charAt(0) || 'U') }}</div>
+
+              <div class="ic-comment-body">
+                <div class="ic-comment-top">
+                  <div class="ic-comment-name">{{ c.name }}</div>
+                  <div class="ic-comment-meta">
+                    <span class="ic-stars">{{ stars(c.rating) }}</span>
+                    <span class="ic-dot">•</span>
+                    <span class="ic-time">{{ formatTime(c.createdAt) }}</span>
+                  </div>
+                </div>
+
+                <div class="ic-comment-text">{{ c.text }}</div>
+
+                <div class="ic-comment-actions">
+                  <button type="button" class="ic-like" (click)="like(i)">
+                    <i class="fa-solid fa-heart"></i>
+                    Like <span class="ic-like-num">{{ c.likes }}</span>
+                  </button>
+
+                  <button type="button" class="ic-delete" (click)="deleteComment(i)">
+                    <i class="fa-solid fa-trash"></i>
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ic-empty-comments" *ngIf="comments.length === 0">
+            <div class="ic-empty-icon">💬</div>
+            <div class="ic-empty-title">No comments yet</div>
+            <div class="ic-empty-sub">Be the first to share feedback about ClaimSurePro.</div>
+          </div>
+
+        </div>
       </div>
     </div>
-  </footer>
 
+    <div class="ic-footer-bottom">
+      <span>© {{ currentYear }} ClaimSurePro </span>   
+      <!-- • Crafted with Angular + Spring Boot -->
+    </div>
+
+  </div>
+</footer>
+
+<!-- ================= OVERVIEW MODAL ================= -->
+<div class="ic-modal" *ngIf="showOverview" (click)="closeOverview()">
+  <div class="ic-modal-card" (click)="$event.stopPropagation()">
+    <div class="ic-modal-top">
+      <div class="ic-modal-title">ClaimSurePro Overview</div>
+      <button class="ic-modal-close" type="button" (click)="closeOverview()">✕</button>
+    </div>
+
+    <div class="ic-modal-body">
+      <div class="ic-modal-points">
+        <div class="ic-point"><i class="fa-solid fa-check"></i> File → Assign → Investigate → Review</div>
+        <div class="ic-point"><i class="fa-solid fa-check"></i> Role‑based dashboards</div>
+        <div class="ic-point"><i class="fa-solid fa-check"></i> JWT-secured APIs</div>
+        <div class="ic-point"><i class="fa-solid fa-check"></i> Modern UI with smooth animations</div>
+      </div>
+
+      <div class="ic-modal-video">
+        <video controls playsinline>
+          <source src="/assets/vecteezy.mp4" type="video/mp4" />
+        </video>
+      </div>
+    </div>
+  </div>
 </div>

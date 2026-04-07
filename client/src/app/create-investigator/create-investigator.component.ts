@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { HttpService } from '../../services/http.service';
 
+type RecordFilter = 'ALL' | 'PENDING' | 'COMPLETED';
+
 @Component({
   selector: 'app-create-investigator',
   templateUrl: './create-investigator.component.html',
@@ -33,6 +35,9 @@ export class CreateInvestigatorComponent implements OnInit {
   // ✅ record search
   recordSearch = '';
 
+  // ✅ NEW: filter chips
+  recordFilter: RecordFilter = 'ALL';
+
   constructor(
     private httpService: HttpService,
     private formBuilder: FormBuilder
@@ -61,6 +66,36 @@ export class CreateInvestigatorComponent implements OnInit {
     });
   }
 
+  // ---------------------------
+  // ✅ UI Helpers / Stats
+  // ---------------------------
+  get assignedCount(): number {
+    return (this.assignedClaims || []).length;
+  }
+
+  get pendingCount(): number {
+    return (this.pendingAssignedClaims || []).length;
+  }
+
+  get completedCount(): number {
+    return (this.investigationList || []).filter(i => this.isCompletedStatus(i?.status)).length;
+  }
+
+  get recordsCount(): number {
+    return (this.investigationList || []).length;
+  }
+
+  setRecordFilter(f: RecordFilter): void {
+    this.recordFilter = f;
+  }
+
+  trackById(_: number, item: any): any {
+    return item?.id;
+  }
+
+  // ---------------------------
+  // ✅ Data Loads
+  // ---------------------------
   private loadAll(investigatorId: number): void {
     this.loadInvestigations(() => {
       this.loadAssignedClaims(investigatorId);
@@ -98,7 +133,7 @@ export class CreateInvestigatorComponent implements OnInit {
   // ✅ Status check (robust)
   private isCompletedStatus(status: any): boolean {
     const st = (status || '').toString().trim().toUpperCase();
-    return st.includes('COMPLETED'); // matches Completed / INVESTIGATION_COMPLETED / COMPLETED_REPORT etc.
+    return st.includes('COMPLETED');
   }
 
   // ✅ Hide completed from dropdown only
@@ -135,7 +170,6 @@ export class CreateInvestigatorComponent implements OnInit {
       return;
     }
 
-    // ✅ IMPORTANT FIX: compare numeric id to numeric id
     this.selectedClaim = (this.assignedClaims || []).find(c => Number(c.id) === claimId) || null;
 
     if (this.selectedClaim) {
@@ -255,17 +289,13 @@ export class CreateInvestigatorComponent implements OnInit {
     }
   }
 
-  // ✅ FIX: clean method name + correct calls with this.resetAfterSubmit(...)
   private resetAfterSubmit(investigatorId: number): void {
     const st = (this.itemForm.value.status || '').toString();
 
-    // clear report/status
     this.itemForm.patchValue({ report: '', status: '' });
 
-    // reload lists
     this.loadAll(investigatorId);
 
-    // if completed -> remove only from dropdown by clearing selection
     if (this.isCompletedStatus(st)) {
       this.itemForm.patchValue({ claimId: '' });
       this.clearSelection();
@@ -274,9 +304,19 @@ export class CreateInvestigatorComponent implements OnInit {
 
   filteredInvestigations(): any[] {
     const q = (this.recordSearch || '').trim().toLowerCase();
-    if (!q) return this.investigationList || [];
+    const base = this.investigationList || [];
 
-    return (this.investigationList || []).filter(inv => {
+    // ✅ apply chip filter first
+    const byFilter = base.filter(inv => {
+      const completed = this.isCompletedStatus(inv?.status);
+      if (this.recordFilter === 'COMPLETED') return completed;
+      if (this.recordFilter === 'PENDING') return !completed;
+      return true;
+    });
+
+    if (!q) return byFilter;
+
+    return byFilter.filter(inv => {
       const pn = (inv?.claim?.policyNumber || '').toString().toLowerCase();
       const desc = (inv?.claim?.description || '').toString().toLowerCase();
       const st = (inv?.status || '').toString().toLowerCase();
