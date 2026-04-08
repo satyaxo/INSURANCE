@@ -113,16 +113,23 @@
   margin-top: 10px;
 }
 
+/* =========================================================
+   ✅ INLINE FIX START
+   This change makes inline-details appear INSIDE the same card.
+   ========================================================= */
 .claim-card {
   background: rgba(2,6,23,0.65);
   border: 1px solid rgba(255,255,255,0.10);
   border-radius: 14px;
   padding: 14px;
   color: #E5E7EB;
+
   display: flex;
+  flex-wrap: wrap;               /* ✅ allow wrapping */
   align-items: flex-start;
-  gap: 18px;
   justify-content: space-between;
+  gap: 18px;
+
   transition: transform .15s, border-color .15s, background .15s;
 }
 
@@ -131,9 +138,60 @@
   border-color: #60A5FA;
 }
 
+/* Main content should grow */
 .claim-main {
-  flex: 1;
+  flex: 1 1 520px;               /* ✅ takes space, wraps nicely */
+  min-width: 280px;
 }
+
+/* Status badge span should not stretch */
+.claim-card > span[class*="badge"] {
+  flex: 0 0 auto;
+  align-self: flex-start;
+}
+
+/* Actions fixed column */
+.claim-actions {
+  flex: 0 0 190px;               /* ✅ right column width */
+  min-width: 160px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ✅ Inline details full width under card */
+.inline-details {
+  flex: 0 0 100%;
+  width: 100%;
+  margin-top: 6px;
+
+  /* premium look */
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: #0F172A;
+  color: #E5E7EB;
+  padding: 18px;
+}
+
+/* Header inside inline details */
+.inline-details .details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* Grid inside inline details */
+.inline-details .details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+/* =========================================================
+   ✅ INLINE FIX END
+   ========================================================= */
 
 .claim-type, .claim-policy, .claim-desc {
   font-size: .95em;
@@ -141,13 +199,6 @@
   display: flex;
   align-items: center;
   gap: 6px;
-}
-
-.claim-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 140px;
 }
 
 .doc-list {
@@ -169,6 +220,7 @@
   gap: 10px;
 }
 
+/* Old global details-card (can remain, but should be removed from HTML) */
 .details-card {
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,0.08);
@@ -200,6 +252,7 @@
   border-radius: 6px;
   text-align: center;
 }
+
 .ic-alert-success {
   background: rgba(34, 197, 94, 0.15);
   border-left: 4px solid #22C55E;
@@ -209,6 +262,7 @@
   border-radius: 6px;
   text-align: center;
 }
+
 .ic-info {
   margin-top: 10px;
   padding: 10px 12px;
@@ -222,5 +276,16 @@
 /* Responsive */
 @media (max-width: 768px) {
   .details-grid { grid-template-columns: 1fr; }
-  .claim-actions { min-width: unset; }
+  .inline-details .details-grid { grid-template-columns: 1fr; } /* ✅ inline too */
+
+  .claim-actions {
+    flex: 0 0 100%;
+    min-width: unset;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .claim-actions .ic-input {
+    flex: 1 1 220px;
+  }
 }

@@ -57,6 +57,13 @@ export class DashbaordComponent implements OnInit {
         this.trackingList = res || [];
         this.isLoading = false;
 
+        // ✅ Keep selection stable
+        if (this.selected) {
+          const updated = this.trackingList.find(c => c.id === this.selected.id);
+          this.selected = updated || this.selected;
+        }
+
+        // ✅ Default select first item
         if (!this.selected && this.trackingList.length > 0) {
           this.selectClaim(this.trackingList[0]);
         }
@@ -90,6 +97,7 @@ export class DashbaordComponent implements OnInit {
   activeIndex(item: any): number {
     const stage = (item?.stage || item?.status || '').toString().trim().toUpperCase();
 
+    // rejected should point to rejected step
     if (stage === 'REJECTED') return this.steps.findIndex(s => s.key === 'REJECTED');
 
     const idx = this.steps.findIndex(s => s.key === stage);
@@ -98,9 +106,6 @@ export class DashbaordComponent implements OnInit {
 
   isDone(item: any, stepIndex: number): boolean {
     const ai = this.activeIndex(item);
-    const stage = (item?.stage || item?.status || '').toString().trim().toUpperCase();
-
-    if (stage === 'REJECTED') return stepIndex < ai;
     return stepIndex < ai;
   }
 
@@ -110,14 +115,14 @@ export class DashbaordComponent implements OnInit {
 
   isRejected(item: any): boolean {
     const stage = (item?.stage || item?.status || '').toString().trim().toUpperCase();
-    return stage === 'REJECTED' || (item?.status || '').toString().trim().toUpperCase() === 'REJECTED';
+    return stage === 'REJECTED';
   }
 
   badgeClass(item: any): string {
     const st = (item?.status || '').toString().trim().toUpperCase();
     if (st === 'APPROVED') return 'ic-badge approved';
     if (st === 'REJECTED') return 'ic-badge rejected';
-    if (st === 'UNDER_REVIEW') return 'ic-badge review';
+    if (st === 'UNDER_REVIEW' || st === 'UNDERWRITER_REVIEW') return 'ic-badge review';
     if (st.includes('INVESTIGATION')) return 'ic-badge invest';
     if (st === 'SUBMITTED') return 'ic-badge submitted';
     return 'ic-badge progress';
@@ -139,5 +144,20 @@ export class DashbaordComponent implements OnInit {
     const ai = this.activeIndex(item);
     const total = this.steps.length - 1;
     return total <= 0 ? 0 : Math.round((ai / total) * 100);
+  }
+
+  // ✅ Real-world owner label (helps BU)
+  trackOwnerLabel(item: any): string {
+    const stage = (item?.stage || item?.status || '').toString().trim().toUpperCase();
+
+    if (stage === 'SUBMITTED') return 'System Intake';
+    if (stage === 'ADJUSTER_REVIEW') return 'Claims Adjuster';
+    if (stage === 'INVESTIGATION' || stage === 'INVESTIGATION_IN_PROGRESS') return 'Investigation Team';
+    if (stage === 'INVESTIGATION_COMPLETED') return 'Investigation Completed';
+    if (stage === 'UNDERWRITER_REVIEW' || stage === 'UNDER_REVIEW') return 'Underwriting Team';
+    if (stage === 'APPROVED') return 'Decision: Approved';
+    if (stage === 'REJECTED') return 'Decision: Rejected';
+
+    return 'Claims Team';
   }
 }

@@ -1,14 +1,21 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
 
-  <!-- LEFT SIDE TITLE -->
-  <div class="navbar-brand">
-    <!-- ✅ Role-based home navigation -->
-    <a class="app-title text-light"
-       style="cursor: pointer; text-decoration: none;"
-       (click)="goToHome()">
-      Insurance Claims &amp; Resource Management Platform
-    </a>
-  </div>
+<div class="navbar-brand">
+  <a class="brand-link" (click)="goToHome()" aria-label="Go to home">
+    <span class="csp-logo" aria-hidden="true">
+      <span class="orbit"></span>
+      <span class="shield">
+        <span class="check"></span>
+      </span>
+      <span class="glow"></span>
+    </span>
+
+    <span class="brand-wordmark">
+      <span class="brand-claim">Claim Sure Pro</span>
+    </span>
+  </a>
+</div>
+
 
   <!-- TOGGLER -->
   <button class="navbar-toggler" type="button"

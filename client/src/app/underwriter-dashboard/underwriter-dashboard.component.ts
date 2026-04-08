@@ -13,7 +13,7 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
 
   // ✅ Workbench split lists
   waitingInvestigation: any[] = []; // Assigned to underwriter but not ready for decision
-  pendingReview: any[] = [];        // UNDER_REVIEW (ready for approve/reject)
+  pendingReview: any[] = [];        // UNDER_REVIEW (ready to approve/reject)
   decisions: any[] = [];            // APPROVED / REJECTED
 
   // Selected claim for review panel
@@ -33,6 +33,10 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
   errorMessage = '';
   showMessage = false;
   responseMessage = '';
+
+  // ✅ NEW: Decision lock (prevents double click + locks after final decision)
+  decisionSubmitting = false;
+  decisionFinalized = false;
 
   // Optional auto-refresh
   private timer: any = null;
@@ -79,6 +83,10 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
         if (this.selectedClaim) {
           const updated = this.allClaims.find(c => Number(c.id) === Number(this.selectedClaim.id));
           this.selectedClaim = updated || this.selectedClaim;
+
+          // ✅ keep decision lock in sync if status changed after refresh
+          this.decisionFinalized = this.isFinalDecisionStatus(this.selectedClaim?.status);
+          if (this.decisionFinalized) this.decisionSubmitting = false;
 
           if (this.selectedClaim?.id) {
             this.loadDocumentsForClaim(this.selectedClaim.id);
@@ -168,6 +176,11 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
   selectClaim(claim: any): void {
     this.selectedClaim = claim;
     this.resetAlerts();
+
+    // ✅ Reset decision locks based on selected claim status
+    this.decisionSubmitting = false;
+    this.decisionFinalized = this.isFinalDecisionStatus(claim?.status);
+
     this.loadDocumentsForClaim(claim.id);
   }
 
@@ -176,6 +189,10 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
     this.claimDocuments = [];
     this.docsLoading = false;
     this.docsError = '';
+
+    // ✅ Reset locks
+    this.decisionSubmitting = false;
+    this.decisionFinalized = false;
   }
 
   private loadDocumentsForClaim(claimId: number): void {
@@ -242,10 +259,22 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
     this.reviewSelected('REJECTED');
   }
 
+  private isFinalDecisionStatus(status: any): boolean {
+    const s = (status || '').toString().toUpperCase();
+    return s === 'APPROVED' || s === 'REJECTED';
+  }
+
   private reviewSelected(status: 'APPROVED' | 'REJECTED'): void {
     this.resetAlerts();
 
     if (!this.selectedClaim) return;
+
+    // ✅ If already finalized, block re-click
+    if (this.decisionFinalized || this.isFinalDecisionStatus(this.selectedClaim?.status)) {
+      this.showError = true;
+      this.errorMessage = 'Final decision already made for this claim.';
+      return;
+    }
 
     // ✅ Block decision until investigation report exists
     if (!this.hasInvestigation(this.selectedClaim)) {
@@ -254,6 +283,11 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // ✅ Prevent double click while API is running
+    if (this.decisionSubmitting) return;
+
+    this.decisionSubmitting = true;
+
     const claimId = this.selectedClaim.id;
 
     this.httpService.updateClaimStatusUnderwriter(status, claimId).subscribe({
@@ -261,16 +295,25 @@ export class UnderwriterDashboardComponent implements OnInit, OnDestroy {
         this.showMessage = true;
         this.responseMessage = `Claim ${status.toLowerCase()} successfully.`;
 
-        // Update local view immediately
+        // ✅ Update local view immediately
         this.selectedClaim = { ...this.selectedClaim, status };
-        this.allClaims = this.allClaims.map(c => Number(c.id) === Number(claimId) ? this.selectedClaim : c);
+        this.allClaims = this.allClaims.map(c =>
+          Number(c.id) === Number(claimId) ? this.selectedClaim : c
+        );
 
         this.splitLists();
+
+        // ✅ FINAL LOCK after decision
+        this.decisionFinalized = true;
+        this.decisionSubmitting = false;
       },
       error: (err) => {
         console.error('Review failed:', err);
         this.showError = true;
         this.errorMessage = err?.error?.message || `Review failed. (${err?.status || 'NO_STATUS'})`;
+
+        // ✅ Unlock so user can retry if API failed
+        this.decisionSubmitting = false;
       }
     });
   }

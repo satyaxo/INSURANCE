@@ -14,37 +14,56 @@ export class HttpService {
   constructor(private http: HttpClient, private authService: AuthService) {}
 
   // ================= Investigator =================
+
+  // ✅ (A) OLD/global (keep only if you really want ALL investigations)
   getInvestigations(): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
+
     return this.http.get(this.serverName + `/api/investigator/investigations`, { headers });
+  }
+
+  // ✅ (B) NEW: Investigator-specific (THIS FIXES "why I see submitted/completed without doing anything")
+  getInvestigationsByInvestigator(investigatorId: number): Observable<any> {
+    const authToken = this.authService.getToken();
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
+
+    return this.http.get(
+      `${this.serverName}/api/investigator/investigations?investigatorId=${investigatorId}`,
+      { headers }
+    );
   }
 
   // ================= Underwriter =================
   getClaimsByUnderwriter(id: any): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
+
     return this.http.get(this.serverName + `/api/underwriter/claims?underwriterId=` + id, { headers });
   }
 
   // ================= Policyholder =================
   getClaimsByPolicyholder(policyholder: any): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
+
     return this.http.get(this.serverName + `/api/policyholder/claims?policyholderId=` + policyholder, { headers });
   }
 
   createClaims(details: any, policyholderId: any): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
+
     return this.http.post(
       this.serverName + `/api/policyholder/claim?policyholderId=` + policyholderId,
       details,
@@ -54,54 +73,56 @@ export class HttpService {
 
   // ================= Adjuster =================
 
-  // ✅ Update page should use this (SUBMITTED only)
   getAllClaims(): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
+
     return this.http.get(this.serverName + `/api/adjuster/claims`, { headers });
   }
 
-  // ✅ Assign page dropdown should use this (UNDER_PROGRESS only)
   getAssignableClaims(): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
+
     return this.http.get(this.serverName + `/api/adjuster/claims/assignable`, { headers });
   }
 
   GetAllUnderwriter(): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
+
     return this.http.get(this.serverName + `/api/adjuster/underwriters`, { headers });
   }
 
   getAllInvestigators(): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
+
     return this.http.get(this.serverName + `/api/adjuster/investigators`, { headers });
   }
 
   updateClaims(details: any, claimId: any): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
+
     return this.http.put(this.serverName + `/api/adjuster/claim/` + claimId, details, { headers });
   }
 
-  // ✅ OLD: assign underwriter only (kept for compatibility)
   AssignClaim(details: any): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
 
     return this.http.put(
       `${this.serverName}/api/adjuster/claim/${details.claimId}/assign?underwriterId=${details.underwriterId}`,
@@ -110,12 +131,11 @@ export class HttpService {
     );
   }
 
-  // ✅ OLD: assign investigator only (kept for compatibility)
   assignClaimToInvestigator(claimId: number, investigatorId: number): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
 
     return this.http.put(
       `${this.serverName}/api/adjuster/claim/${claimId}/assign-investigator?investigatorId=${investigatorId}`,
@@ -124,12 +144,12 @@ export class HttpService {
     );
   }
 
-  // ✅ NEW: assign BOTH investigator + underwriter in ONE call (this fixes Underwriter missing claims)
+  // ✅ FIXED: use '&' not '&amp;'
   assignClaimToBoth(claimId: number, investigatorId: number, underwriterId: number): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
 
     return this.http.put(
       `${this.serverName}/api/adjuster/claim/${claimId}/assign-all?investigatorId=${investigatorId}&underwriterId=${underwriterId}`,
@@ -141,23 +161,25 @@ export class HttpService {
   // ================= Investigator ops =================
   updateInvestigation(details: any, investigationId: any): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
+
     return this.http.put(this.serverName + `/api/investigator/investigation/` + investigationId, details, { headers });
   }
 
   createInvestigation(details: any): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
+
     return this.http.post(this.serverName + `/api/investigator/investigation`, details, { headers });
   }
 
   getClaimsByInvestigator(investigatorId: number): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders()
+    const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
       .set('Authorization', `Bearer ${authToken}`);
 
@@ -170,9 +192,9 @@ export class HttpService {
   // ================= Underwriter review =================
   updateClaimsStatus(status: any, claimId: any): Observable<any> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    headers = headers.set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`);
 
     return this.http.put(
       `${this.serverName}/api/underwriter/claim/${claimId}/review?status=${status}`,
@@ -195,41 +217,29 @@ export class HttpService {
 
   // ================= Auth =================
   Login(details: any): Observable<any> {
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
     return this.http.post(this.serverName + `/api/user/login`, details, { headers });
   }
 
   registerUser(details: any): Observable<any> {
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
     return this.http.post(this.serverName + `/api/user/register`, details, { headers });
   }
 
-  // ✅ OTP: Send OTP (NO JWT needed)
   sendOtp(email: string): Observable<any> {
-    let headers = new HttpHeaders().set('Content-Type', 'application/json');
-    return this.http.post(
-      `${this.serverName}/api/user/send-otp`,
-      { email },
-      { headers }
-    );
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
+    return this.http.post(`${this.serverName}/api/user/send-otp`, { email }, { headers });
   }
 
-  // ✅ OTP: Verify OTP (NO JWT needed)
   verifyOtp(email: string, otp: string): Observable<any> {
-    let headers = new HttpHeaders().set('Content-Type', 'application/json');
-    return this.http.post(
-      `${this.serverName}/api/user/verify-otp`,
-      { email, otp },
-      { headers }
-    );
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
+    return this.http.post(`${this.serverName}/api/user/verify-otp`, { email, otp }, { headers });
   }
 
   // ================= Policyholder tracking =================
   getPolicyholderClaimsTracking(policyholderId: number): Observable<any[]> {
     const authToken = this.authService.getToken();
-    let headers = new HttpHeaders()
+    const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
       .set('Authorization', `Bearer ${authToken}`);
 
@@ -240,13 +250,9 @@ export class HttpService {
   }
 
   // ================= Documents =================
-
-  // ✅ Upload ONE document for a claim (multipart)
   uploadClaimDocument(claimId: number, file: File): Observable<any> {
     const authToken = this.authService.getToken();
-
-    const headers = new HttpHeaders()
-      .set('Authorization', `Bearer ${authToken}`);
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${authToken}`);
 
     const formData = new FormData();
     formData.append('file', file);
@@ -258,7 +264,6 @@ export class HttpService {
     );
   }
 
-  // ✅ List documents for a claim
   getClaimDocuments(claimId: number): Observable<any[]> {
     const authToken = this.authService.getToken();
     const headers = new HttpHeaders()
@@ -271,15 +276,13 @@ export class HttpService {
     );
   }
 
-  // ✅ Download document (Blob)
-  downloadClaimDocument(docId: number): Observable<Blob> {
-    const authToken = this.authService.getToken();
-    const headers = new HttpHeaders()
-      .set('Authorization', `Bearer ${authToken}`);
+ downloadClaimDocument(docId: number): Observable<Blob> {
+  const authToken = this.authService.getToken();
+  const headers = new HttpHeaders().set('Authorization', `Bearer ${authToken}`);
 
-    return this.http.get(
-      `${this.serverName}/api/documents/${docId}/download`,
-      { headers, responseType: 'blob' }
-    );
-  }
+  return this.http.get(
+    `${this.serverName}/api/documents/${docId}/download`,
+    { headers, responseType: 'blob' as 'blob' }
+  );
+}
 }

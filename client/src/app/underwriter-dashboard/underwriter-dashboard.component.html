@@ -210,18 +210,26 @@
             </div>
           </div>
 
-          <!-- Decision buttons -->
+          <!-- ✅ Decision buttons (UPDATED DISABLE LOGIC) -->
           <div class="decision mt-3">
             <button class="btn btn-success"
                     (click)="approve()"
-                    [disabled]="!hasInvestigation(selectedClaim) || (selectedClaim.status || '').toUpperCase() === 'APPROVED'">
-              Approve
+                    [disabled]="decisionSubmitting
+                                || decisionFinalized
+                                || !hasInvestigation(selectedClaim)
+                                || (selectedClaim.status || '').toUpperCase() === 'APPROVED'
+                                || (selectedClaim.status || '').toUpperCase() === 'REJECTED'">
+              {{ decisionSubmitting ? 'Processing...' : 'Approve' }}
             </button>
 
             <button class="btn btn-danger"
                     (click)="reject()"
-                    [disabled]="!hasInvestigation(selectedClaim) || (selectedClaim.status || '').toUpperCase() === 'REJECTED'">
-              Reject
+                    [disabled]="decisionSubmitting
+                                || decisionFinalized
+                                || !hasInvestigation(selectedClaim)
+                                || (selectedClaim.status || '').toUpperCase() === 'APPROVED'
+                                || (selectedClaim.status || '').toUpperCase() === 'REJECTED'">
+              {{ decisionSubmitting ? 'Processing...' : 'Reject' }}
             </button>
 
             <button class="btn btn-outline-secondary ms-auto" (click)="closeDetails()">

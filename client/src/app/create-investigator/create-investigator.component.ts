@@ -16,10 +16,8 @@ export class CreateInvestigatorComponent implements OnInit {
   assignedClaims: any[] = [];
   investigationList: any[] = [];
 
-  // ✅ Dropdown list (hide completed only)
   pendingAssignedClaims: any[] = [];
 
-  // ✅ Selected claim + docs
   selectedClaim: any = null;
   claimDocuments: any[] = [];
   docsLoading = false;
@@ -32,10 +30,7 @@ export class CreateInvestigatorComponent implements OnInit {
   showMessage = false;
   responseMessage = '';
 
-  // ✅ record search
   recordSearch = '';
-
-  // ✅ NEW: filter chips
   recordFilter: RecordFilter = 'ALL';
 
   constructor(
@@ -50,7 +45,7 @@ export class CreateInvestigatorComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const investigatorId = localStorage.getItem('userId');
+    const investigatorId = Number(localStorage.getItem('userId'));
 
     if (!investigatorId) {
       this.showError = true;
@@ -58,16 +53,15 @@ export class CreateInvestigatorComponent implements OnInit {
       return;
     }
 
-    this.loadAll(+investigatorId);
+    this.loadAll(investigatorId);
 
-    // ✅ When claim dropdown changes -> show details/docs
     this.itemForm.get('claimId')?.valueChanges.subscribe(() => {
       this.onClaimChange();
     });
   }
 
   // ---------------------------
-  // ✅ UI Helpers / Stats
+  // Stats
   // ---------------------------
   get assignedCount(): number {
     return (this.assignedClaims || []).length;
@@ -94,10 +88,10 @@ export class CreateInvestigatorComponent implements OnInit {
   }
 
   // ---------------------------
-  // ✅ Data Loads
+  // Data Loads
   // ---------------------------
   private loadAll(investigatorId: number): void {
-    this.loadInvestigations(() => {
+    this.loadInvestigations(investigatorId, () => {
       this.loadAssignedClaims(investigatorId);
     });
   }
@@ -115,8 +109,9 @@ export class CreateInvestigatorComponent implements OnInit {
     });
   }
 
-  private loadInvestigations(after?: () => void): void {
-    this.httpService.getInvestigations().subscribe({
+  // ✅ FIX: Load investigations for this investigator only
+  private loadInvestigations(investigatorId: number, after?: () => void): void {
+    this.httpService.getInvestigationsByInvestigator(investigatorId).subscribe({
       next: (res: any[]) => {
         this.investigationList = res || [];
         this.applyDropdownFilter();
@@ -130,13 +125,11 @@ export class CreateInvestigatorComponent implements OnInit {
     });
   }
 
-  // ✅ Status check (robust)
   private isCompletedStatus(status: any): boolean {
     const st = (status || '').toString().trim().toUpperCase();
     return st.includes('COMPLETED');
   }
 
-  // ✅ Hide completed from dropdown only
   private applyDropdownFilter(): void {
     const completedClaimIds = new Set<number>();
 
@@ -152,7 +145,6 @@ export class CreateInvestigatorComponent implements OnInit {
       return id && !completedClaimIds.has(id);
     });
 
-    // if selected claim becomes completed -> clear selection
     const selectedId = Number(this.itemForm.get('claimId')?.value);
     if (selectedId && completedClaimIds.has(selectedId)) {
       this.itemForm.patchValue({ claimId: '' });
@@ -160,7 +152,6 @@ export class CreateInvestigatorComponent implements OnInit {
     }
   }
 
-  // ✅ FIXED: always sets selectedClaim correctly (handles string/number)
   onClaimChange(): void {
     const raw = this.itemForm.get('claimId')?.value;
     const claimId = Number(raw);
@@ -306,7 +297,6 @@ export class CreateInvestigatorComponent implements OnInit {
     const q = (this.recordSearch || '').trim().toLowerCase();
     const base = this.investigationList || [];
 
-    // ✅ apply chip filter first
     const byFilter = base.filter(inv => {
       const completed = this.isCompletedStatus(inv?.status);
       if (this.recordFilter === 'COMPLETED') return completed;

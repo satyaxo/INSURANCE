@@ -17,7 +17,7 @@ export class AdjusterDashboardComponent implements OnInit, OnDestroy {
   // Draft status selection per claim
   statusDraft: { [claimId: number]: string } = {};
 
-  // UI state
+  // UI state (kept for docs + other logic)
   selectedClaim: any = null;
   isLoading = false;
   showError = false;
@@ -38,6 +38,9 @@ export class AdjusterDashboardComponent implements OnInit, OnDestroy {
 
   // Realtime polling
   private timer: any = null;
+
+  // ✅ INLINE DETAILS STATE (NEW)
+  expandedClaimId: number | null = null;
 
   constructor(private httpService: HttpService) {}
 
@@ -71,7 +74,17 @@ export class AdjusterDashboardComponent implements OnInit, OnDestroy {
 
         this.initDrafts(this.inboxClaims);
 
-        // keep selected claim stable
+        // ✅ Keep expanded claim stable
+        if (this.expandedClaimId != null) {
+          const existsInInbox = this.inboxClaims.some(c => Number(c.id) === Number(this.expandedClaimId));
+          const existsInProcessed = this.processedClaims.some(c => Number(c.id) === Number(this.expandedClaimId));
+
+          if (!existsInInbox && !existsInProcessed) {
+            this.closeInlineDetails();
+          }
+        }
+
+        // keep selected claim stable (your original behavior)
         if (this.selectedClaim) {
           const id = this.selectedClaim.id;
 
@@ -132,7 +145,33 @@ export class AdjusterDashboardComponent implements OnInit, OnDestroy {
       .replace('#', '');
   }
 
-  // ✅ Open details panel + load documents
+  // =========================================================
+  // ✅ INLINE DETAILS (THIS FIXES YOUR PROBLEM)
+  // =========================================================
+
+  toggleInlineDetails(claim: any): void {
+    if (!claim?.id) return;
+    const id = Number(claim.id);
+
+    // Toggle same card close
+    if (this.expandedClaimId === id) {
+      this.closeInlineDetails();
+      return;
+    }
+
+    // Open this card inline
+    this.expandedClaimId = id;
+
+    // Load details + docs using your existing function
+    this.selectClaim(claim);
+  }
+
+  closeInlineDetails(): void {
+    this.expandedClaimId = null;
+    this.closeDetails();
+  }
+
+  // ✅ Open details panel + load documents (kept, reused)
   selectClaim(claim: any): void {
     this.selectedClaim = claim;
     this.resetAlerts();
@@ -144,6 +183,9 @@ export class AdjusterDashboardComponent implements OnInit, OnDestroy {
     this.claimDocuments = [];
     this.docsLoading = false;
     this.docsError = '';
+
+    // ✅ make sure inline closes too (safety)
+    this.expandedClaimId = null;
   }
 
   private loadDocumentsForClaim(claimId: number): void {
@@ -208,10 +250,15 @@ export class AdjusterDashboardComponent implements OnInit, OnDestroy {
         const processedItem = { ...claim, status: newStatus };
         this.addToProcessed(processedItem);
 
-        // ✅ Remove from inbox list (because status changed from SUBMITTED)
+        // ✅ Remove from inbox list
         this.inboxClaims = this.inboxClaims.filter(c => c.id !== claim.id);
 
-        // keep details open
+        // ✅ If this claim was expanded inline, keep it expanded but now in processed list
+        // (No action needed unless you want to auto-close)
+        // If you want auto-close, uncomment:
+        // if (this.expandedClaimId === claim.id) this.expandedClaimId = null;
+
+        // keep details open (your original)
         if (this.selectedClaim?.id === claim.id) {
           this.selectedClaim = processedItem;
         }
@@ -233,7 +280,7 @@ export class AdjusterDashboardComponent implements OnInit, OnDestroy {
       this.processedClaims = this.processedClaims.map(c => c.id === claim.id ? claim : c);
     }
 
-    // ✅ Persist as record (so it never disappears)
+    // ✅ Persist as record
     this.saveProcessedToStorage();
   }
 

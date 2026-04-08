@@ -7,14 +7,12 @@
         <div class="hero-kicker">Investigation</div>
         <h2 class="hero-title">Investigation Workbench</h2>
         <p class="hero-subtitle">
-          Review assigned claims, verify evidence, and submit a clean investigation report.
+          Review assigned claims, verify evidence, and submit a structured investigation report.
         </p>
 
         <div class="hero-badges">
           <span class="role-pill">Investigator</span>
-          <span class="meta-pill">
-            <span class="dot"></span> Secure Workflow
-          </span>
+          <span class="meta-pill"><span class="dot"></span> Secure Workflow</span>
         </div>
       </div>
 
@@ -55,7 +53,6 @@
 
     <!-- ONE FORM FOR WHOLE PAGE -->
     <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
-
       <div class="row g-4">
 
         <!-- LEFT: CLAIM + EVIDENCE -->
@@ -92,7 +89,7 @@
 
             <!-- EMPTY -->
             <div *ngIf="!selectedClaim" class="inv-empty">
-              <div class="inv-empty__icon">🕵️</div>
+              <div class="inv-empty__icon">i</div>
               <div class="inv-empty__title">Pick a claim to begin</div>
               <div class="inv-empty__sub">
                 Select a claim to view details and evidence. Then submit your investigation report.
@@ -119,9 +116,7 @@
 
                 <div class="kv">
                   <div class="k">Claim Status</div>
-                  <div class="v">
-                    <span class="status-pill">{{ selectedClaim.status }}</span>
-                  </div>
+                  <div class="v"><span class="status-pill">{{ selectedClaim.status }}</span></div>
                 </div>
               </div>
 
@@ -162,7 +157,7 @@
                           *ngFor="let doc of claimDocuments; trackBy: trackById"
                           (click)="previewDocument(doc)">
                     <div class="doc-left">
-                      <div class="doc-ico">📄</div>
+                      <div class="doc-ico">DOC</div>
                       <div class="doc-name">{{ doc.originalFileName }}</div>
                     </div>
                     <div class="doc-action">Preview</div>
@@ -250,24 +245,9 @@
 
         <div class="records-tools">
           <div class="chip-group">
-            <button type="button"
-                    class="chip"
-                    [class.active]="recordFilter==='ALL'"
-                    (click)="setRecordFilter('ALL')">
-              All
-            </button>
-            <button type="button"
-                    class="chip"
-                    [class.active]="recordFilter==='PENDING'"
-                    (click)="setRecordFilter('PENDING')">
-              Pending
-            </button>
-            <button type="button"
-                    class="chip"
-                    [class.active]="recordFilter==='COMPLETED'"
-                    (click)="setRecordFilter('COMPLETED')">
-              Completed
-            </button>
+            <button type="button" class="chip" [class.active]="recordFilter==='ALL'" (click)="setRecordFilter('ALL')">All</button>
+            <button type="button" class="chip" [class.active]="recordFilter==='PENDING'" (click)="setRecordFilter('PENDING')">Pending</button>
+            <button type="button" class="chip" [class.active]="recordFilter==='COMPLETED'" (click)="setRecordFilter('COMPLETED')">Completed</button>
           </div>
 
           <input class="records-search"
@@ -278,7 +258,7 @@
       </div>
 
       <div *ngIf="filteredInvestigations().length === 0" class="inv-empty inv-empty--mini">
-        <div class="inv-empty__icon">📭</div>
+        <div class="inv-empty__icon">i</div>
         <div class="inv-empty__title">No records found</div>
         <div class="inv-empty__sub">Try changing search/filter.</div>
       </div>
@@ -312,6 +292,7 @@
                     (click)="edit(inv)">
               Edit
             </button>
+
             <div class="record-meta">
               Claim ID: <b>{{ inv?.claim?.id || '-' }}</b>
             </div>

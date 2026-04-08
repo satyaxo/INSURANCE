@@ -26,12 +26,6 @@ public class InvestigationService {
         this.claimRepository = claimRepository;
     }
 
-    /**
-     * Creates a new investigation.
-     * ✅ Must link claim properly.
-     * ✅ Prevent duplicate investigations for same claim (OneToOne rule).
-     * ✅ Update claim status based on investigation status.
-     */
     public Investigation createInvestigation(Investigation investigation) {
 
         if (investigation == null) {
@@ -44,7 +38,7 @@ public class InvestigationService {
 
         Long claimId = investigation.getClaim().getId();
 
-        // ✅ IMPORTANT: Prevent duplicates (this fixes underwriter approve crash)
+        // ✅ Prevent duplicates
         if (investigationRepository.existsByClaimId(claimId)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -52,13 +46,11 @@ public class InvestigationService {
             );
         }
 
-        // ✅ Fetch claim from DB (ensures it is fully linked)
         Claim claim = claimRepository.findById(claimId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Claim not found"));
 
         investigation.setClaim(claim);
 
-        // ✅ Save investigation
         Investigation savedInvestigation = investigationRepository.save(investigation);
 
         // ✅ Update claim status based on investigation status
@@ -74,10 +66,6 @@ public class InvestigationService {
         return savedInvestigation;
     }
 
-    /**
-     * Updates an investigation’s details by ID.
-     * ✅ Once Completed, it cannot be edited.
-     */
     public Investigation updateInvestigation(Long id, Investigation investigationDetails) {
 
         if (id == null || investigationDetails == null) {
@@ -85,10 +73,9 @@ public class InvestigationService {
         }
 
         Investigation existingInvestigation = investigationRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Investigation not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Investigation not found"));
 
-        // ✅ BLOCK edits if already completed
+        // ✅ Block edits if already completed
         if ("COMPLETED".equalsIgnoreCase(existingInvestigation.getStatus())
                 || "Completed".equalsIgnoreCase(existingInvestigation.getStatus())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Completed investigation cannot be edited");
@@ -99,7 +86,7 @@ public class InvestigationService {
 
         Investigation updated = investigationRepository.save(existingInvestigation);
 
-        // ✅ If updated to Completed -> update claim status
+        // ✅ update claim status
         if (("COMPLETED".equalsIgnoreCase(updated.getStatus())
                 || "Completed".equalsIgnoreCase(updated.getStatus()))
                 && updated.getClaim() != null) {
@@ -118,10 +105,16 @@ public class InvestigationService {
         return updated;
     }
 
-    /**
-     * Retrieves all investigations with claim loaded.
-     */
+    // ✅ Admin/global (keep if you want)
     public List<Investigation> getAllInvestigations() {
         return investigationRepository.findAllWithClaim();
+    }
+
+    // ✅ Investigator-only (THIS FIXES "why I see records without submitting")
+    public List<Investigation> getInvestigationsByInvestigator(Long investigatorId) {
+        if (investigatorId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid investigatorId");
+        }
+        return investigationRepository.findAllWithClaimByInvestigatorId(investigatorId);
     }
 }

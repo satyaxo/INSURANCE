@@ -26,14 +26,11 @@ public class InvestigatorController {
 
     @PostMapping("/investigation")
     public ResponseEntity<Investigation> createInvestigation(@RequestBody Investigation investigation) {
-
         if (investigation == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
         }
 
         Investigation saved = investigationService.createInvestigation(investigation);
-
-        // ✅ IMPORTANT FIX: if investigator completes report, move claim to UNDER_REVIEW
         moveClaimToUnderwriterReviewIfCompleted(saved);
 
         return ResponseEntity.ok(saved);
@@ -49,16 +46,15 @@ public class InvestigatorController {
         }
 
         Investigation saved = investigationService.updateInvestigation(id, investigationDetails);
-
-        // ✅ IMPORTANT FIX: if investigator completes report, move claim to UNDER_REVIEW
         moveClaimToUnderwriterReviewIfCompleted(saved);
 
         return ResponseEntity.ok(saved);
     }
 
+    // ✅ FIX: Investigator should not get ALL investigations
     @GetMapping("/investigations")
-    public List<Investigation> getAllInvestigations() {
-        return investigationService.getAllInvestigations();
+    public List<Investigation> getInvestigations(@RequestParam Long investigatorId) {
+        return investigationService.getInvestigationsByInvestigator(investigatorId);
     }
 
     // ✅ Investigator receives assigned claims
@@ -67,25 +63,18 @@ public class InvestigatorController {
         return claimService.getClaimsByInvestigator(investigatorId);
     }
 
-    /* =========================================================
-       ✅ Helper: if investigation status is completed => claim UNDER_REVIEW
-       ========================================================= */
     private void moveClaimToUnderwriterReviewIfCompleted(Investigation inv) {
-
         if (inv == null) return;
 
         String st = inv.getStatus();
         if (st == null) return;
 
-        // Accept both "Completed" and "INVESTIGATION_COMPLETED"
         String up = st.trim().toUpperCase();
         boolean completed = up.equals("COMPLETED") || up.contains("COMPLETED");
-
         if (!completed) return;
 
         if (inv.getClaim() == null || inv.getClaim().getId() == null) return;
 
-        // ✅ Move claim to UNDER_REVIEW so underwriter dashboard can see it
         claimService.moveClaimToUnderwriterReview(inv.getClaim().getId());
     }
 }
