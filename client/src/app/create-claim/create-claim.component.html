@@ -17,15 +17,21 @@
 
     <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
 
-      <!-- ✅ Insurance Type -->
+      <!-- ✅ Insurance Type (auto + locked via TS, not HTML) -->
       <div class="ic-form-group">
         <label>Insurance Type</label>
+
+        <!-- ✅ removed "disabled" attribute -->
         <select class="ic-input" formControlName="insuranceType">
           <option value="" disabled>Select Insurance Type</option>
           <option *ngFor="let t of insuranceTypes" [value]="t.value">
             {{ t.label }}
           </option>
         </select>
+
+        <small class="ic-help">
+          Auto-filled from your active policy.
+        </small>
 
         <small class="ic-field-error"
                *ngIf="itemForm.get('insuranceType')?.touched && itemForm.get('insuranceType')?.invalid">
@@ -36,27 +42,29 @@
       <!-- ✅ Policy Number (auto + readonly) -->
       <div class="ic-form-group">
         <label>Policy Number</label>
+
         <input
           type="text"
           class="ic-input"
           formControlName="policyNumber"
           readonly
-          (input)="onPolicyNumberInput()"
         />
 
-        <!-- <small class="ic-help">
-          Auto-generated. Format: <b># + numbers</b> (example: #12345678)
-        </small> -->
+        <small class="ic-help">
+          Auto-filled from your active policy (example:
+          <b>POL-20260408-834921</b>)
+        </small>
 
         <small class="ic-field-error"
                *ngIf="policyNumberCtrl?.touched && policyNumberCtrl?.invalid">
-          Policy number must start with <b>#</b> and contain digits only.
+          Policy number format must be <b>POL-YYYYMMDD-XXXXXX</b>.
         </small>
       </div>
 
-      <!-- ✅ Accident Date (deadline check) -->
+      <!-- ✅ Accident Date -->
       <div class="ic-form-group">
         <label>Date</label>
+
         <input
           type="date"
           class="ic-input"
@@ -64,17 +72,18 @@
         />
 
         <div class="ic-help mt-1" *ngIf="deadlineDays && deadlineDateText">
-          Deadline: file within <b>{{ deadlineDays }}</b> days (before <b>{{ deadlineDateText }}</b>)
+          Deadline: file within <b>{{ deadlineDays }}</b> days
+          (before <b>{{ deadlineDateText }}</b>)
         </div>
 
         <small class="ic-field-error"
                *ngIf="dateCtrl?.touched && dateCtrl?.errors?.['required']">
-          Accident date is required.
+          Date is required.
         </small>
 
         <small class="ic-field-error"
                *ngIf="dateCtrl?.touched && dateCtrl?.errors?.['future']">
-          Accident date cannot be in the future.
+          Date cannot be in the future.
         </small>
 
         <small class="ic-field-error"
@@ -99,7 +108,7 @@
         </small>
       </div>
 
-      <!-- ✅ Upload Evidence (Optional) -->
+      <!-- ✅ Upload Evidence -->
       <div class="ic-form-group">
         <label>Upload Evidence (Optional)</label>
         <input
@@ -114,26 +123,28 @@
           Supported: JPG, PNG, PDF (max 5MB each).
         </small>
 
-        <!-- ✅ Selected files list -->
         <div class="ic-files mt-2" *ngIf="selectedFiles.length > 0">
           <div class="ic-files-title">Selected files:</div>
 
           <div class="ic-file-row" *ngFor="let f of selectedFiles; let i = index">
             <span class="ic-file-name">{{ f.name }}</span>
-            <button type="button" class="ic-mini-btn ghost danger" (click)="removeFile(i)">
+            <button type="button"
+                    class="ic-mini-btn ghost danger"
+                    (click)="removeFile(i)">
               Remove
             </button>
           </div>
         </div>
 
-        <!-- ✅ Upload info -->
         <div class="ic-upload-info" *ngIf="uploadInfo">
           {{ uploadInfo }}
         </div>
       </div>
 
       <!-- ✅ Submit -->
-      <button type="submit" class="ic-btn-primary w-100" [disabled]="isSubmitting">
+      <button type="submit"
+              class="ic-btn-primary w-100"
+              [disabled]="isSubmitting">
         {{ isSubmitting ? 'Submitting...' : 'Create Claim' }}
       </button>
 

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,6 +15,7 @@ import com.edutech.insurance_claims_processing_system.entity.Claim;
 import com.edutech.insurance_claims_processing_system.entity.Investigator;
 import com.edutech.insurance_claims_processing_system.entity.Policyholder;
 import com.edutech.insurance_claims_processing_system.entity.Underwriter;
+import com.edutech.insurance_claims_processing_system.entity.Policy; // ✅ NEW
 import com.edutech.insurance_claims_processing_system.repository.AdjusterRepository;
 import com.edutech.insurance_claims_processing_system.repository.ClaimRepository;
 import com.edutech.insurance_claims_processing_system.repository.InvestigatorRepository;
@@ -31,24 +31,27 @@ public class ClaimService {
     private final InvestigatorRepository investigatorRepository;
     private final AdjusterRepository adjusterRepository;
 
-    // ✅ Deadline rules (realtime-like / industry simplified)
+    // ✅ NEW: policy validation
+    private final PolicyService policyService;
+
     // Motor/Travel -> 7 days ; Others -> 30 days
     private static final int DEADLINE_MOTOR_DAYS = 7;
     private static final int DEADLINE_DEFAULT_DAYS = 30;
 
-    @Autowired
     public ClaimService(
             ClaimRepository claimRepository,
             PolicyholderRepository policyholderRepository,
             UnderwriterRepository underwriterRepository,
             InvestigatorRepository investigatorRepository,
-            AdjusterRepository adjusterRepository
+            AdjusterRepository adjusterRepository,
+            PolicyService policyService // ✅ NEW
     ) {
         this.claimRepository = claimRepository;
         this.policyholderRepository = policyholderRepository;
         this.underwriterRepository = underwriterRepository;
         this.investigatorRepository = investigatorRepository;
         this.adjusterRepository = adjusterRepository;
+        this.policyService = policyService;
     }
 
     public Claim createClaim(Claim claim) {
@@ -88,29 +91,61 @@ public class ClaimService {
     /**
      * ✅ Policyholder submits claim
      * Rules:
-     * - insuranceType required
-     * - policyNumber must match ^#\d+$
-     * - accident date must not be future
-     * - claim must be filed within allowed deadline based on insuranceType
+     * - Policyholder must have ACTIVE + PAID policy
+     * - insuranceType must match purchased policy
+     * - policyNumber must match purchased policyNumber (or auto-filled)
+     * - accident date not future
+     * - filed within deadline days
      */
     public Claim submitClaim(Long policyholderId, Claim claim) {
         if (policyholderId == null || claim == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
         }
 
-        if (claim.getInsuranceType() == null || claim.getInsuranceType().trim().isEmpty()) {
+        // =========================================================
+        // ✅ POLICY CHECK ADDED (REAL-WORLD REQUIREMENT)
+        // ✅ FIXED: Use entity method (DTO method cannot be converted to Policy)
+        // =========================================================
+        Policy activePolicy = policyService.getActivePaidPolicyEntity(policyholderId);
+
+        // insurance type must match purchased policy
+        String policyType = (activePolicy.getInsuranceType() == null) ? "" : activePolicy.getInsuranceType().trim().toUpperCase();
+        String claimType  = (claim.getInsuranceType() == null) ? "" : claim.getInsuranceType().trim().toUpperCase();
+
+        if (claimType.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insurance type is required");
         }
 
-        if (claim.getPolicyNumber() == null || claim.getPolicyNumber().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Policy number is required");
-        }
-
-        String pn = claim.getPolicyNumber().trim();
-        if (!pn.matches("^#\\d+$")) {
+        if (!policyType.equals(claimType)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Policy number must start with # and contain digits only (example: #12345678)"
+                    "Insurance type does not match your active policy. Please select the correct insurance type."
+            );
+        }
+
+        // policyNumber: if not provided, auto-fill from active policy
+        if (claim.getPolicyNumber() == null || claim.getPolicyNumber().trim().isEmpty()) {
+            claim.setPolicyNumber(activePolicy.getPolicyNumber());
+        } else {
+            // If user entered, verify it matches the active policy
+            if (!claim.getPolicyNumber().trim().equalsIgnoreCase(activePolicy.getPolicyNumber())) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Policy number does not match your active policy."
+                );
+            }
+        }
+
+        // Accept both:
+        //  - #12345678
+        //  - POL-20260408-834921
+        String pn = claim.getPolicyNumber().trim();
+        boolean okPn = pn.matches("^#\\d+$") || pn.matches("^POL-\\d{8}-\\d{6}$");
+
+        if (!okPn) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid policy number format. Use #12345678 or POL-YYYYMMDD-XXXXXX"
             );
         }
 
@@ -143,19 +178,19 @@ public class ClaimService {
         claim.setPolicyholder(policyholder);
         claim.setStatus("SUBMITTED");
 
+        // OPTIONAL: If you later add Claim.policy relation, set it here:
+        // claim.setPolicy(activePolicy);
+
         return claimRepository.save(claim);
     }
 
-    // ✅ Deadline rules per type
     private int getDeadlineDaysByInsuranceType(String insuranceType) {
         if (insuranceType == null) return DEADLINE_DEFAULT_DAYS;
 
         String t = insuranceType.trim().toUpperCase();
-
         if ("CAR".equals(t) || "BIKE".equals(t) || "TRAVEL".equals(t)) {
             return DEADLINE_MOTOR_DAYS;
         }
-
         return DEADLINE_DEFAULT_DAYS;
     }
 
@@ -181,12 +216,6 @@ public class ClaimService {
         return claimRepository.findByUnderwriter(underwriter);
     }
 
-    /**
-     * ✅ Assign claim to Underwriter
-     * IMPORTANT: Do NOT always force UNDER_REVIEW here.
-     * - If investigation is not completed, claim should remain in investigation stage.
-     * - Only after investigator marks COMPLETED, we move to UNDER_REVIEW.
-     */
     public Claim assignClaimToUnderwriter(Long claimId, Long underwriterId) {
         if (claimId == null || underwriterId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
@@ -200,7 +229,6 @@ public class ClaimService {
 
         claim.setUnderwriter(underwriter);
 
-        // ✅ Only set UNDER_REVIEW if investigation already completed
         if (claim.getInvestigation() != null && isCompletedStatus(claim.getInvestigation().getStatus())) {
             claim.setStatus("UNDER_REVIEW");
         }
@@ -208,10 +236,6 @@ public class ClaimService {
         return claimRepository.save(claim);
     }
 
-    /**
-     * ✅ Assign claim to Investigator
-     * This always moves claim into investigation stage.
-     */
     public Claim assignClaimToInvestigator(Long claimId, Long investigatorId) {
         if (claimId == null || investigatorId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
@@ -240,12 +264,10 @@ public class ClaimService {
         return claimRepository.findByInvestigator(investigator);
     }
 
-    // Update page inbox: SUBMITTED only
     public List<Claim> getUnassignedSubmittedClaims() {
         return claimRepository.findByAdjusterIsNullAndStatus("SUBMITTED");
     }
 
-    // ✅ Ready-to-Assign shows claims where investigator OR underwriter missing
     public List<Claim> getAssignableClaimsForAdjuster() {
         return claimRepository.findAssignableClaims("UNDER_PROGRESS");
     }
@@ -301,10 +323,6 @@ public class ClaimService {
         return claimRepository.save(claim);
     }
 
-    /* =========================================================
-       ✅ NEW: Move claim to UNDER_REVIEW after investigation completed
-       This is called from InvestigatorController when status becomes Completed.
-       ========================================================= */
     public Claim moveClaimToUnderwriterReview(Long claimId) {
         if (claimId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid claimId");
@@ -325,7 +343,6 @@ public class ClaimService {
         return claimRepository.save(claim);
     }
 
-    // ✅ Underwriter DTO (includes policyNumber/type/date + report)
     public List<UnderwriterClaimDTO> getUnderwriterClaimsWithReport(Long underwriterId) {
         if (underwriterId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
@@ -360,7 +377,6 @@ public class ClaimService {
         return result;
     }
 
-    // ✅ Policyholder tracking DTO
     public List<PolicyholderClaimTrackingDTO> getPolicyholderClaimsTracking(Long policyholderId) {
         if (policyholderId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request");
@@ -409,7 +425,6 @@ public class ClaimService {
         return s;
     }
 
-    // ✅ helper: treat "Completed" and anything containing "COMPLETED" as completed
     private boolean isCompletedStatus(String status) {
         if (status == null) return false;
         String st = status.trim().toUpperCase();

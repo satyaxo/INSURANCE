@@ -27,7 +27,11 @@ export class CreateClaimComponent implements OnInit {
   deadlineDays: number | null = null;
   deadlineDateText: string = '';
 
-  // ✅ Insurance types list for dropdown
+  // ✅ Active policy details (for UI/debug)
+  activePolicyNumber: string = '';
+  activeInsuranceType: string = '';
+
+  // ✅ Insurance types list for dropdown (kept for UI display)
   insuranceTypes = [
     { value: 'BIKE', label: 'Bike Insurance' },
     { value: 'CAR', label: 'Car Insurance' },
@@ -43,10 +47,12 @@ export class CreateClaimComponent implements OnInit {
     private formBuilder: FormBuilder
   ) {
     this.itemForm = this.formBuilder.group({
-      insuranceType: ['', Validators.required],
+      // ✅ We'll auto-fill & lock these from active policy
+      insuranceType: [{ value: '', disabled: false }, Validators.required],
 
-      // ✅ Read-only auto policy number
-      policyNumber: ['', [Validators.required, Validators.pattern(/^#\d+$/)]],
+      // ✅ Policy number must match your PolicyService generator: POL-YYYYMMDD-XXXXXX
+      // Example: POL-20260408-834921
+      policyNumber: [{ value: '', disabled: false }, [Validators.required, Validators.pattern(/^POL-\d{8}-\d{6}$/)]],
 
       // ✅ accident date
       date: ['', Validators.required],
@@ -56,10 +62,11 @@ export class CreateClaimComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // ✅ Generate policy number on load
-    this.setAutoPolicyNumber();
+    // ✅ Load active policy and lock fields (this fixes mismatch)
+    this.loadActivePolicyAndLockFields();
 
     // ✅ Recalculate deadline when insurance type changes
+    // (insuranceType will be auto-set; still okay to keep this logic)
     this.itemForm.get('insuranceType')?.valueChanges.subscribe(() => {
       this.updateDeadlineInfo();
       this.validateAccidentDate();
@@ -72,27 +79,50 @@ export class CreateClaimComponent implements OnInit {
   }
 
   // ---------------------------
-  // Policy Number helpers
+  // ✅ Load Active Policy from backend and lock fields
   // ---------------------------
-  private generatePolicyNumber(): string {
-    const num = Math.floor(10000000 + Math.random() * 90000000);
-    return `#${num}`;
-  }
+  private loadActivePolicyAndLockFields(): void {
+    const userId = Number(localStorage.getItem('userId'));
 
-  private setAutoPolicyNumber(): void {
-    this.itemForm.patchValue({ policyNumber: this.generatePolicyNumber() });
-  }
+    if (!userId) {
+      this.showError = true;
+      this.errorMessage = 'User not logged in.';
+      return;
+    }
 
-  // If user tries to type, keep only # + digits
-  onPolicyNumberInput(): void {
-    const ctrl = this.itemForm.get('policyNumber');
-    if (!ctrl) return;
+    this.httpService.getActivePolicy(userId).subscribe({
+      next: (policy: any) => {
+        const pn = (policy?.policyNumber || '').toString().trim();
+        const it = (policy?.insuranceType || '').toString().trim().toUpperCase();
 
-    let v = (ctrl.value || '').toString();
-    if (!v.startsWith('#')) v = '#' + v;
-    v = '#' + v.substring(1).replace(/\D/g, '');
+        if (!pn || !it) {
+          this.showError = true;
+          this.errorMessage = 'Active policy data is incomplete. Please buy policy again.';
+          return;
+        }
 
-    ctrl.setValue(v, { emitEvent: false });
+        this.activePolicyNumber = pn;
+        this.activeInsuranceType = it;
+
+        // ✅ Auto-fill from active policy
+        this.itemForm.patchValue({
+          policyNumber: pn,
+          insuranceType: it
+        });
+
+        // ✅ Lock them so user cannot mismatch
+        this.itemForm.get('policyNumber')?.disable({ emitEvent: false });
+        this.itemForm.get('insuranceType')?.disable({ emitEvent: false });
+
+        // ✅ Update deadline display if date exists
+        this.updateDeadlineInfo();
+      },
+      error: () => {
+        // No active policy => policyholder must buy policy first
+        this.showError = true;
+        this.errorMessage = 'No active policy found. Please buy a policy first.';
+      }
+    });
   }
 
   // ---------------------------
@@ -105,7 +135,10 @@ export class CreateClaimComponent implements OnInit {
   }
 
   private updateDeadlineInfo(): void {
-    const type = this.itemForm.get('insuranceType')?.value;
+    // insuranceType is disabled; getRawValue needed sometimes
+    const raw = this.itemForm.getRawValue();
+    const type = raw.insuranceType;
+
     if (!type) {
       this.deadlineDays = null;
       this.deadlineDateText = '';
@@ -114,7 +147,7 @@ export class CreateClaimComponent implements OnInit {
 
     this.deadlineDays = this.getDeadlineDaysByType(type);
 
-    const dateStr = this.itemForm.get('date')?.value;
+    const dateStr = raw.date;
     if (!dateStr) {
       this.deadlineDateText = '';
       return;
@@ -128,12 +161,11 @@ export class CreateClaimComponent implements OnInit {
 
   validateAccidentDate(): void {
     const dateCtrl = this.itemForm.get('date');
-    const typeCtrl = this.itemForm.get('insuranceType');
+    if (!dateCtrl) return;
 
-    if (!dateCtrl || !typeCtrl) return;
-
-    const dateValue = dateCtrl.value;
-    const typeValue = typeCtrl.value;
+    const raw = this.itemForm.getRawValue();
+    const dateValue = raw.date;
+    const typeValue = raw.insuranceType;
 
     if (!dateValue || !typeValue) {
       this.updateDeadlineInfo();
@@ -159,7 +191,7 @@ export class CreateClaimComponent implements OnInit {
       dateCtrl.setErrors({ deadline: true });
     } else {
       if (dateCtrl.errors) {
-        const { deadline, future, ...rest } = dateCtrl.errors;
+        const { deadline, future, ...rest } = dateCtrl.errors as any;
         dateCtrl.setErrors(Object.keys(rest).length ? rest : null);
       }
     }
@@ -211,11 +243,14 @@ export class CreateClaimComponent implements OnInit {
       return;
     }
 
+    // ✅ IMPORTANT: insuranceType & policyNumber are disabled, so use getRawValue()
+    const raw = this.itemForm.getRawValue();
+
     const payload = {
-      insuranceType: this.itemForm.value.insuranceType,
-      policyNumber: this.itemForm.value.policyNumber,
-      date: this.itemForm.value.date,
-      description: this.itemForm.value.description
+      insuranceType: raw.insuranceType,
+      policyNumber: raw.policyNumber,
+      date: raw.date,
+      description: raw.description
     };
 
     this.isSubmitting = true;
@@ -230,10 +265,16 @@ export class CreateClaimComponent implements OnInit {
           this.isSubmitting = false;
           this.showMessage = true;
           this.responseMessage = '✅ Claim created successfully!';
-          this.itemForm.reset();
-          this.setAutoPolicyNumber();
+
+          // Reset only editable fields
+          this.itemForm.patchValue({ date: '', description: '' });
+          this.selectedFiles = [];
+          this.uploadInfo = '';
           this.deadlineDays = null;
           this.deadlineDateText = '';
+
+          // Reload active policy values (keeps locked values consistent)
+          this.loadActivePolicyAndLockFields();
           return;
         }
 
@@ -258,12 +299,15 @@ export class CreateClaimComponent implements OnInit {
             this.showMessage = true;
             this.responseMessage = `✅ Claim created and ${this.selectedFiles.length} document(s) uploaded successfully!`;
 
-            this.itemForm.reset();
+            // Reset only editable fields
+            this.itemForm.patchValue({ date: '', description: '' });
             this.selectedFiles = [];
             this.uploadInfo = '';
-            this.setAutoPolicyNumber();
             this.deadlineDays = null;
             this.deadlineDateText = '';
+
+            // Reload active policy values (keeps locked values consistent)
+            this.loadActivePolicyAndLockFields();
           },
           error: (err) => {
             console.error('Upload failed:', err);

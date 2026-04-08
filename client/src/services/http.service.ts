@@ -285,4 +285,83 @@ export class HttpService {
     { headers, responseType: 'blob' as 'blob' }
   );
 }
+
+// ================= POLICY (ADD ONLY) =================
+
+// Create policy purchase (PENDING)
+createPolicyPurchase(policyholderId: number, payload: any): Observable<any> {
+  const authToken = this.authService.getToken();
+  const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Authorization', `Bearer ${authToken}`);
+
+  return this.http.post(
+    `${this.serverName}/api/policy/purchase?policyholderId=${policyholderId}`,
+    payload,
+    { headers }
+  );
+}
+
+// Get all policies of policyholder
+getMyPolicies(policyholderId: number): Observable<any[]> {
+  const authToken = this.authService.getToken();
+  const headers = new HttpHeaders()
+    .set('Authorization', `Bearer ${authToken}`);
+
+  return this.http.get<any[]>(
+    `${this.serverName}/api/policy/my?policyholderId=${policyholderId}`,
+    { headers }
+  );
+}
+
+// Get active paid policy
+getActivePolicy(policyholderId: number): Observable<any> {
+  const authToken = this.authService.getToken();
+  const headers = new HttpHeaders()
+    .set('Authorization', `Bearer ${authToken}`);
+
+  return this.http.get(
+    `${this.serverName}/api/policy/active?policyholderId=${policyholderId}`,
+    { headers }
+  );
+}
+
+// ================= PAYMENT (RAZORPAY) =================
+
+// Create Razorpay order
+createRazorpayOrder(
+  amountInPaise: number,
+  currency: string,
+  receipt: string
+): Observable<any> {
+  const authToken = this.authService.getToken();
+  const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Authorization', `Bearer ${authToken}`);
+
+  return this.http.post(
+    `${this.serverName}/api/payment/create-order`,
+    { amountInPaise, currency, receipt },
+    { headers }
+  );
+}
+
+// Verify Razorpay payment
+verifyRazorpayPayment(payload: any): Observable<any> {
+  const authToken = this.authService.getToken();
+  const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Authorization', `Bearer ${authToken}`);
+
+  return this.http.post(
+    `${this.serverName}/api/payment/verify`,
+    payload,
+    { headers }
+  );
+}
+
+
+
+
+
 }

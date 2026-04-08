@@ -12,6 +12,15 @@ import { UpdateClaimInvestigatorComponent } from './update-claim-investigator/up
 import { UnderwriterDashboardComponent } from './underwriter-dashboard/underwriter-dashboard.component';
 import { LandingComponent } from './landing-component/landing.component';
 import { AdjusterDashboardComponent } from './dashbaord/adjusterDashboard.component';
+import { BuyPolicyComponent } from './policy/buy-policy.component';
+import { MyPoliciesComponent } from './policy/my-policies.component';
+import { PolicyGuard } from './gaurds/policy.gaurd';
+
+// ✅ NEW: Policy pages
+
+
+// ✅ NEW: Policy guard
+
 
 const routes: Routes = [
   // ✅ Default route
@@ -27,8 +36,12 @@ const routes: Routes = [
   { path: 'adjuster-dashboard', component: AdjusterDashboardComponent },
   { path: 'underwriter-dashboard', component: UnderwriterDashboardComponent },
 
-  // ✅ Policyholder
-  { path: 'create-claim', component: CreateClaimComponent },
+  // ✅ Policy purchase & policy list
+  { path: 'buy-policy', component: BuyPolicyComponent },
+  { path: 'my-policies', component: MyPoliciesComponent },
+
+  // ✅ Policyholder (PROTECTED: must have active policy)
+  { path: 'create-claim', component: CreateClaimComponent, canActivate: [PolicyGuard] },
 
   // ✅ Adjuster workflow
   { path: 'update-claim', component: UpdateClaimComponent },

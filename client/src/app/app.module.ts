@@ -15,15 +15,17 @@ import { CreateInvestigatorComponent } from './create-investigator/create-invest
 import { UpdateClaimInvestigatorComponent } from './update-claim-investigator/update-claim-investigator.component';
 import { UnderwriterDashboardComponent } from './underwriter-dashboard/underwriter-dashboard.component';
 import { LandingComponent } from './landing-component/landing.component';
+import { AdjusterDashboardComponent } from './dashbaord/adjusterDashboard.component';
+
+/* ✅ IMPORT POLICY COMPONENTS */
+
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
 import { HttpService } from '../services/http.service';
-import { AdjusterDashboardComponent } from './dashbaord/adjusterDashboard.component';
-
-// ✅ NEW: Add your animated Auth page component
-
+import { BuyPolicyComponent } from './policy/buy-policy.component';
+import { MyPoliciesComponent } from './policy/my-policies.component';
 
 @NgModule({
   declarations: [
@@ -40,13 +42,14 @@ import { AdjusterDashboardComponent } from './dashbaord/adjusterDashboard.compon
     LandingComponent,
     AdjusterDashboardComponent,
 
-    // ✅ NEW: Declare AuthComponent so Angular recognizes [formGroup]
-
+    /* ✅ DECLARE POLICY COMPONENTS */
+    BuyPolicyComponent,
+    MyPoliciesComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    FormsModule,
+    FormsModule,            // ✅ required for ngModel
     ReactiveFormsModule,
     HttpClientModule,
     CommonModule

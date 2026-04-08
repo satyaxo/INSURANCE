@@ -15,11 +15,11 @@ public class Claim {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ✅ NEW: insurance type (CAR / BIKE / LIFE / HEALTH / etc.)
+    // ✅ insurance type (CAR / BIKE / LIFE / HEALTH / etc.)
     @Column(nullable = false)
     private String insuranceType;
 
-    // ✅ NEW: policy number
+    // ✅ policy number (keep for quick lookup + UI)
     @Column(nullable = false)
     private String policyNumber;
 
@@ -29,6 +29,14 @@ public class Claim {
     private Date date;
 
     private String status;
+
+    // ✅ NEW (Enterprise): Claim belongs to a purchased policy
+    // Keep nullable=true for now to avoid breaking old DB rows.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "policy_id")
+    @NotFound(action = NotFoundAction.IGNORE)
+    @JsonIgnore
+    private Policy policy;
 
     @ManyToOne
     @JoinColumn(name = "policyholder_id")
@@ -102,6 +110,14 @@ public class Claim {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Policy getPolicy() {
+        return policy;
+    }
+
+    public void setPolicy(Policy policy) {
+        this.policy = policy;
     }
 
     public Policyholder getPolicyholder() {

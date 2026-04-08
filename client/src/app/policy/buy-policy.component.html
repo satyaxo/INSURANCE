@@ -1,0 +1,114 @@
+<div class="ic-auth-page ic-buy-policy-page">
+  <div class="ic-page-shell">
+
+    <div class="bp-head">
+      <div>
+        <h2 class="bp-title">Buy a Policy</h2>
+        <p class="bp-sub">Choose an insurance type, select a plan, and pay securely via Razorpay.</p>
+      </div>
+
+      <button class="ic-mini-btn ghost" (click)="router.navigateByUrl('/my-policies')">
+        My Policies
+      </button>
+    </div>
+
+    <!-- Alerts -->
+    <div *ngIf="showError" class="ic-alert-error">{{ errorMessage }}</div>
+    <div *ngIf="showMessage" class="ic-alert-success">{{ responseMessage }}</div>
+
+    <!-- Step 1: Insurance Type -->
+    <div class="bp-card">
+      <div class="bp-card-head">
+        <div>
+          <div class="bp-kicker">Step 1</div>
+          <div class="bp-card-title">Select Insurance Type</div>
+        </div>
+        <span class="bp-pill" *ngIf="insuranceType">{{ typeLabel(insuranceType) }}</span>
+      </div>
+
+      <div class="bp-types">
+        <button class="bp-type" [class.active]="insuranceType==='CAR'" (click)="onSelectInsurance('CAR')">Car</button>
+        <button class="bp-type" [class.active]="insuranceType==='BIKE'" (click)="onSelectInsurance('BIKE')">Bike</button>
+        <button class="bp-type" [class.active]="insuranceType==='HEALTH'" (click)="onSelectInsurance('HEALTH')">Health</button>
+        <button class="bp-type" [class.active]="insuranceType==='LIFE'" (click)="onSelectInsurance('LIFE')">Life</button>
+        <button class="bp-type" [class.active]="insuranceType==='TERM'" (click)="onSelectInsurance('TERM')">Term</button>
+        <button class="bp-type" [class.active]="insuranceType==='TRAVEL'" (click)="onSelectInsurance('TRAVEL')">Travel</button>
+        <button class="bp-type" [class.active]="insuranceType==='HOME'" (click)="onSelectInsurance('HOME')">Home</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Plans -->
+    <div class="bp-card" *ngIf="insuranceType">
+      <div class="bp-card-head">
+        <div>
+          <div class="bp-kicker">Step 2</div>
+          <div class="bp-card-title">Choose a Plan</div>
+        </div>
+        <span class="bp-pill" *ngIf="selectedPlan">{{ selectedPlan.planType }}</span>
+      </div>
+
+      <div class="bp-plans">
+        <button class="bp-plan"
+                *ngFor="let p of planCatalog[insuranceType]"
+                [class.active]="selectedPlan?.planType === p.planType"
+                (click)="selectPlan(p)">
+          <div class="bp-plan-top">
+            <div class="bp-plan-name">{{ p.title }}</div>
+            <div class="bp-plan-price">{{ formatINR(p.premiumAmount) }}/year</div>
+          </div>
+
+          <div class="bp-plan-sub">{{ p.subtitle }}</div>
+
+          <div class="bp-plan-meta">
+            <div><span>Coverage</span><b>{{ formatINR(p.coverageAmount) }}</b></div>
+            <div><span>Tenure</span><b>{{ p.durationYears }} year</b></div>
+          </div>
+
+          <ul class="bp-plan-points">
+            <li *ngFor="let h of p.highlights">{{ h }}</li>
+          </ul>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 3: Pay -->
+    <div class="bp-card bp-pay" *ngIf="insuranceType && selectedPlan">
+      <div class="bp-pay-left">
+        <div class="bp-card-title">Confirm & Pay</div>
+        <div class="bp-pay-line">
+          <span>Insurance</span>
+          <b>{{ typeLabel(insuranceType) }}</b>
+        </div>
+        <div class="bp-pay-line">
+          <span>Plan</span>
+          <b>{{ selectedPlan.planType }}</b>
+        </div>
+        <div class="bp-pay-line">
+          <span>Coverage</span>
+          <b>{{ formatINR(selectedPlan.coverageAmount) }}</b>
+        </div>
+        <div class="bp-pay-line">
+          <span>Premium</span>
+          <b>{{ formatINR(selectedPlan.premiumAmount) }}/year</b>
+        </div>
+
+        <div class="bp-note">
+          Policy activates only after payment verification. Test mode uses Razorpay sandbox.
+        </div>
+      </div>
+
+      <div class="bp-pay-right">
+        <button class="ic-mini-btn primary big"
+                (click)="payNow()"
+                [disabled]="paymentInProgress">
+          {{ paymentInProgress ? 'Processing…' : 'Pay with Razorpay' }}
+        </button>
+
+        <div class="bp-mini" *ngIf="paymentInProgress">
+          Do not refresh. Razorpay checkout will open.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
