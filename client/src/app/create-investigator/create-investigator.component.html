@@ -1,39 +1,306 @@
-<div class="container mt-4">
-  <h2 class="text-center mb-4">Investigator Report</h2>
+<div class="inv-wrap">
 
-  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="needs-validation">
-    <div class="form-group mb-3">
-      <label for="report">Report</label>
-      <textarea id="report" formControlName="report" class="form-control"></textarea>
+  <!-- HERO -->
+  <div class="inv-hero">
+    <div class="inv-hero__inner container">
+      <div class="hero-left">
+        <div class="hero-kicker">Investigation</div>
+        <h2 class="hero-title">Investigation Workbench</h2>
+        <p class="hero-subtitle">
+          Review assigned claims, verify evidence, and submit a structured investigation report.
+        </p>
+
+        <div class="hero-badges">
+          <span class="role-pill">Investigator</span>
+          <span class="meta-pill"><span class="dot"></span> Secure Workflow</span>
+        </div>
+      </div>
+
+      <!-- QUICK STATS -->
+      <div class="hero-stats">
+        <div class="stat-card">
+          <div class="stat-label">Assigned</div>
+          <div class="stat-value">{{ assignedCount }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pending</div>
+          <div class="stat-value">{{ pendingCount }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Completed</div>
+          <div class="stat-value">{{ completedCount }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Records</div>
+          <div class="stat-value">{{ recordsCount }}</div>
+        </div>
+      </div>
     </div>
-
-    <div class="form-group mb-3">
-      <label for="status">Status</label>
-      <select id="status" formControlName="status" class="form-select">
-        <option value="" disabled>Select Status</option>
-        <option value="Pending">Pending</option>
-        <option value="Completed">Completed</option>
-      </select>
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100">
-      {{ updateId ? 'Update Investigation' : 'Create Investigation' }}
-    </button>
-  </form>
-
-  <div *ngIf="showError" class="alert alert-danger mt-3">
-    {{ errorMessage }}
   </div>
 
-  <div *ngIf="showMessage" class="alert alert-success mt-3">
-    {{ responseMessage }}
-  </div>
+  <div class="container inv-body">
 
-  <h3 class="mt-4">Investigations</h3>
-  <ul class="list-group">
-    <li *ngFor="let inv of investigationList" class="list-group-item d-flex justify-content-between align-items-center">
-      <span>{{ inv.report }} - {{ inv.status }}</span>
-      <button class="btn btn-sm btn-secondary" (click)="edit(inv)">Edit</button>
-    </li>
-  </ul>
+    <!-- Alerts -->
+    <div *ngIf="showError" class="inv-alert inv-alert--danger">
+      <div class="inv-alert__icon">!</div>
+      <div class="inv-alert__text">{{ errorMessage }}</div>
+    </div>
+
+    <div *ngIf="showMessage" class="inv-alert inv-alert--success">
+      <div class="inv-alert__icon">✓</div>
+      <div class="inv-alert__text">{{ responseMessage }}</div>
+    </div>
+
+    <!-- ONE FORM FOR WHOLE PAGE -->
+    <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
+      <div class="row g-4">
+
+        <!-- LEFT: CLAIM + EVIDENCE -->
+        <div class="col-lg-6">
+          <div class="inv-panel sticky-lg">
+            <div class="inv-panel__head">
+              <div>
+                <h5 class="inv-panel__title">Assigned Claim</h5>
+                <div class="inv-muted">
+                  Completed investigations are removed only from the dropdown.
+                </div>
+              </div>
+              <div class="inv-chip">{{ pendingAssignedClaims.length }} Pending</div>
+            </div>
+
+            <div class="inv-field">
+              <label class="inv-label">Select Assigned Claim</label>
+
+              <select class="inv-select"
+                      formControlName="claimId"
+                      (change)="onClaimChange()">
+                <option value="" disabled>Select Claim</option>
+                <option *ngFor="let claim of pendingAssignedClaims; trackBy: trackById"
+                        [value]="claim.id">
+                  {{ claim.policyNumber || '-' }} • {{ typeLabel(claim.insuranceType) }} • {{ claim.description }}
+                </option>
+              </select>
+
+              <div class="inv-error"
+                   *ngIf="itemForm.get('claimId')?.touched && itemForm.get('claimId')?.invalid">
+                Claim selection is required.
+              </div>
+            </div>
+
+            <!-- EMPTY -->
+            <div *ngIf="!selectedClaim" class="inv-empty">
+              <div class="inv-empty__icon">i</div>
+              <div class="inv-empty__title">Pick a claim to begin</div>
+              <div class="inv-empty__sub">
+                Select a claim to view details and evidence. Then submit your investigation report.
+              </div>
+            </div>
+
+            <!-- SELECTED CLAIM -->
+            <div *ngIf="selectedClaim" class="inv-claim">
+              <div class="inv-grid">
+                <div class="kv">
+                  <div class="k">Policy Number</div>
+                  <div class="v">{{ selectedClaim.policyNumber || '-' }}</div>
+                </div>
+
+                <div class="kv">
+                  <div class="k">Insurance Type</div>
+                  <div class="v">{{ typeLabel(selectedClaim.insuranceType) }}</div>
+                </div>
+
+                <div class="kv">
+                  <div class="k">Accident Date</div>
+                  <div class="v">{{ selectedClaim.date | date:'dd-MMM-yyyy' }}</div>
+                </div>
+
+                <div class="kv">
+                  <div class="k">Claim Status</div>
+                  <div class="v"><span class="status-pill">{{ selectedClaim.status }}</span></div>
+                </div>
+              </div>
+
+              <div class="inv-desc">
+                <div class="k">Incident Description</div>
+                <div class="v">{{ selectedClaim.description }}</div>
+              </div>
+
+              <!-- DOCUMENTS -->
+              <div class="inv-docs">
+                <div class="inv-docs__head">
+                  <h6 class="m-0">Evidence / Documents</h6>
+
+                  <div class="inv-docs__meta">
+                    <span class="mini" *ngIf="docsLoading">Loading…</span>
+                    <span class="mini" *ngIf="!docsLoading && claimDocuments.length > 0">
+                      {{ claimDocuments.length }} file(s)
+                    </span>
+                  </div>
+                </div>
+
+                <div *ngIf="docsError" class="inv-docs__error">
+                  {{ docsError }}
+                </div>
+
+                <!-- Skeleton Loading -->
+                <div *ngIf="docsLoading" class="doc-skeleton">
+                  <div class="sk-line" *ngFor="let x of [1,2,3,4]"></div>
+                </div>
+
+                <div *ngIf="!docsLoading && claimDocuments.length === 0" class="inv-muted mt-2">
+                  No documents uploaded for this claim.
+                </div>
+
+                <div class="doc-list" *ngIf="!docsLoading && claimDocuments.length > 0">
+                  <button type="button"
+                          class="doc-item"
+                          *ngFor="let doc of claimDocuments; trackBy: trackById"
+                          (click)="previewDocument(doc)">
+                    <div class="doc-left">
+                      <div class="doc-ico">DOC</div>
+                      <div class="doc-name">{{ doc.originalFileName }}</div>
+                    </div>
+                    <div class="doc-action">Preview</div>
+                  </button>
+                </div>
+
+                <div class="inv-muted small mt-2">
+                  Preview opens in a new tab.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: REPORT -->
+        <div class="col-lg-6">
+          <div class="inv-panel">
+            <div class="inv-panel__head">
+              <div>
+                <h5 class="inv-panel__title">Investigation Report</h5>
+                <div class="inv-muted">Submit findings after reviewing evidence.</div>
+              </div>
+
+              <div class="mode-pill" [class.mode-pill--edit]="!!updateId">
+                {{ updateId ? 'Edit Mode' : 'New Report' }}
+              </div>
+            </div>
+
+            <div class="inv-field">
+              <label class="inv-label">Report</label>
+              <textarea class="inv-textarea"
+                        rows="8"
+                        formControlName="report"
+                        placeholder="Write findings: verification notes, damage assessment, fraud indicators, supporting evidence..."></textarea>
+
+              <div class="inv-error"
+                   *ngIf="itemForm.get('report')?.touched && itemForm.get('report')?.invalid">
+                Report is required.
+              </div>
+            </div>
+
+            <div class="inv-field">
+              <label class="inv-label">Investigation Status</label>
+              <div class="status-row">
+                <select class="inv-select" formControlName="status">
+                  <option value="" disabled>Select Status</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Completed">Completed</option>
+                </select>
+
+                <div class="status-hint">
+                  Mark <b>Completed</b> after final verification.
+                </div>
+              </div>
+
+              <div class="inv-error"
+                   *ngIf="itemForm.get('status')?.touched && itemForm.get('status')?.invalid">
+                Status is required.
+              </div>
+            </div>
+
+            <button type="submit"
+                    class="inv-btn"
+                    [disabled]="itemForm.invalid">
+              {{ updateId ? 'Update Investigation' : 'Submit Investigation' }}
+            </button>
+
+            <div class="inv-note">
+              <b>Note:</b> If status is <b>Completed</b>, the claim disappears only from dropdown,
+              but remains in <b>Investigation Records</b>.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </form>
+
+    <!-- RECORDS -->
+    <div class="inv-panel mt-4">
+      <div class="inv-panel__head records-head">
+        <div>
+          <h5 class="inv-panel__title">Investigation Records</h5>
+          <div class="inv-muted">Read‑only history of submitted investigations.</div>
+        </div>
+
+        <div class="records-tools">
+          <div class="chip-group">
+            <button type="button" class="chip" [class.active]="recordFilter==='ALL'" (click)="setRecordFilter('ALL')">All</button>
+            <button type="button" class="chip" [class.active]="recordFilter==='PENDING'" (click)="setRecordFilter('PENDING')">Pending</button>
+            <button type="button" class="chip" [class.active]="recordFilter==='COMPLETED'" (click)="setRecordFilter('COMPLETED')">Completed</button>
+          </div>
+
+          <input class="records-search"
+                 [(ngModel)]="recordSearch"
+                 [ngModelOptions]="{standalone: true}"
+                 placeholder="Search (policy / description / status)" />
+        </div>
+      </div>
+
+      <div *ngIf="filteredInvestigations().length === 0" class="inv-empty inv-empty--mini">
+        <div class="inv-empty__icon">i</div>
+        <div class="inv-empty__title">No records found</div>
+        <div class="inv-empty__sub">Try changing search/filter.</div>
+      </div>
+
+      <div class="record-grid" *ngIf="filteredInvestigations().length > 0">
+        <div class="record-card"
+             *ngFor="let inv of filteredInvestigations(); trackBy: trackById">
+
+          <div class="record-top">
+            <div class="record-title">
+              {{ inv?.claim?.policyNumber || '-' }}
+              <span class="dot">•</span>
+              {{ typeLabel(inv?.claim?.insuranceType) }}
+            </div>
+
+            <span class="badge-soft"
+                  [class.badge-soft--success]="(inv?.status || '').toString().toUpperCase().includes('COMPLETED')"
+                  [class.badge-soft--warn]="!(inv?.status || '').toString().toUpperCase().includes('COMPLETED')">
+              {{ inv?.status || 'Unknown' }}
+            </span>
+          </div>
+
+          <div class="record-desc">
+            {{ inv?.claim?.description || 'Claim not linked' }}
+          </div>
+
+          <div class="record-actions">
+            <button type="button"
+                    class="btn-edit"
+                    *ngIf="!(inv?.status || '').toString().toUpperCase().includes('COMPLETED')"
+                    (click)="edit(inv)">
+              Edit
+            </button>
+
+            <div class="record-meta">
+              Claim ID: <b>{{ inv?.claim?.id || '-' }}</b>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>

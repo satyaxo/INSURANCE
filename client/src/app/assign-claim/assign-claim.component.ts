@@ -1,7 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpService } from '../../services/http.service';
 
 @Component({
@@ -9,82 +7,233 @@ import { HttpService } from '../../services/http.service';
   templateUrl: './assign-claim.component.html',
   styleUrls: ['./assign-claim.component.scss']
 })
-
 export class AssignClaimComponent implements OnInit {
 
   itemForm: FormGroup;
-  formModel: any = { claimId: null, underwriterId: null };
-  showError: boolean = false;
-  errorMessage: any = '';
-  assignModel: any = {};
-  showMessage: any = false;
-  responseMessage: any = '';
+
   claimList: any[] = [];
+  investigatorList: any[] = [];
   underwriterList: any[] = [];
 
+  // ✅ Selected claim details + docs preview
+  selectedClaim: any = null;
+  claimDocuments: any[] = [];
+  docsLoading = false;
+  docsError = '';
+
+  // ✅ Recently assigned (read-only record)
+  recentlyAssigned: any[] = [];
+
+  showError = false;
+  showMessage = false;
+  errorMessage = '';
+  responseMessage = '';
+
   constructor(
-    public router: Router,
-    public httpService: HttpService,
-    private formBuilder: FormBuilder,
-    private authService: AuthService
+    private httpService: HttpService,
+    private formBuilder: FormBuilder
   ) {
     this.itemForm = this.formBuilder.group({
-      claimId: [this.formModel.claimId, Validators.required],
-      underwriterId: [this.formModel.underwriterId, Validators.required]
+      claimId: [null, Validators.required],
+      investigatorId: [null, Validators.required],
+      underwriterId: [null, Validators.required]
     });
   }
 
   ngOnInit(): void {
-    this.getClaims();
-    this.getUnderwriter();
+    this.loadClaims();
+    this.loadInvestigators();
+    this.loadUnderwriters();
+
+    // ✅ When claim changes in dropdown, show details + documents
+    this.itemForm.get('claimId')?.valueChanges.subscribe((claimId) => {
+      this.onClaimSelected(claimId);
+    });
+  }
+
+  // ✅ Load assignable claims
+  loadClaims(): void {
+    this.httpService.getAssignableClaims().subscribe({
+      next: (res: any[]) => {
+        this.claimList = res || [];
+        this.showError = false;
+
+        // If selected claim no longer available, clear preview
+        const currentClaimId = this.itemForm.get('claimId')?.value;
+        if (currentClaimId && !this.claimList.some(c => Number(c.id) === Number(currentClaimId))) {
+          this.selectedClaim = null;
+          this.claimDocuments = [];
+          this.docsError = '';
+          this.docsLoading = false;
+        }
+      },
+      error: (err) => {
+        console.error('Load claims failed:', err);
+        this.showError = true;
+        this.errorMessage = `Error loading claims. (${err?.status || 'NO_STATUS'})`;
+      }
+    });
+  }
+
+  loadInvestigators(): void {
+    this.httpService.getAllInvestigators().subscribe({
+      next: (res: any[]) => {
+        this.investigatorList = res || [];
+        this.showError = false;
+      },
+      error: (err) => {
+        console.error('Load investigators failed:', err);
+        this.showError = true;
+        this.errorMessage = `Error loading investigators. (${err?.status || 'NO_STATUS'})`;
+      }
+    });
+  }
+
+  loadUnderwriters(): void {
+    this.httpService.GetAllUnderwriter().subscribe({
+      next: (res: any[]) => {
+        this.underwriterList = res || [];
+        this.showError = false;
+      },
+      error: (err) => {
+        console.error('Load underwriters failed:', err);
+        this.showError = true;
+        this.errorMessage = `Error loading underwriters. (${err?.status || 'NO_STATUS'})`;
+      }
+    });
+  }
+
+  // ✅ Claim selection -> show details/docs
+  private onClaimSelected(claimId: any): void {
+    if (!claimId) {
+      this.selectedClaim = null;
+      this.claimDocuments = [];
+      this.docsError = '';
+      this.docsLoading = false;
+      return;
+    }
+
+    const id = Number(claimId);
+    this.selectedClaim = (this.claimList || []).find(c => Number(c.id) === id) || null;
+
+    if (this.selectedClaim) {
+      this.loadDocumentsForClaim(this.selectedClaim.id);
+    } else {
+      this.claimDocuments = [];
+      this.docsError = '';
+      this.docsLoading = false;
+    }
+  }
+
+  private loadDocumentsForClaim(claimId: number): void {
+    this.docsLoading = true;
+    this.docsError = '';
+    this.claimDocuments = [];
+
+    this.httpService.getClaimDocuments(claimId).subscribe({
+      next: (res: any[]) => {
+        this.claimDocuments = res || [];
+        this.docsLoading = false;
+      },
+      error: (err) => {
+        console.error('Docs load failed:', err);
+        this.docsLoading = false;
+        this.docsError = `Unable to load documents. (${err?.status || 'NO_STATUS'})`;
+      }
+    });
+  }
+
+  // ✅ Preview doc in new tab
+  previewDocument(doc: any): void {
+    if (!doc?.id) return;
+
+    this.docsError = '';
+
+    this.httpService.downloadClaimDocument(doc.id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+      },
+      error: (err) => {
+        console.error('Preview failed:', err);
+        this.docsError = `Preview failed. (${err?.status || 'NO_STATUS'})`;
+      }
+    });
   }
 
   onSubmit(): void {
     this.showError = false;
     this.showMessage = false;
+    this.errorMessage = '';
+    this.responseMessage = '';
 
     if (this.itemForm.invalid) {
       this.showError = true;
-      this.errorMessage = 'Please fill in all required fields.';
+      this.errorMessage = 'Please fill all required fields.';
       return;
     }
-//this.httpService.AssignClaim(this.itemForm.value).subscribe({
-    this.httpService.AssignClaim(this.itemForm.value).subscribe({
+
+    const claimId = Number(this.itemForm.value.claimId);
+    const investigatorId = Number(this.itemForm.value.investigatorId);
+    const underwriterId = Number(this.itemForm.value.underwriterId);
+
+    // ✅ Snapshot claim before it disappears from dropdown
+    const assignedClaimSnapshot =
+      (this.claimList || []).find(c => Number(c.id) === claimId) || this.selectedClaim;
+
+    // ✅ SINGLE API CALL: assign-all (prevents status override + partial assignment)
+    this.httpService.assignClaimToBoth(claimId, investigatorId, underwriterId).subscribe({
       next: () => {
         this.showMessage = true;
-        this.responseMessage = 'Claim successfully assigned!';
+        this.responseMessage = 'Claim assigned to Investigator and Underwriter successfully.';
+
+        // ✅ Move to Recently Assigned record
+        if (assignedClaimSnapshot) {
+          this.addToRecentlyAssigned({
+            ...assignedClaimSnapshot,
+            assignedInvestigatorId: investigatorId,
+            assignedUnderwriterId: underwriterId
+          });
+        }
+
+        // ✅ Reset UI
         this.itemForm.reset();
-        //changes
-       // this.getClaims;
+        this.selectedClaim = null;
+        this.claimDocuments = [];
+        this.docsError = '';
+        this.docsLoading = false;
+
+        // ✅ refresh dropdown so assigned claim disappears
+        this.loadClaims();
       },
-      error: () => {
+      error: (err) => {
+        console.error('Assign-all failed:', err);
         this.showError = true;
-        this.errorMessage = 'Error assigning claim.';
+        const msg = err?.error?.message || err?.message || 'Error assigning claim.';
+        this.errorMessage = `${msg} (${err?.status || 'NO_STATUS'})`;
       }
     });
   }
 
-  getClaims(): void {
-    this.httpService.getAllClaims().subscribe({
-      next: (res: any[]) => {
-        this.claimList = res;
-      },
-      error: () => {
-        this.showError = true;
-        this.errorMessage = 'Error fetching claims.';
-      }
-    });
+  private addToRecentlyAssigned(claim: any): void {
+    const exists = this.recentlyAssigned.some(c => c.id === claim.id);
+    if (!exists) {
+      this.recentlyAssigned.unshift(claim);
+    } else {
+      this.recentlyAssigned = this.recentlyAssigned.map(c => c.id === claim.id ? claim : c);
+    }
   }
-// this.httpService.GetAllUnderwriter().subscribe({
-  getUnderwriter(): void {
-    this.httpService.GetAllUnderwriter().subscribe({
-      next: (res: any[]) => {
-        this.underwriterList = res;
-      },
-      error: () => {
-        this.showError = true;
-        this.errorMessage = 'Error fetching underwriters.';
-      }
-    });
+
+  typeLabel(type: string): string {
+    const t = (type || '').toUpperCase();
+    if (t === 'CAR') return 'Car Insurance';
+    if (t === 'BIKE') return 'Bike Insurance';
+    if (t === 'HEALTH') return 'Health Insurance';
+    if (t === 'LIFE') return 'Life Insurance';
+    if (t === 'TERM') return 'Term Insurance';
+    if (t === 'TRAVEL') return 'Travel Insurance';
+    if (t === 'HOME') return 'Home Insurance';
+    return type || 'Claim';
   }
 }

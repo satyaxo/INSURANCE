@@ -1,0 +1,259 @@
+<!-- Login theme background wrapper -->
+<div class="ic-auth-page ic-adjuster-page">
+  <div class="ic-page-shell">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="m-0 ic-page-title">
+        <span class="ic-icon"><i class="fa fa-clipboard-list"></i></span>
+        Adjuster Dashboard
+      </h2>
+      <div class="d-flex gap-2">
+        <button class="ic-mini-btn" (click)="refreshNow()">
+          <i class="fa fa-sync-alt"></i> Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div *ngIf="isLoading" class="ic-info">
+      <i class="fa fa-spinner fa-spin"></i> Loading...
+    </div>
+
+    <div *ngIf="showError" class="ic-alert-error">
+      <i class="fa fa-exclamation-circle"></i> {{ errorMessage }}
+    </div>
+
+    <div *ngIf="showMessage" class="ic-alert-success">
+      <i class="fa fa-check-circle"></i> {{ responseMessage }}
+    </div>
+
+    <!-- Search -->
+    <div class="mb-3 d-flex gap-2">
+      <input
+        type="text"
+        class="ic-input"
+        [(ngModel)]="policySearch"
+        [ngModelOptions]="{standalone: true}"
+        placeholder="Search by Policy Number (e.g., #44710572)"
+      />
+      <button
+        type="button"
+        class="ic-mini-btn ghost"
+        (click)="clearSearch()"
+        [disabled]="!policySearch || policySearch.trim().length === 0">
+        <i class="fa fa-times"></i> Clear
+      </button>
+    </div>
+
+    <!-- Inbox Section -->
+    <div class="section-card">
+      <div class="section-title">
+        <span class="ic-icon"><i class="fa fa-inbox"></i></span>
+        Inbox <span class="badge badge-submitted">SUBMITTED</span>
+      </div>
+
+      <div *ngIf="filteredInboxClaims().length === 0" class="empty-state">
+        <i class="fa fa-folder-open"></i> No matching SUBMITTED claims.
+      </div>
+
+      <ul class="claim-list" *ngIf="filteredInboxClaims().length > 0">
+        <li *ngFor="let c of filteredInboxClaims()"
+            class="claim-card"
+            [class.expanded]="expandedClaimId === c.id">
+
+          <!-- TOP ROW -->
+          <div class="claim-main">
+            <div class="claim-type">
+              <span class="ic-icon"><i class="fa fa-shield-alt"></i></span>
+              {{ typeLabel(c.insuranceType) }}
+            </div>
+            <div class="claim-policy">
+              <span class="ic-icon"><i class="fa fa-id-card"></i></span>
+              Policy: {{ c.policyNumber || '-' }}
+            </div>
+            <div class="claim-desc">
+              <span class="ic-icon"><i class="fa fa-info-circle"></i></span>
+              {{ c.description }}
+            </div>
+          </div>
+
+          <span [class]="badgeClass(c.status)">{{ c.status }}</span>
+
+          <!-- Actions -->
+          <div class="claim-actions">
+            <select class="ic-input"
+                    [(ngModel)]="statusDraft[c.id]"
+                    [ngModelOptions]="{standalone: true}">
+              <option value="SUBMITTED">SUBMITTED</option>
+              <option value="IN_PROGRESS">IN_PROGRESS</option>
+              <option value="UNDER_PROGRESS">UNDER_PROGRESS</option>
+            </select>
+
+            <button class="ic-mini-btn" (click)="updateStatus(c)">
+              <i class="fa fa-edit"></i> Update Status
+            </button>
+
+            <!-- ✅ Inline toggle -->
+            <button class="ic-mini-btn ghost" type="button" (click)="toggleInlineDetails(c)">
+              <i class="fa fa-eye"></i>
+              {{ expandedClaimId === c.id ? 'Hide Details' : 'View Details' }}
+            </button>
+          </div>
+
+          <!-- ✅ INLINE DETAILS (INSIDE SAME CARD) -->
+          <div *ngIf="expandedClaimId === c.id" class="inline-details">
+
+            <div class="details-header">
+              <h5 class="m-0"><i class="fa fa-file-alt"></i> Claim Details</h5>
+              <button class="ic-mini-btn ghost" (click)="closeInlineDetails()">
+                <i class="fa fa-times"></i> Close
+              </button>
+            </div>
+
+            <div class="details-grid">
+              <div>
+                <p><b>Type:</b> {{ typeLabel(c.insuranceType) }}</p>
+                <p><b>Policy Number:</b> {{ c.policyNumber || '-' }}</p>
+                <p><b>Date:</b> {{ c.date | date:'dd-MMM-yyyy' }}</p>
+              </div>
+
+              <div>
+                <p><b>Status:</b>
+                  <span [class]="badgeClass(c.status)">{{ c.status }}</span>
+                </p>
+                <p><b>Description:</b> {{ c.description }}</p>
+              </div>
+            </div>
+
+            <hr />
+
+            <h6><i class="fa fa-paperclip"></i> Uploaded Documents</h6>
+
+            <div *ngIf="docsLoading" class="text-muted">
+              <i class="fa fa-spinner fa-spin"></i> Loading documents...
+            </div>
+
+            <div *ngIf="docsError" class="ic-alert-error p-2">
+              <i class="fa fa-exclamation-circle"></i> {{ docsError }}
+            </div>
+
+            <div *ngIf="!docsLoading && claimDocuments.length === 0" class="text-muted">
+              <i class="fa fa-folder-open"></i> No documents uploaded for this claim.
+            </div>
+
+            <ul class="doc-list" *ngIf="!docsLoading && claimDocuments.length > 0">
+              <li class="doc-item" *ngFor="let doc of claimDocuments">
+                <span><i class="fa fa-file"></i> {{ doc.originalFileName }}</span>
+                <button class="ic-mini-btn ghost" (click)="previewDocument(doc)">
+                  <i class="fa fa-eye"></i> Preview
+                </button>
+              </li>
+            </ul>
+
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Recently Processed -->
+    <div class="section-card mt-4" *ngIf="processedClaims.length > 0">
+      <div class="section-title">
+        <span class="ic-icon"><i class="fa fa-history"></i></span>
+        Recently Processed (Read‑only)
+      </div>
+
+      <div *ngIf="filteredProcessedClaims().length === 0" class="empty-state">
+        <i class="fa fa-folder-open"></i> No matching processed claims.
+      </div>
+
+      <ul class="claim-list" *ngIf="filteredProcessedClaims().length > 0">
+        <li *ngFor="let c of filteredProcessedClaims()"
+            class="claim-card"
+            [class.expanded]="expandedClaimId === c.id">
+
+          <!-- TOP ROW -->
+          <div class="claim-main">
+            <div class="claim-type">
+              <span class="ic-icon"><i class="fa fa-shield-alt"></i></span>
+              {{ typeLabel(c.insuranceType) }}
+            </div>
+            <div class="claim-policy">
+              <span class="ic-icon"><i class="fa fa-id-card"></i></span>
+              Policy: {{ c.policyNumber || '-' }}
+            </div>
+            <div class="claim-desc">
+              <span class="ic-icon"><i class="fa fa-info-circle"></i></span>
+              {{ c.description }}
+            </div>
+          </div>
+
+          <span [class]="badgeClass(c.status)">{{ c.status }}</span>
+
+          <div class="claim-actions">
+            <!-- ✅ Inline toggle -->
+            <button class="ic-mini-btn ghost" type="button" (click)="toggleInlineDetails(c)">
+              <i class="fa fa-eye"></i>
+              {{ expandedClaimId === c.id ? 'Hide Details' : 'View Details' }}
+            </button>
+          </div>
+
+          <!-- ✅ INLINE DETAILS (INSIDE SAME CARD) -->
+          <div *ngIf="expandedClaimId === c.id" class="inline-details">
+
+            <div class="details-header">
+              <h5 class="m-0"><i class="fa fa-file-alt"></i> Claim Details</h5>
+              <button class="ic-mini-btn ghost" (click)="closeInlineDetails()">
+                <i class="fa fa-times"></i> Close
+              </button>
+            </div>
+
+            <div class="details-grid">
+              <div>
+                <p><b>Type:</b> {{ typeLabel(c.insuranceType) }}</p>
+                <p><b>Policy Number:</b> {{ c.policyNumber || '-' }}</p>
+                <p><b>Date:</b> {{ c.date | date:'dd-MMM-yyyy' }}</p>
+              </div>
+
+              <div>
+                <p><b>Status:</b>
+                  <span [class]="badgeClass(c.status)">{{ c.status }}</span>
+                </p>
+                <p><b>Description:</b> {{ c.description }}</p>
+              </div>
+            </div>
+
+            <hr />
+
+            <h6><i class="fa fa-paperclip"></i> Uploaded Documents</h6>
+
+            <div *ngIf="docsLoading" class="text-muted">
+              <i class="fa fa-spinner fa-spin"></i> Loading documents...
+            </div>
+
+            <div *ngIf="docsError" class="ic-alert-error p-2">
+              <i class="fa fa-exclamation-circle"></i> {{ docsError }}
+            </div>
+
+            <div *ngIf="!docsLoading && claimDocuments.length === 0" class="text-muted">
+              <i class="fa fa-folder-open"></i> No documents uploaded for this claim.
+            </div>
+
+            <ul class="doc-list" *ngIf="!docsLoading && claimDocuments.length > 0">
+              <li class="doc-item" *ngFor="let doc of claimDocuments">
+                <span><i class="fa fa-file"></i> {{ doc.originalFileName }}</span>
+                <button class="ic-mini-btn ghost" (click)="previewDocument(doc)">
+                  <i class="fa fa-eye"></i> Preview
+                </button>
+              </li>
+            </ul>
+
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- ✅ NOTE: Global bottom Details Panel REMOVED completely -->
+
+  </div>
+</div>

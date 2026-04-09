@@ -1,36 +1,209 @@
-<div class="container mt-4">
-  <h2 class="text-center mb-4">Assign Claim</h2>
+<!-- ✅ Login theme background wrapper -->
+<div class="ic-auth-page ic-assign-page">
 
-  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="needs-validation">
-    <div class="form-group mb-3">
-      <label for="claimId">Select Claim</label>
-      <select id="claimId" formControlName="claimId" class="form-select">
-        <option value="" disabled>Select Claim</option>
-        <option *ngFor="let claim of claimList" [value]="claim.id">
-          <!-- {{ claim.claimNumber }} -->
-              {{ claim.description }}({{claim.status}})
-        </option>
-      </select>
+  <!-- ✅ Centered page shell -->
+  <div class="ic-page-shell assign-page">
+
+    <!-- Header -->
+    <div class="page-head">
+      <div>
+        <h2 class="title">
+          <span class="ic-ico">🧾</span> Assign Claim
+        </h2>
+        <p class="sub">
+          Select a pending claim, choose investigator & underwriter, and assign.
+        </p>
+      </div>
+
+      <span class="pill">Adjuster • Assignment</span>
     </div>
 
-    <div class="form-group mb-3">
-      <label for="underwriterId">Select Underwriter</label>
-      <select id="underwriterId" formControlName="underwriterId" class="form-select">
-        <option value="" disabled>Select Underwriter</option>
-        <option *ngFor="let uw of underwriterList" [value]="uw.id">
-          {{ uw.name }}
-        </option>
-      </select>
+    <!-- Alerts -->
+    <div *ngIf="showError" class="ic-alert-error">
+      {{ errorMessage }}
     </div>
 
-    <button type="submit" class="btn btn-success w-100">Assign Claim</button>
-  </form>
+    <div *ngIf="showMessage" class="ic-alert-success">
+      {{ responseMessage }}
+    </div>
 
-  <div *ngIf="showError" class="alert alert-danger mt-3">
-    {{ errorMessage }}
-  </div>
+    <div class="row g-4">
 
-  <div *ngIf="showMessage" class="alert alert-success mt-3">
-    {{ responseMessage }}
+      <!-- LEFT: Assign Form -->
+      <div class="col-lg-5">
+        <div class="panel panel-dark">
+          <div class="panel-head">
+            <h5 class="panel-title">
+              <span class="ic-ico">🧩</span> Assignment Form
+            </h5>
+            <small class="muted">All fields are required</small>
+          </div>
+
+          <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
+
+            <!-- Claim -->
+            <div class="mb-3">
+              <label class="form-label">Select Claim</label>
+              <select class="ic-input" formControlName="claimId">
+                <option [ngValue]="null" disabled>Select Claim</option>
+                <option *ngFor="let c of claimList" [ngValue]="c.id">
+                  {{ c.policyNumber || '-' }} • {{ typeLabel(c.insuranceType) }}
+                </option>
+              </select>
+
+              <small class="ic-field-error"
+                     *ngIf="itemForm.get('claimId')?.touched && itemForm.get('claimId')?.invalid">
+                Claim is required.
+              </small>
+            </div>
+
+            <!-- Investigator -->
+            <div class="mb-3">
+              <label class="form-label">Select Investigator</label>
+              <select class="ic-input" formControlName="investigatorId">
+                <option [ngValue]="null" disabled>Select Investigator</option>
+                <option *ngFor="let inv of investigatorList" [ngValue]="inv.id">
+                  {{ inv.username }}
+                </option>
+              </select>
+
+              <small class="ic-field-error"
+                     *ngIf="itemForm.get('investigatorId')?.touched && itemForm.get('investigatorId')?.invalid">
+                Investigator is required.
+              </small>
+            </div>
+
+            <!-- Underwriter -->
+            <div class="mb-3">
+              <label class="form-label">Select Underwriter</label>
+              <select class="ic-input" formControlName="underwriterId">
+                <option [ngValue]="null" disabled>Select Underwriter</option>
+                <option *ngFor="let uw of underwriterList" [ngValue]="uw.id">
+                  {{ uw.username }}
+                </option>
+              </select>
+
+              <small class="ic-field-error"
+                     *ngIf="itemForm.get('underwriterId')?.touched && itemForm.get('underwriterId')?.invalid">
+                Underwriter is required.
+              </small>
+            </div>
+
+            <button type="submit" class="ic-btn-primary w-100">
+              <span class="ic-ico">✅</span> Assign Claim
+            </button>
+
+            <div class="note mt-3">
+              <b>Note:</b> Once assigned, the claim will disappear from the dropdown and move to
+              <b>Recently Assigned</b> (read‑only).
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- RIGHT: Selected Claim Preview -->
+      <div class="col-lg-7">
+        <div class="panel panel-dark">
+          <div class="panel-head">
+            <h5 class="panel-title">
+              <span class="ic-ico">🔍</span> Selected Claim Preview
+            </h5>
+            <small class="muted">Read‑only details for verification</small>
+          </div>
+
+          <div *ngIf="!selectedClaim" class="empty">
+            Select a claim from the dropdown to view details and documents.
+          </div>
+
+          <div *ngIf="selectedClaim">
+            <div class="grid">
+              <div class="kv">
+                <div class="k">Policy Number</div>
+                <div class="v">{{ selectedClaim.policyNumber || '-' }}</div>
+              </div>
+
+              <div class="kv">
+                <div class="k">Insurance Type</div>
+                <div class="v">{{ typeLabel(selectedClaim.insuranceType) }}</div>
+              </div>
+
+              <div class="kv">
+                <div class="k">Accident Date</div>
+                <div class="v">{{ selectedClaim.date | date:'dd-MMM-yyyy' }}</div>
+              </div>
+
+              <div class="kv">
+                <div class="k">Status</div>
+                <div class="v">{{ selectedClaim.status }}</div>
+              </div>
+            </div>
+
+            <div class="desc-box">
+              <div class="k">Description</div>
+              <div class="v">{{ selectedClaim.description }}</div>
+            </div>
+
+            <!-- Documents -->
+            <div class="docs panel-dark-inner">
+              <div class="docs-head">
+                <h6 class="m-0"><span class="ic-ico">📎</span> Uploaded Documents</h6>
+                <span class="muted small" *ngIf="docsLoading">Loading...</span>
+              </div>
+
+              <div *ngIf="docsError" class="ic-alert-error p-2 mt-2">
+                {{ docsError }}
+              </div>
+
+              <div *ngIf="!docsLoading && claimDocuments.length === 0" class="muted mt-2">
+                No documents uploaded for this claim.
+              </div>
+
+              <div class="doc-list" *ngIf="!docsLoading && claimDocuments.length > 0">
+                <button type="button"
+                        class="doc-item"
+                        *ngFor="let doc of claimDocuments"
+                        (click)="previewDocument(doc)">
+                  <span class="doc-name">{{ doc.originalFileName }}</span>
+                  <span class="doc-action"><span class="ic-ico">👁️</span> Preview</span>
+                </button>
+              </div>
+
+              <small class="muted d-block mt-2">
+                Clicking Preview will open the file in a new tab.
+              </small>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOTTOM: Recently Assigned (Read-only) -->
+    <div class="panel panel-dark mt-4" *ngIf="recentlyAssigned.length > 0">
+      <div class="panel-head">
+        <h5 class="panel-title"><span class="ic-ico">🕒</span> Recently Assigned (Read‑only)</h5>
+        <small class="muted">Assigned claims disappear from dropdown but remain here for reference</small>
+      </div>
+
+      <div class="assigned-list">
+        <div class="assigned-item" *ngFor="let c of recentlyAssigned">
+          <div class="left">
+            <div class="t">{{ typeLabel(c.insuranceType) }}</div>
+            <div class="s">Policy: {{ c.policyNumber || '-' }}</div>
+            <div class="d">{{ c.description }}</div>
+          </div>
+
+          <div class="right">
+            <span class="ic-badge approved">ASSIGNED</span>
+            <div class="meta">
+              Inv ID: {{ c.assignedInvestigatorId }} • UW ID: {{ c.assignedUnderwriterId }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>

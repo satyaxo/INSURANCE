@@ -1,0 +1,329 @@
+
+/* =========================
+   ClaimSurePro - Pure CSS Animated Logo
+   (No images)
+   ========================= */
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.brand-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 8px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  user-select: none;
+
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(120, 190, 255, 0.14);
+
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  overflow: hidden;
+}
+
+.brand-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(120, 190, 255, 0.28);
+  box-shadow:
+    0 14px 30px rgba(0, 120, 255, 0.18),
+    0 0 0 4px rgba(0, 140, 255, 0.08);
+}
+
+/* ---------- Logo mark container ---------- */
+.csp-logo {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+}
+
+/* Orbit ring */
+.csp-logo .orbit {
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+
+  background:
+    conic-gradient(
+      from 90deg,
+      rgba(0, 210, 255, 0.00),
+      rgba(0, 210, 255, 0.45),
+      rgba(45, 140, 255, 0.10),
+      rgba(0, 210, 255, 0.55),
+      rgba(0, 210, 255, 0.00)
+    );
+
+  filter: blur(0.2px);
+  animation: cspSpin 2.6s linear infinite;
+  opacity: 0.9;
+}
+
+/* Shield base */
+.csp-logo .shield {
+  position: relative;
+  width: 26px;
+  height: 30px;
+
+  background: linear-gradient(180deg, #eaf2ff 0%, #97d9ff 45%, #2d8cff 100%);
+  clip-path: polygon(50% 0%, 92% 18%, 92% 58%, 50% 100%, 8% 58%, 8% 18%);
+
+  box-shadow:
+    0 10px 20px rgba(0, 140, 255, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+
+  animation: cspFloat 3.4s ease-in-out infinite;
+}
+
+/* Check mark inside shield */
+.csp-logo .shield .check {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 11px;
+  height: 6px;
+  transform: translate(-45%, -35%) rotate(-45deg);
+
+  border-left: 3px solid rgba(2, 14, 35, 0.85);
+  border-bottom: 3px solid rgba(2, 14, 35, 0.85);
+  border-radius: 1px;
+
+  animation: cspTick 2.2s ease-in-out infinite;
+}
+
+/* Soft glow behind */
+.csp-logo .glow {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+
+  background: radial-gradient(circle at 30% 30%,
+    rgba(0, 210, 255, 0.35),
+    rgba(45, 140, 255, 0.18),
+    rgba(0, 0, 0, 0) 65%
+  );
+
+  filter: blur(6px);
+  opacity: 0.85;
+  z-index: -1;
+
+  animation: cspPulse 2.8s ease-in-out infinite;
+}
+
+/* ---------- Wordmark ---------- */
+.brand-wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+  min-width: 240px;
+}
+
+.brand-claim, .brand-sure, .brand-pro {
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  font-size: 15px;
+}
+
+.brand-claim {
+  color: rgba(234, 242, 255, 0.95);
+}
+
+.brand-sure {
+  background: linear-gradient(90deg, #bfe9ff 0%, #79baff 50%, #2d8cff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  text-shadow: 0 10px 30px rgba(0, 140, 255, 0.22);
+}
+
+.brand-pro {
+  color: rgba(234, 242, 255, 0.95);
+  margin-left: 1px;
+}
+
+/* Tagline under logo name */
+.brand-tag {
+  margin-top: 3px;
+  font-size: 11.5px;
+  letter-spacing: 0.25px;
+  color: rgba(234, 242, 255, 0.70);
+}
+
+/* ---------- Shine sweep on hover ---------- */
+.brand-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  background: linear-gradient(
+    110deg,
+    transparent 0%,
+    rgba(255,255,255,0.00) 40%,
+    rgba(255,255,255,0.18) 50%,
+    rgba(255,255,255,0.00) 60%,
+    transparent 100%
+  );
+
+  transform: translateX(-120%);
+  transition: transform 650ms ease;
+  opacity: 0.8;
+}
+
+.brand-link:hover::after {
+  transform: translateX(120%);
+}
+
+/* ---------- Animations ---------- */
+@keyframes cspSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes cspFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes cspPulse {
+  0%, 100% { transform: scale(1); opacity: 0.78; }
+  50% { transform: scale(1.06); opacity: 0.95; }
+}
+
+@keyframes cspTick {
+  0%, 100% { transform: translate(-45%, -35%) rotate(-45deg) scale(1); opacity: 0.9; }
+  50% { transform: translate(-45%, -35%) rotate(-45deg) scale(1.08); opacity: 1; }
+}
+
+/* Accessibility: reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .csp-logo .orbit,
+  .csp-logo .shield,
+  .csp-logo .shield .check,
+  .csp-logo .glow {
+    animation: none !important;
+  }
+  .brand-link::after {
+    transition: none !important;
+  }
+}
+
+/* =========================
+   Insurance Blue Navbar Theme
+   ========================= */
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  /* Deep insurance blue gradient */
+  background: linear-gradient(135deg, #061a3a 0%, #0b2d66 45%, #0a3a8c 100%);
+  padding: 4px 16px;
+
+  /* Premium depth */
+  border-bottom: 1px solid rgba(80, 160, 255, 0.18);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  /* Optional: blur/glass effect if your page uses gradients */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  position: sticky; /* optional */
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  /* Brand text feel */
+  color: #eaf2ff;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* Links */
+.nav-right a {
+  color: rgba(234, 242, 255, 0.92);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+
+  /* Smooth premium interaction */
+  padding: 8px 12px;
+  border-radius: 10px;
+  transition: all 220ms ease;
+
+  /* subtle underline glow effect via background */
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(120, 190, 255, 0.10);
+}
+
+.nav-right a:hover {
+  color: #ffffff;
+  transform: translateY(-1px);
+
+  /* blue glow hover */
+  background: linear-gradient(
+    135deg,
+    rgba(45, 140, 255, 0.22),
+    rgba(0, 210, 255, 0.10)
+  );
+  border-color: rgba(120, 190, 255, 0.22);
+
+  box-shadow:
+    0 10px 25px rgba(0, 120, 255, 0.20),
+    0 0 0 4px rgba(0, 140, 255, 0.10);
+}
+
+.nav-right a:active {
+  transform: translateY(0px);
+  box-shadow: none;
+}
+
+/* Optional: Active route style (Angular routerLinkActive) */
+.nav-right a.active,
+.nav-right a.router-link-active {
+  color: #ffffff;
+  background: linear-gradient(
+    135deg,
+    rgba(50, 140, 255, 0.32),
+    rgba(0, 220, 255, 0.16)
+  );
+  border-color: rgba(120, 190, 255, 0.32);
+  box-shadow: 0 10px 25px rgba(0, 120, 255, 0.18);
+}
+
+
+.app-title {
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.app-title:hover {
+  color: #60a5fa;
+}

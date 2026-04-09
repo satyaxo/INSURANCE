@@ -1,6 +1,5 @@
 package com.edutech.insurance_claims_processing_system.service;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,25 +8,29 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.edutech.insurance_claims_processing_system.entity.*;
-import com.edutech.insurance_claims_processing_system.repository.*;
+import com.edutech.insurance_claims_processing_system.entity.Adjuster;
+import com.edutech.insurance_claims_processing_system.entity.Investigator;
+import com.edutech.insurance_claims_processing_system.entity.Policyholder;
+import com.edutech.insurance_claims_processing_system.entity.Underwriter;
+import com.edutech.insurance_claims_processing_system.entity.User;
+import com.edutech.insurance_claims_processing_system.repository.AdjusterRepository;
+import com.edutech.insurance_claims_processing_system.repository.InvestigatorRepository;
+import com.edutech.insurance_claims_processing_system.repository.PolicyholderRepository;
+import com.edutech.insurance_claims_processing_system.repository.UnderwriterRepository;
+import com.edutech.insurance_claims_processing_system.repository.UserRepository;
 
-import java.util.ArrayList;
 import java.util.Collections;
 
 @Service
-public class UserService  implements UserDetailsService{
+public class UserService implements UserDetailsService {
 
-     private final UserRepository userRepository;
+    private final UserRepository userRepository;
     private final AdjusterRepository adjusterRepository;
     private final InvestigatorRepository investigatorRepository;
     private final PolicyholderRepository policyholderRepository;
     private final UnderwriterRepository underwriterRepository;
     private final PasswordEncoder passwordEncoder;
 
-    /**
-     * Default constructor with @Autowired dependencies.
-     */
     @Autowired
     public UserService(
             UserRepository userRepository,
@@ -35,7 +38,8 @@ public class UserService  implements UserDetailsService{
             InvestigatorRepository investigatorRepository,
             PolicyholderRepository policyholderRepository,
             UnderwriterRepository underwriterRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder
+    ) {
         this.userRepository = userRepository;
         this.adjusterRepository = adjusterRepository;
         this.investigatorRepository = investigatorRepository;
@@ -44,19 +48,19 @@ public class UserService  implements UserDetailsService{
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Registers a user based on their role and saves to the respective repository.
-     */
     public User registerUser(User user) {
-        String role = user.getRole();
-
-        if (role == null) {
+        if (user == null || user.getRole() == null) {
             throw new RuntimeException("User role must be specified");
         }
 
+        // Normalize role: remove ROLE_ if present, uppercase
+        String role = user.getRole().toUpperCase();
+        if (role.startsWith("ROLE_")) role = role.substring(5);
+        user.setRole(role);
+
         User target;
 
-        switch (role.toUpperCase()) {
+        switch (role) {
             case "ADJUSTER":
                 target = new Adjuster();
                 copyProperties(user, target);
@@ -82,16 +86,10 @@ public class UserService  implements UserDetailsService{
         }
     }
 
-    /**
-     * Retrieves a user by username.
-     */
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
-    /**
-     * Loads user details for authentication.
-     */
     @Override
     public UserDetails loadUserByUsername(String username)
             throws UsernameNotFoundException {
@@ -102,23 +100,26 @@ public class UserService  implements UserDetailsService{
             throw new UsernameNotFoundException("User not found with username: " + username);
         }
 
+        // Normalize authority: ensure single ROLE_ prefix
+        String role = user.getRole() == null ? "" : user.getRole().toUpperCase();
+        if (!role.startsWith("ROLE_")) role = "ROLE_" + role;
+
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                Collections.singletonList(
-                        new SimpleGrantedAuthority("ROLE_" + user.getRole())
-                )
+                Collections.singletonList(new SimpleGrantedAuthority(role))
         );
     }
 
-    /**
-     * Copies user details while encoding the password.
-     */
     private void copyProperties(User source, User target) {
         target.setUsername(source.getUsername());
         target.setEmail(source.getEmail());
-        target.setRole(source.getRole());
+
+        // Ensure role stored without ROLE_ prefix
+        String role = source.getRole().toUpperCase();
+        if (role.startsWith("ROLE_")) role = role.substring(5);
+        target.setRole(role);
+
         target.setPassword(passwordEncoder.encode(source.getPassword()));
     }
-
 }

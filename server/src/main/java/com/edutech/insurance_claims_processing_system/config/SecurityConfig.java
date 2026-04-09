@@ -2,6 +2,7 @@ package com.edutech.insurance_claims_processing_system.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -32,9 +33,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth
-            .userDetailsService(userDetailsService)
-            .passwordEncoder(passwordEncoder);
+        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
     }
 
     @Override
@@ -48,16 +47,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .authorizeRequests()
 
-            // Public APIs
-            .antMatchers("/api/user/register", "/api/user/login").permitAll()
+            .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-            // Role-based APIs (AUTHORITY based — FIX)
-            .antMatchers("/api/adjuster/**").hasRole("ADJUSTER")
-            .antMatchers("/api/investigator/**").hasRole("INVESTIGATOR")
-            .antMatchers("/api/policyholder/**").hasRole("POLICYHOLDER")
-            .antMatchers("/api/underwriter/**").hasRole("UNDERWRITER")
+            // ✅ Public endpoints (NO JWT required)
+            .antMatchers(
+                "/api/user/register",
+                "/api/user/login",
+                "/api/user/send-otp",
+                "/api/user/verify-otp"
+            ).permitAll()
 
-            // All other requests
+            // ✅ Make role checks robust (handles ROLE_ADJUSTER vs ADJUSTER)
+            .antMatchers("/api/policyholder/**").hasAnyAuthority("ROLE_POLICYHOLDER", "POLICYHOLDER")
+            .antMatchers("/api/adjuster/**").hasAnyAuthority("ROLE_ADJUSTER", "ADJUSTER")
+            .antMatchers("/api/investigator/**").hasAnyAuthority("ROLE_INVESTIGATOR", "INVESTIGATOR")
+            .antMatchers("/api/underwriter/**").hasAnyAuthority("ROLE_UNDERWRITER", "UNDERWRITER")
+
             .anyRequest().authenticated();
 
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

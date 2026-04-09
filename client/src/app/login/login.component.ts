@@ -4,8 +4,6 @@ import { Router } from '@angular/router';
 import { HttpService } from '../../services/http.service';
 import { AuthService } from '../../services/auth.service';
 
-
-
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -30,9 +28,7 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    // No initialization logic yet
-  }
+  ngOnInit(): void {}
 
   onLogin(): void {
     this.showError = false;
@@ -42,18 +38,29 @@ export class LoginComponent implements OnInit {
       this.errorMessage = 'Please enter both username and password.';
       return;
     }
-//changes made here L
+
     this.httpService.Login(this.itemForm.value).subscribe({
       next: (res: any) => {
-        // Use AuthService methods
+
         this.authService.saveToken(res.token);
         this.authService.SetRole(res.role);
         this.authService.saveUserId(res.userId);
 
-        // Navigate to dashboard and refresh
-        this.router.navigateByUrl('/dashboard').then(() => {
-          window.location.reload();
-        });
+        // ✅ FIX: strict role-based navigation
+        const role = (res.role || '').toUpperCase();
+
+        if (role === 'UNDERWRITER') {
+          this.router.navigateByUrl('/underwriter-dashboard').then(() => window.location.reload());
+        } else if (role === 'INVESTIGATOR') {
+          this.router.navigateByUrl('/create-investigator').then(() => window.location.reload());
+        } else if (role === 'ADJUSTER') {
+          this.router.navigateByUrl('/adjuster-dashboard').then(() => window.location.reload());
+        } else if (role === 'POLICYHOLDER') {
+          this.router.navigateByUrl('/dashboard').then(() => window.location.reload());
+        } else {
+          // fallback
+          this.router.navigateByUrl('/landing').then(() => window.location.reload());
+        }
       },
       error: () => {
         this.showError = true;

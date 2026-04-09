@@ -1,7 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
 import { HttpService } from '../../services/http.service';
 
 @Component({
@@ -9,82 +6,77 @@ import { HttpService } from '../../services/http.service';
   templateUrl: './update-claim-investigator.component.html',
   styleUrls: ['./update-claim-investigator.component.scss']
 })
-
 export class UpdateClaimInvestigatorComponent implements OnInit {
 
-  itemForm: FormGroup;
-  formModel: any = { status: null };
-  showError: boolean = false;
-  errorMessage: any = '';
   claimList: any[] = [];
-  assignModel: any = {};
-  showMessage: any = false;
-  responseMessage: any = '';
-  updateId: any = null;
+  selectedClaim: any = null;
 
-  constructor(
-    public router: Router,
-    public httpService: HttpService,
-    private formBuilder: FormBuilder,
-    private authService: AuthService
-  ) {
-    this.itemForm = this.formBuilder.group({
-      status: [this.formModel.status, Validators.required]
-    });
-  }
+  showError = false;
+  errorMessage = '';
+  showMessage = false;
+  responseMessage = '';
+
+  constructor(private httpService: HttpService) {}
 
   ngOnInit(): void {
-    this.getClaims();
+    this.loadClaims();
   }
 
-  getClaims(): void {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
+  loadClaims(): void {
+    const underwriterId = localStorage.getItem('userId');
+
+    if (!underwriterId) {
       this.showError = true;
-      this.errorMessage = 'User not logged in.';
+      this.errorMessage = 'Underwriter not logged in.';
       return;
     }
 
-    this.httpService.getClaimsByUnderwriter(userId).subscribe({
+    this.httpService.getClaimsForUnderwriter(+underwriterId).subscribe({
       next: (res: any[]) => {
-        this.claimList = res;
+        this.claimList = res || [];
       },
-      error: () => {
+      error: (err) => {
+        console.error('Unable to load claims for underwriter:', err);
         this.showError = true;
-        this.errorMessage = 'Error fetching claims.';
+        this.errorMessage = err?.error?.message || 'Unable to load claims for underwriter.';
       }
     });
   }
 
-  edit(val: any): void {
-    this.updateId = val.id;
-    this.itemForm.patchValue({
-      status: val.status
-    });
+  selectClaim(claim: any): void {
+    this.selectedClaim = claim;
+    this.showMessage = false;
+    this.showError = false;
   }
 
-  onSubmit(): void {
-    this.showError = false;
-    this.showMessage = false;
+  approveClaim(): void {
+    this.updateStatus('APPROVED');
+  }
 
-    if (this.itemForm.invalid || !this.updateId) {
-      this.showError = true;
-      this.errorMessage = 'Please select a claim and status.';
-      return;
-    }
+  rejectClaim(): void {
+    this.updateStatus('REJECTED');
+  }
 
-    this.httpService.updateClaimsStatus(this.itemForm.value.status, this.updateId).subscribe({
+  private updateStatus(status: string): void {
+    if (!this.selectedClaim) return;
+
+    this.httpService.updateClaimStatusUnderwriter(status, this.selectedClaim.id).subscribe({
       next: () => {
         this.showMessage = true;
-        this.responseMessage = 'Claim status updated successfully!';
-        this.itemForm.reset();
-        this.updateId = null;
-        this.getClaims();
+        this.responseMessage = `Claim ${status.toLowerCase()} successfully.`;
+        this.selectedClaim = null;
+        this.loadClaims();
       },
-      error: () => {
+      error: (err) => {
+        console.error('Unable to update claim status:', err);
         this.showError = true;
-        this.errorMessage = 'Error updating claim status.';
+        this.errorMessage = err?.error?.message || 'Unable to update claim status.';
       }
     });
+  }
+
+  // ✅ Helper: report exists?
+  hasReport(): boolean {
+    return !!(this.selectedClaim && this.selectedClaim.investigationReport && this.selectedClaim.investigationReport.trim());
   }
 }

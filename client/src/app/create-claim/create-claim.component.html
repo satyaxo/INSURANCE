@@ -1,42 +1,164 @@
-<div class="container mt-4">
-  <h2 class="text-center mb-4">Create Claim</h2>
+<!-- ✅ LOGIN THEME BACKGROUND WRAPPER -->
+<div class="ic-auth-page ic-claim-page">
 
-  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="needs-validation">
-    <div class="form-group mb-3">
-      <label for="description">Description</label>
-      <input id="description" type="text" formControlName="description" class="form-control" />
+  <!-- ✅ CLAIM CARD -->
+  <div class="ic-claim-card">
+
+    <!-- Header -->
+    <div class="ic-claim-header">
+      <span class="ic-shield">⬡</span>
+      <h2 class="ic-claim-title">
+        Create <span class="ic-brand-accent">Claim</span>
+      </h2>
+      <p class="ic-claim-sub">
+        Submit a claim with policy details and optional evidence
+      </p>
     </div>
 
-    <div class="form-group mb-3">
-      <label for="date">Date</label>
-      <input id="date" type="date" formControlName="date" class="form-control" />
+    <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
+
+      <!-- ✅ Insurance Type (auto + locked via TS, not HTML) -->
+      <div class="ic-form-group">
+        <label>Insurance Type</label>
+
+        <!-- ✅ removed "disabled" attribute -->
+        <select class="ic-input" formControlName="insuranceType">
+          <option value="" disabled>Select Insurance Type</option>
+          <option *ngFor="let t of insuranceTypes" [value]="t.value">
+            {{ t.label }}
+          </option>
+        </select>
+
+        <small class="ic-help">
+          Auto-filled from your active policy.
+        </small>
+
+        <small class="ic-field-error"
+               *ngIf="itemForm.get('insuranceType')?.touched && itemForm.get('insuranceType')?.invalid">
+          Insurance type is required.
+        </small>
+      </div>
+
+      <!-- ✅ Policy Number (auto + readonly) -->
+      <div class="ic-form-group">
+        <label>Policy Number</label>
+
+        <input
+          type="text"
+          class="ic-input"
+          formControlName="policyNumber"
+          readonly
+        />
+
+        <small class="ic-help">
+          Auto-filled from your active policy (example:
+          <b>POL-20260408-834921</b>)
+        </small>
+
+        <small class="ic-field-error"
+               *ngIf="policyNumberCtrl?.touched && policyNumberCtrl?.invalid">
+          Policy number format must be <b>POL-YYYYMMDD-XXXXXX</b>.
+        </small>
+      </div>
+
+      <!-- ✅ Accident Date -->
+      <div class="ic-form-group">
+        <label>Date</label>
+
+        <input
+          type="date"
+          class="ic-input"
+          formControlName="date"
+        />
+
+        <div class="ic-help mt-1" *ngIf="deadlineDays && deadlineDateText">
+          Deadline: file within <b>{{ deadlineDays }}</b> days
+          (before <b>{{ deadlineDateText }}</b>)
+        </div>
+
+        <small class="ic-field-error"
+               *ngIf="dateCtrl?.touched && dateCtrl?.errors?.['required']">
+          Date is required.
+        </small>
+
+        <small class="ic-field-error"
+               *ngIf="dateCtrl?.touched && dateCtrl?.errors?.['future']">
+          Date cannot be in the future.
+        </small>
+
+        <small class="ic-field-error"
+               *ngIf="dateCtrl?.touched && dateCtrl?.errors?.['deadline']">
+          Claim must be filed within the allowed deadline.
+        </small>
+      </div>
+
+      <!-- ✅ Description -->
+      <div class="ic-form-group">
+        <label>Description</label>
+        <textarea
+          rows="3"
+          class="ic-input ic-textarea"
+          formControlName="description"
+          placeholder="Describe the incident..."
+        ></textarea>
+
+        <small class="ic-field-error"
+               *ngIf="itemForm.get('description')?.touched && itemForm.get('description')?.invalid">
+          Description is required.
+        </small>
+      </div>
+
+      <!-- ✅ Upload Evidence -->
+      <div class="ic-form-group">
+        <label>Upload Evidence (Optional)</label>
+        <input
+          type="file"
+          class="ic-input"
+          multiple
+          accept=".jpg,.jpeg,.png,.pdf"
+          (change)="onFilesSelected($event)"
+        />
+
+        <small class="ic-help">
+          Supported: JPG, PNG, PDF (max 5MB each).
+        </small>
+
+        <div class="ic-files mt-2" *ngIf="selectedFiles.length > 0">
+          <div class="ic-files-title">Selected files:</div>
+
+          <div class="ic-file-row" *ngFor="let f of selectedFiles; let i = index">
+            <span class="ic-file-name">{{ f.name }}</span>
+            <button type="button"
+                    class="ic-mini-btn ghost danger"
+                    (click)="removeFile(i)">
+              Remove
+            </button>
+          </div>
+        </div>
+
+        <div class="ic-upload-info" *ngIf="uploadInfo">
+          {{ uploadInfo }}
+        </div>
+      </div>
+
+      <!-- ✅ Submit -->
+      <button type="submit"
+              class="ic-btn-primary w-100"
+              [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Submitting...' : 'Create Claim' }}
+      </button>
+
+    </form>
+
+    <!-- Error -->
+    <div *ngIf="showError" class="ic-alert-error mt-3">
+      {{ errorMessage }}
     </div>
-<!-- 
-    <div class="form-group mb-3">
-      <label for="status">Status</label>
-      <select id="status" formControlName="status" class="form-select">
-        <option value="" disabled>Select Status</option>
-        <option value="Pending">Pending</option>
-        <option value="Approved">Approved</option>
-        <option value="Rejected">Rejected</option>
-      </select>
-    </div> -->
 
-    <button type="submit" class="btn btn-primary w-100">Create Claim</button>
-  </form>
+    <!-- Success -->
+    <div *ngIf="showMessage" class="ic-alert-success mt-3">
+      {{ responseMessage }}
+    </div>
 
-  <div *ngIf="showError" class="alert alert-danger mt-3">
-    {{ errorMessage }}
   </div>
-
-  <div *ngIf="showMessage" class="alert alert-success mt-3">
-    {{ responseMessage }}
-  </div>
-
-  <h3 class="mt-4">My Claims</h3>
-  <ul class="list-group">
-    <li *ngFor="let claim of claimList" class="list-group-item">
-      {{ claim.description }} - {{ claim.status }} ({{ claim.date }})
-    </li>
-  </ul>
 </div>

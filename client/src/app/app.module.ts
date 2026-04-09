@@ -1,20 +1,31 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { CommonModule } from '@angular/common';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+
 import { LoginComponent } from './login/login.component';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RegistrationComponent } from './registration/registration.component';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { HttpService } from '../services/http.service';
 import { DashbaordComponent } from './dashbaord/dashbaord.component';
 import { CreateClaimComponent } from './create-claim/create-claim.component';
-
 import { UpdateClaimComponent } from './update-claim/update-claim.component';
 import { AssignClaimComponent } from './assign-claim/assign-claim.component';
 import { CreateInvestigatorComponent } from './create-investigator/create-investigator.component';
 import { UpdateClaimInvestigatorComponent } from './update-claim-investigator/update-claim-investigator.component';
+import { UnderwriterDashboardComponent } from './underwriter-dashboard/underwriter-dashboard.component';
+import { LandingComponent } from './landing-component/landing.component';
+import { AdjusterDashboardComponent } from './dashbaord/adjusterDashboard.component';
+
+/* ✅ IMPORT POLICY COMPONENTS */
+
+
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+
+import { HttpService } from '../services/http.service';
+import { BuyPolicyComponent } from './policy/buy-policy.component';
+import { MyPoliciesComponent } from './policy/my-policies.component';
 
 @NgModule({
   declarations: [
@@ -23,19 +34,27 @@ import { UpdateClaimInvestigatorComponent } from './update-claim-investigator/up
     RegistrationComponent,
     DashbaordComponent,
     CreateClaimComponent,
-     UpdateClaimComponent,
-      AssignClaimComponent,
-      CreateInvestigatorComponent,
-      UpdateClaimInvestigatorComponent,
+    UpdateClaimComponent,
+    AssignClaimComponent,
+    CreateInvestigatorComponent,
+    UpdateClaimInvestigatorComponent,
+    UnderwriterDashboardComponent,
+    LandingComponent,
+    AdjusterDashboardComponent,
+
+    /* ✅ DECLARE POLICY COMPONENTS */
+    BuyPolicyComponent,
+    MyPoliciesComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    FormsModule,
+    FormsModule,            // ✅ required for ngModel
     ReactiveFormsModule,
     HttpClientModule,
+    CommonModule
   ],
-  providers: [HttpService, HttpClientModule],
-  bootstrap: [AppComponent],
+  providers: [HttpService],
+  bootstrap: [AppComponent]
 })
 export class AppModule {}

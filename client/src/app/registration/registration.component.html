@@ -1,49 +1,130 @@
-<div class="container mt-4">
-  <h2 class="text-center mb-4">User Registration</h2>
+<div class="auth-wrapper">
+  <div class="auth-card">
 
-  <form [formGroup]="itemForm" (ngSubmit)="onRegister()" class="needs-validation">
-    <div class="form-group mb-3">
-      <label for="username">Username</label>
-      <input id="username" type="text" formControlName="username" class="form-control" />
-      <div *ngIf="itemForm.get('username')?.touched && itemForm.get('username')?.invalid" class="text-danger">
-        Username is required.
-      </div>
+    <div class="auth-header">
+      <h2>Create Account</h2>
+      <p>Register to access the Insurance Claims Platform</p>
     </div>
 
-    <div class="form-group mb-3">
-      <label for="email">Email</label>
-      <input id="email" type="email" formControlName="email" class="form-control" />
-      <div *ngIf="itemForm.get('email')?.touched && itemForm.get('email')?.invalid" class="text-danger">
-        Valid email is required.
-      </div>
-    </div>
+    <form [formGroup]="itemForm" (ngSubmit)="onRegister()">
 
-    <div class="form-group mb-3">
-      <label for="password">Password</label>
-      <input id="password" type="password" formControlName="password" class="form-control" />
-      <div *ngIf="itemForm.get('password')?.touched && itemForm.get('password')?.invalid" class="text-danger">
-        Password is required.
+      <!-- ================= Email + OTP ================= -->
+      <label>Email</label>
+      <div class="otp-row">
+        <input
+          type="email"
+          class="auth-input"
+          formControlName="email"
+          placeholder="Enter your email"
+        />
+        <button
+          type="button"
+          class="otp-btn"
+          (click)="sendOtp()"
+          [disabled]="otpSending || otpResendCooldown > 0 || itemForm.get('email')?.invalid">
+          {{ otpSending ? 'Sending...' :
+             otpResendCooldown > 0 ? 'Resend in ' + otpResendCooldown + 's' : 'Send OTP' }}
+        </button>
       </div>
-    </div>
 
-    <div class="form-group mb-3">
-      <label for="role">Role</label>
-      <select id="role" formControlName="role" class="form-select">
-        <option value="" disabled>Select Role</option>
+      <div class="error"
+           *ngIf="itemForm.get('email')?.touched && itemForm.get('email')?.invalid">
+        Please enter a valid email address.
+      </div>
+
+      <!-- ================= OTP ================= -->
+      <div *ngIf="otpSent">
+        <label>OTP</label>
+        <div class="otp-row">
+          <input
+            type="text"
+            maxlength="6"
+            class="auth-input"
+            formControlName="otp"
+            placeholder="Enter OTP"
+          />
+          <button
+            type="button"
+            class="otp-btn outline"
+            (click)="verifyOtp()"
+            [disabled]="otpVerified || otpVerifying">
+            {{ otpVerifying ? 'Verifying...' : otpVerified ? 'Verified' : 'Verify' }}
+          </button>
+        </div>
+
+        <div class="error"
+             *ngIf="itemForm.get('otp')?.touched && itemForm.get('otp')?.invalid">
+          OTP must be a valid 6‑digit number.
+        </div>
+      </div>
+
+      <!-- ================= Username ================= -->
+      <label>Username</label>
+      <input
+        type="text"
+        class="auth-input"
+        formControlName="username"
+        placeholder="Enter username"
+      />
+
+      <div class="error"
+           *ngIf="itemForm.get('username')?.touched && itemForm.get('username')?.errors">
+        Username must contain only alphabets and be at least 3 characters long.
+      </div>
+
+      <!-- ================= Password ================= -->
+      <label>Password</label>
+      <input
+        type="password"
+        class="auth-input"
+        formControlName="password"
+        placeholder="Enter password"
+      />
+
+      <div class="error"
+           *ngIf="itemForm.get('password')?.touched && itemForm.get('password')?.errors">
+        Password must contain at least 8 characters, including
+        1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.
+      </div>
+
+      <!-- ================= Role ================= -->
+      <label>Role</label>
+      <select class="auth-input" formControlName="role">
+        <option value="" disabled>Select role</option>
         <option value="POLICYHOLDER">Policyholder</option>
         <option value="ADJUSTER">Adjuster</option>
         <option value="INVESTIGATOR">Investigator</option>
         <option value="UNDERWRITER">Underwriter</option>
       </select>
-      <div *ngIf="itemForm.get('role')?.touched && itemForm.get('role')?.invalid" class="text-danger">
-        Role is required.
+
+      <div class="error"
+           *ngIf="itemForm.get('role')?.touched && itemForm.get('role')?.invalid">
+        Please select a role.
       </div>
+
+      <!-- ================= Register ================= -->
+      <button
+        class="primary-btn"
+        type="submit"
+        [disabled]="!otpVerified">
+        Register
+      </button>
+
+      <p class="hint">Please verify OTP to enable registration.</p>
+
+      <div *ngIf="showError" class="error-box">
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="showMessage" class="success-box">
+        {{ responseMessage }}
+      </div>
+
+    </form>
+
+    <div class="auth-footer">
+      Already have an account?
+      <a routerLink="/login">Login</a>
     </div>
-
-    <button type="submit" class="btn btn-primary w-100">Register</button>
-  </form>
-
-  <div *ngIf="showMessage" class="alert alert-info mt-3">
-    {{ responseMessage }}
   </div>
 </div>

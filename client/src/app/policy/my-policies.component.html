@@ -1,0 +1,161 @@
+<div class="ic-auth-page ic-my-policies-page">
+  <div class="ic-page-shell">
+
+    <!-- Header -->
+    <div class="mp-head">
+      <div>
+        <h2 class="mp-title">My Policies</h2>
+        <p class="mp-sub">
+          View active policies, payment status, and policy history.
+        </p>
+      </div>
+
+      <div class="mp-actions">
+        <button class="ic-mini-btn ghost"
+                (click)="router.navigateByUrl('/buy-policy')">
+          Buy Policy
+        </button>
+        <button class="ic-mini-btn" (click)="loadPolicies()">
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div *ngIf="showError" class="ic-alert-error">{{ errorMessage }}</div>
+    <div *ngIf="showMessage" class="ic-alert-success">{{ responseMessage }}</div>
+    <div *ngIf="isLoading" class="mp-loading">Loading policies...</div>
+
+    <!-- Active policy hero -->
+    <div class="mp-hero" *ngIf="!isLoading">
+      <div class="mp-hero-left">
+        <div class="mp-kicker">Active Policy</div>
+
+        <div *ngIf="activePolicy; else noActive">
+          <div class="mp-hero-title">{{ activePolicy.policyNumber }}</div>
+          <div class="mp-hero-meta">
+            <span class="mp-chip">{{ typeLabel(activePolicy.insuranceType) }}</span>
+            <span class="mp-chip">{{ activePolicy.planType }}</span>
+            <span class="mp-chip">Status: {{ activePolicy.policyStatus }}</span>
+            <span class="mp-chip">Payment: {{ activePolicy.paymentStatus }}</span>
+          </div>
+        </div>
+
+        <ng-template #noActive>
+          <div class="mp-hero-title">No Active Policy</div>
+          <div class="mp-hero-note">
+            You need an active paid policy to create a claim.
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="mp-hero-right">
+        <div class="mp-stat">
+          <div class="k">Total Policies</div>
+          <div class="v">{{ policies.length }}</div>
+        </div>
+        <div class="mp-stat">
+          <div class="k">Active</div>
+          <div class="v">{{ activeCount }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="mp-toolbar" *ngIf="!isLoading">
+      <input class="mp-input"
+             placeholder="Search (policy number / type / plan)"
+             [(ngModel)]="search"
+             [ngModelOptions]="{ standalone: true }" />
+
+      <button class="ic-mini-btn ghost"
+              (click)="clearSearch()"
+              [disabled]="!search || search.trim().length === 0">
+        Clear
+      </button>
+
+      <div class="mp-filters">
+        <button class="mp-filter"
+                [class.active]="filter === 'ALL'"
+                (click)="setFilter('ALL')">All</button>
+
+        <button class="mp-filter"
+                [class.active]="filter === 'ACTIVE'"
+                (click)="setFilter('ACTIVE')">Active</button>
+
+        <button class="mp-filter"
+                [class.active]="filter === 'PENDING'"
+                (click)="setFilter('PENDING')">Pending</button>
+
+        <button class="mp-filter"
+                [class.active]="filter === 'EXPIRED'"
+                (click)="setFilter('EXPIRED')">Expired</button>
+      </div>
+    </div>
+
+    <!-- Empty -->
+    <div class="mp-empty"
+         *ngIf="!isLoading && filteredPolicies.length === 0">
+      No policies found for the selected filter/search.
+    </div>
+
+    <!-- Policy cards -->
+    <div class="mp-grid"
+         *ngIf="!isLoading && filteredPolicies.length > 0">
+
+      <div class="mp-card"
+           *ngFor="let p of filteredPolicies"
+           [class.active]="isActiveCard(p)">
+
+        <div class="mp-card-top">
+          <div>
+            <div class="mp-pn">{{ p.policyNumber }}</div>
+            <div class="mp-type">
+              {{ typeLabel(p.insuranceType) }} • {{ p.planType }}
+            </div>
+          </div>
+
+          <span [class]="badgeClass(p)">
+            {{ p.policyStatus || '-' }} / {{ p.paymentStatus || '-' }}
+          </span>
+        </div>
+
+        <div class="mp-meta">
+          <div class="mp-kv">
+            <span>Coverage</span>
+            <b>{{ formatINR(p.coverageAmount) }}</b>
+          </div>
+          <div class="mp-kv">
+            <span>Premium</span>
+            <b>{{ formatINR(p.premiumAmount) }}/year</b>
+          </div>
+          <div class="mp-kv">
+            <span>Start</span>
+            <b>{{ p.startDate || '-' }}</b>
+          </div>
+          <div class="mp-kv">
+            <span>End</span>
+            <b>{{ p.endDate || '-' }}</b>
+          </div>
+        </div>
+
+        <div class="mp-footer">
+          <span class="mp-mini" *ngIf="isActiveCard(p)">
+            This is your current active policy.
+          </span>
+          <span class="mp-mini" *ngIf="!isActiveCard(p)">
+            Policy record stored for history.
+          </span>
+
+          <button class="ic-mini-btn ghost"
+                  *ngIf="isActiveCard(p)"
+                  (click)="router.navigateByUrl('/create-claim')">
+            Create Claim
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

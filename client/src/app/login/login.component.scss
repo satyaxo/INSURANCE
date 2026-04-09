@@ -1,23 +1,150 @@
-.container {
-  max-width: 400px;
+// .container {
+//   max-width: 400px;
 
-  h2 {
-    color: #333;
-  }
+//   h2 {
+//     color: #333;
+//   }
 
-  form {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-  }
+//   form {
+//     background: #f8f9fa;
+//     padding: 20px;
+//     border-radius: 6px;
+//     border: 1px solid #ddd;
+//   }
 
-  .alert {
-    text-align: center;
-    font-weight: bold;
-  }
+//   .alert {
+//     text-align: center;
+//     font-weight: bold;
+//   }
 
-  .btn-link {
-    text-decoration: none;
-  }
+//   .btn-link {
+//     text-decoration: none;
+//   }
+// }
+/* ================= AUTH PAGE BACKGROUND ================= */
+.ic-auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.35), transparent 60%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.25), transparent 60%),
+    #020617;
+  color: #E5E7EB;
+}
+
+/* ================= LOGIN CARD ================= */
+.ic-auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: #0F172A;
+  border-radius: 18px;
+  padding: 40px 36px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.55);
+}
+
+/* ================= HEADER ================= */
+.ic-auth-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.ic-auth-header .ic-shield {
+  font-size: 2rem;
+  color: #60A5FA;
+}
+
+.ic-auth-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-top: 8px;
+}
+
+.ic-auth-sub {
+  font-size: 0.9rem;
+  color: #CBD5F5;
+  margin-top: 6px;
+}
+
+/* ================= FORM ================= */
+.ic-form-group {
+  margin-bottom: 18px;
+}
+
+.ic-form-group label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #93C5FD;
+  margin-bottom: 6px;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.ic-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #020617;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #E5E7EB;
+  outline: none;
+}
+
+.ic-input::placeholder {
+  color: #64748B;
+}
+
+.ic-input:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
+}
+
+/* ================= BUTTON ================= */
+.ic-btn-primary {
+  margin-top: 10px;
+  padding: 12px;
+  font-weight: 700;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3B82F6, #22D3EE);
+  border: none;
+  color: #020617;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ic-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(59, 130, 246, 0.45);
+}
+
+/* ================= ERROR ================= */
+.ic-alert-error {
+  margin-top: 16px;
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 4px solid #EF4444;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  color: #FCA5A5;
+  border-radius: 6px;
+  text-align: center;
+}
+
+/* ================= FOOTER ================= */
+.ic-auth-footer {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #CBD5F5;
+}
+
+.ic-auth-footer a {
+  color: #60A5FA;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.ic-auth-footer a:hover {
+  color: #93C5FD;
 }

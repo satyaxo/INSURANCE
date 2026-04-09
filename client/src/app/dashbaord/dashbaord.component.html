@@ -1,20 +1,144 @@
-<div class="container mt-4">
-  <h2 class="text-center mb-4">Dashboard</h2>
+<!-- Full-page background wrapper (matches your theme) -->
+<div class="ic-auth-page policy-track-page">
 
-  <div class="card">
-    <div class="card-body">
-      <p class="text-muted">
-        Welcome to the Insurance Claims & Resource Management Platform dashboard.
-      </p>
-      <p>
-        Use the navigation bar above to access features based on your role:
-      </p>
-      <ul>
-        <li>Policyholders: Create and view claims</li>
-        <li>Adjusters: Update and assign claims</li>
-        <li>Investigators: Manage investigation reports</li>
-        <li>Underwriters: Review and update claim investigations</li>
-      </ul>
+  <div class="policy-layout">
+
+    <!-- LEFT: Claims list -->
+    <div class="policy-list-card">
+
+      <div class="policy-list-head">
+        <div>
+          <h3 class="policy-title">Your Claims</h3>
+          <p class="policy-sub">Track claim progress in real time with stage ownership.</p>
+        </div>
+        <button class="ic-mini-btn" (click)="loadTracking()">Refresh</button>
+      </div>
+
+      <!-- Alerts -->
+      <div *ngIf="isLoading" class="ic-info">Loading claims...</div>
+      <div *ngIf="showError" class="ic-alert-error">{{ errorMessage }}</div>
+
+      <!-- Search -->
+      <div class="policy-search">
+        <input class="ic-input"
+               [(ngModel)]="policySearch"
+               [ngModelOptions]="{standalone:true}"
+               placeholder="Search by Policy Number (e.g., #45033512)" />
+        <button class="ic-mini-btn ghost"
+                (click)="clearSearch()"
+                [disabled]="!policySearch || policySearch.trim().length === 0">
+          Clear
+        </button>
+      </div>
+
+      <div class="ic-info" *ngIf="!isLoading && filteredList().length === 0">
+        No claims found.
+      </div>
+
+      <!-- Claim list -->
+      <div class="claim-list" *ngIf="filteredList().length > 0">
+        <button class="claim-item"
+                *ngFor="let c of filteredList()"
+                [class.active]="selected?.id === c.id"
+                (click)="selectClaim(c)">
+
+          <div class="claim-item-main">
+            <div class="claim-row">
+              <div class="claim-pn">{{ c.policyNumber || '-' }}</div>
+              <span [class]="badgeClass(c)">{{ c.status }}</span>
+            </div>
+
+            <div class="claim-type">{{ typeLabel(c.insuranceType) }}</div>
+            <div class="claim-date">Accident date: {{ c.date ? (c.date | date:'dd-MMM-yyyy') : '-' }}</div>
+            <div class="claim-owner">Owner: <b>{{ trackOwnerLabel(c) }}</b></div>
+          </div>
+
+          <div class="claim-chevron">›</div>
+        </button>
+      </div>
     </div>
+
+    <!-- RIGHT: Tracking Workbench -->
+    <div class="policy-track-card" *ngIf="selected">
+
+      <div class="track-head">
+        <div>
+          <h3 class="track-title">Claim Tracking</h3>
+          <div class="track-meta">
+            <span class="meta-pill">{{ typeLabel(selected.insuranceType) }}</span>
+            <span class="meta-pill">Policy: {{ selected.policyNumber }}</span>
+          </div>
+        </div>
+        <span [class]="badgeClass(selected)">{{ selected.status }}</span>
+      </div>
+
+      <div class="track-body">
+
+        <!-- ✅ Summary cards (real portal feel) -->
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="k">Current Stage</div>
+            <div class="v">{{ selected.stage || selected.status }}</div>
+          </div>
+
+          <div class="summary-card">
+            <div class="k">Current Owner</div>
+            <div class="v">{{ trackOwnerLabel(selected) }}</div>
+          </div>
+
+          <div class="summary-card">
+            <div class="k">Investigation</div>
+            <div class="v">{{ selected.investigationStatus || 'N/A' }}</div>
+          </div>
+
+          <div class="summary-card">
+            <div class="k">Progress</div>
+            <div class="v">{{ progressPercent(selected) }}%</div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="info-block">
+          <div class="info-k">Description</div>
+          <div class="info-v">{{ selected.description }}</div>
+        </div>
+
+        <!-- Animated Stepper -->
+        <div class="stepper">
+          <div class="stepper-line">
+            <div class="stepper-fill"
+                 [style.width.%]="progressPercent(selected)"
+                 [class.rejected]="isRejected(selected)">
+            </div>
+          </div>
+
+          <div class="step"
+               *ngFor="let s of steps; let i = index"
+               [class.done]="isDone(selected,i)"
+               [class.active]="isActive(selected,i)"
+               [class.rejected]="isRejected(selected) && s.key === 'REJECTED' && isActive(selected,i)">
+
+            <div class="dot">
+              <span class="check" *ngIf="isDone(selected,i)">✓</span>
+              <span class="pulse" *ngIf="isActive(selected,i)"></span>
+            </div>
+
+            <div class="step-text">
+              <div class="step-title">{{ s.title }}</div>
+              <div class="step-sub">{{ s.subtitle }}</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- No selection -->
+    <div class="policy-track-card empty-card" *ngIf="!selected && !isLoading">
+      <div class="empty-state">
+        Select a claim from the left to view tracking.
+      </div>
+    </div>
+
   </div>
 </div>
